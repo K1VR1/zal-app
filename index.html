@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Журнал зала</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #121418; --card: #1C1F26; --card2: #232733; --line: #2E3340;
+    --text: #F2F4F8; --soft: #D9DEE8; --muted: #8E95A6;
+    --lime: #C6FF3D; --orange: #FF8A3D; --cyan: #3DD9FF; --red: #FF5470;
+    --day: var(--lime);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Montserrat', system-ui, sans-serif; }
+  body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  button { font-family: inherit; }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 16px 16px 8px; }
+
+  /* шапка */
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .title { font-size: 28px; font-weight: 800; line-height: 1.1; margin: 4px 0 2px; letter-spacing: -.01em; }
+  .title .accent { color: var(--day); }
+  .subtitle { font-size: 14px; color: var(--soft); }
+  .demo { margin: 0 0 12px; padding: 8px 12px; border-radius: 10px; background: #2a2416; color: var(--orange); font-size: 12px; font-weight: 600; }
+
+  /* плитки */
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0; }
+  .tiles.four { grid-template-columns: repeat(2, 1fr); }
+  .tile { background: var(--card); border-radius: 14px; padding: 12px 10px; border-top: 3px solid var(--c, var(--lime)); }
+  .tile .k { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .tile .v { font-size: 22px; font-weight: 800; margin-top: 4px; color: var(--c, var(--lime)); font-variant-numeric: tabular-nums; }
+  .tile .v small { font-size: 13px; color: var(--muted); font-weight: 600; }
+
+  /* карточки упражнений */
+  .card { background: var(--card); border-radius: 16px; padding: 14px; margin-bottom: 10px; border: 1px solid transparent; transition: border-color .2s; }
+  .card.done { border-color: color-mix(in srgb, var(--day) 55%, transparent); }
+  .card-head { display: flex; align-items: flex-start; gap: 10px; }
+  .card-name { flex: 1; font-size: 16px; font-weight: 700; line-height: 1.25; }
+  .chip { flex: none; font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 8px; background: var(--card2); color: var(--day); }
+  .check { flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--day); color: var(--bg); display: none; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; }
+  .card.done .check { display: flex; }
+  .last { font-size: 12px; color: var(--muted); margin: 6px 0 10px; }
+  .last b { color: var(--soft); font-weight: 600; }
+
+  .set { display: grid; grid-template-columns: 26px 1fr 14px 1fr 22px; align-items: center; gap: 8px; margin-top: 6px; }
+  .set .n { width: 26px; height: 26px; border-radius: 50%; background: var(--card2); color: var(--muted); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .set.filled .n { background: color-mix(in srgb, var(--day) 22%, var(--card2)); color: var(--day); }
+  .set .x { text-align: center; color: var(--muted); font-weight: 600; }
+  .field { position: relative; }
+  .field input { width: 100%; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg);
+    color: var(--text); font: 700 18px 'Montserrat', sans-serif; text-align: center; padding: 0 30px 0 8px; outline: none; }
+  .field input:focus { border-color: var(--day); }
+  .field input::placeholder { color: #4a5062; font-weight: 600; }
+  .field span { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--muted); pointer-events: none; }
+  .state { font-size: 14px; text-align: center; color: var(--day); }
+  .state.err { color: var(--red); }
+  .spin { width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--day); border-radius: 50%; animation: r .7s linear infinite; display: inline-block; }
+  @keyframes r { to { transform: rotate(360deg); } }
+
+  .card-foot { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+  .btn { white-space: nowrap; border: 0; border-radius: 10px; padding: 9px 12px; font-size: 13px; font-weight: 700; background: var(--card2); color: var(--soft); cursor: pointer; }
+  .btn.primary { background: var(--day); color: var(--bg); }
+  .tonnage { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .tonnage b { color: var(--soft); }
+
+  .extra { border: 1px dashed color-mix(in srgb, var(--orange) 60%, transparent); }
+  .extra .card-name { color: var(--orange); }
+  select, .text { width: 100%; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--text);
+    font: 600 15px 'Montserrat', sans-serif; padding: 0 12px; margin-top: 10px; }
+
+  /* день отдыха */
+  .rest { text-align: center; padding: 28px 16px; background: var(--card); border-radius: 18px; margin: 16px 0; }
+  .rest .big { font-size: 30px; font-weight: 800; color: var(--lime); }
+  .rest p { margin: 8px 0 0; color: var(--soft); font-size: 14px; }
+  .section { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 22px 0 10px; }
+  .row { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--card); border-radius: 12px; margin-bottom: 6px; }
+  .row .nm { flex: 1; font-weight: 600; font-size: 14px; }
+  .row .sm { font-size: 12px; color: var(--muted); margin-top: 2px; font-weight: 500; }
+  .row .val { font-weight: 800; font-size: 15px; font-variant-numeric: tabular-nums; }
+  .pill { font-size: 11px; font-weight: 800; padding: 4px 7px; border-radius: 7px; color: var(--bg); }
+  .row .up { color: var(--lime); } .row .down { color: var(--red); } .row .zero { color: var(--muted); }
+
+  /* графики */
+  .chart { background: var(--card); border-radius: 16px; padding: 14px 10px 8px; }
+  .chart svg { width: 100%; height: auto; display: block; }
+  .chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chips button { flex: none; border: 0; border-radius: 999px; padding: 8px 12px; font: 600 13px 'Montserrat', sans-serif; background: var(--card); color: var(--soft); cursor: pointer; }
+  .chips button.on { background: var(--lime); color: var(--bg); }
+  .empty { color: var(--muted); font-size: 14px; text-align: center; padding: 24px 0; }
+
+  /* нижнее меню */
+  nav { position: fixed; left: 0; right: 0; bottom: 0; background: rgba(18,20,24,.94); backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line); padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); display: flex; justify-content: center; gap: 6px; }
+  nav button { flex: 1; max-width: 180px; border: 0; background: none; color: var(--muted); font: 700 12px 'Montserrat', sans-serif; padding: 8px 4px; border-radius: 12px; cursor: pointer; }
+  nav button .ic { display: block; font-size: 20px; margin-bottom: 2px; }
+  nav button.on { color: var(--lime); background: var(--card); }
+
+  .skeleton { height: 120px; border-radius: 16px; background: linear-gradient(90deg, var(--card) 0%, var(--card2) 50%, var(--card) 100%);
+    background-size: 200% 100%; animation: sh 1.2s infinite; margin-bottom: 10px; }
+  @keyframes sh { to { background-position: -200% 0; } }
+  #toast { position: fixed; left: 16px; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom)); max-width: 528px; margin: 0 auto;
+    background: var(--red); color: #fff; font-weight: 600; font-size: 14px; padding: 12px 14px; border-radius: 12px; display: none; z-index: 10; }
+</style>
+</head>
+<body>
+<div class="wrap" id="view"></div>
+<nav>
+  <button data-tab="today" class="on"><span class="ic">🏋️</span>Сегодня</button>
+  <button data-tab="progress"><span class="ic">📈</span>Прогресс</button>
+  <button data-tab="history"><span class="ic">📊</span>История</button>
+</nav>
+<div id="toast"></div>
+
+<script>
+// Вставь сюда ссылку на веб-приложение Apps Script (заканчивается на /exec)
+const API_URL = 'PASTE_APPS_SCRIPT_URL_HERE';
+
+const tg = window.Telegram && window.Telegram.WebApp;
+const INIT = tg ? tg.initData : '';
+const DEMO = !INIT || API_URL.indexOf('PASTE') === 0;
+const DAYS = ['', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+const DAY_COLOR = { 1: 'var(--lime)', 3: 'var(--orange)', 5: 'var(--cyan)' };
+const state = { tab: 'today', today: null, progress: null, history: null, pick: null };
+const $view = document.getElementById('view');
+
+if (tg) {
+  tg.ready(); tg.expand();
+  try { tg.setHeaderColor('#121418'); tg.setBackgroundColor('#121418'); } catch (e) {}
+  if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+}
+
+/* ---------- запросы ---------- */
+async function api(action, payload) {
+  if (DEMO) return demoApi(action, payload || {});
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(Object.assign({ action: action, initData: INIT }, payload || {}))
+  });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'Ошибка');
+  return json.data;
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.style.display = 'none', 4000);
+}
+function haptic(kind) { try { tg && tg.HapticFeedback.notificationOccurred(kind); } catch (e) {} }
+
+/* ---------- помощники ---------- */
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const fmtNum = n => (n == null || n === '') ? '' : String(Math.round(n * 100) / 100).replace('.', ',');
+const fmtT = n => Math.round(n || 0).toLocaleString('ru-RU');
+const dm = iso => iso.slice(8, 10) + '.' + iso.slice(5, 7);
+const parseNum = v => { v = String(v).trim().replace(',', '.'); return v === '' ? null : Number(v); };
+
+function parsePlan(plan) {
+  const m = String(plan || '').match(/(\d+)\s*×\s*(\d+|макс)?/);
+  return { sets: m ? Number(m[1]) : 3, reps: m && m[2] && m[2] !== 'макс' ? Number(m[2]) : null };
+}
+function parseLast(last, plan) {
+  const out = [];
+  const re = /([\d.,]*)×(\d+)/g; let m;
+  while ((m = re.exec(last || ''))) out.push([m[1] ? parseNum(m[1]) : null, Number(m[2])]);
+  if (!out.length) {
+    const s = String(last || '').match(/старт:\s*([\d.,]+)/);
+    if (s) for (let i = 0; i < plan.sets; i++) out.push([parseNum(s[1]), plan.reps]);
+  }
+  return out;
+}
+function prettyLast(last) {
+  if (!last || last === '—') return 'Прошлый раз: —';
+  if (last.indexOf('старт') === 0) return 'Старт: <b>' + esc(last.replace('старт:', '').trim()) + '</b>';
+  return 'Прошлый раз: <b>' + esc(last.trim().split(/\s{2,}/).join(' · ')) + '</b>';
+}
+
+/* ---------- «Сегодня» ---------- */
+function renderToday() {
+  const d = state.today;
+  if (!d) return skeleton();
+  const wd = d.today ? d.today.weekday : d.weekday;
+  document.documentElement.style.setProperty('--day', DAY_COLOR[wd] || 'var(--lime)');
+  let html = demoBanner();
+  html += '<div class="eyebrow">' + DAYS[d.weekday] + ' · ' + dm(d.date) + '</div>';
+
+  if (d.today) {
+    const ex = d.today.exercises;
+    const tonnage = ex.reduce((s, e) => s + (e.tonnage || 0), 0);
+    html += '<div class="title"><span class="accent">' + esc(d.today.group) + '</span></div>';
+    html += tiles([
+      ['Тоннаж', fmtT(tonnage) + ' <small>кг</small>', 'var(--day)'],
+      ['Неделя', d.week.done + ' <small>из ' + d.week.total + '</small>', 'var(--orange)'],
+      ['Рекорды', d.week.prs, 'var(--red)']
+    ], 'tTonnage');
+    ex.forEach(e => { html += e.extra && !e.name ? extraPicker(e) : exerciseCard(e); });
+  } else {
+    html += '<div class="title">День <span class="accent">отдыха</span></div>';
+    html += tiles([
+      ['Неделя', d.week.done + ' <small>из ' + d.week.total + '</small>', 'var(--lime)'],
+      ['Тоннаж недели', fmtT(d.week.tonnage), 'var(--orange)'],
+      ['Рекорды', d.week.prs, 'var(--red)']
+    ]);
+    html += '<div class="rest"><div class="big">💤</div><p>Мышцы растут, пока ты восстанавливаешься.</p></div>';
+    if (d.next) {
+      html += '<div class="section">Следующая · ' + DAYS[d.next.weekday] + ', ' + dm(d.next.date) + ' · ' + esc(d.next.group) + '</div>';
+      d.next.exercises.forEach(e => {
+        html += '<div class="row"><div class="nm">' + esc(e.name) + '<div class="sm">' + prettyLast(e.last) + '</div></div>' +
+          '<span class="chip" style="color:' + (DAY_COLOR[d.next.weekday] || 'var(--lime)') + '">' + esc(e.plan) + '</span></div>';
+      });
+    }
+  }
+  $view.innerHTML = html;
+  bindToday();
+}
+
+function tiles(list, id) {
+  return '<div class="tiles">' + list.map((t, i) =>
+    '<div class="tile" style="--c:' + t[2] + '"><div class="k">' + t[0] + '</div><div class="v"' + (i === 0 && id ? ' id="' + id + '"' : '') + '>' + t[1] + '</div></div>').join('') + '</div>';
+}
+
+function exerciseCard(e) {
+  const plan = parsePlan(e.plan);
+  const last = parseLast(e.last, plan);
+  const filled = e.sets.filter(s => s[0] != null || s[1] != null).length;
+  const lastIdx = e.sets.reduce((m, s, i) => (s[0] != null || s[1] != null) ? i : m, -1);
+  const show = Math.min(4, Math.max(plan.sets, lastIdx + 1, 1));
+  let sets = '';
+  for (let i = 0; i < 4; i++) {
+    const s = e.sets[i], l = last[i] || last[last.length - 1] || [null, plan.reps];
+    const on = s[0] != null || s[1] != null;
+    sets += '<div class="set' + (on ? ' filled' : '') + '" data-set="' + i + '"' + (i >= show ? ' hidden' : '') + '>' +
+      '<div class="n">' + (i + 1) + '</div>' +
+      '<div class="field"><input inputmode="decimal" data-k="kg" value="' + fmtNum(s[0]) + '" placeholder="' + fmtNum(l[0]) + '"><span>кг</span></div>' +
+      '<div class="x">×</div>' +
+      '<div class="field"><input inputmode="numeric" data-k="reps" value="' + fmtNum(s[1]) + '" placeholder="' + fmtNum(l[1]) + '"><span>раз</span></div>' +
+      '<div class="state"></div></div>';
+  }
+  const done = plan.sets && e.sets.filter(s => s[1] != null).length >= plan.sets;
+  return '<div class="card' + (done ? ' done' : '') + (e.extra ? ' extra' : '') + '" data-row="' + e.row + '" data-plan="' + plan.sets + '">' +
+    '<div class="card-head"><div class="card-name">' + esc(e.name) + '</div>' +
+    (e.plan ? '<span class="chip">' + esc(e.plan) + '</span>' : '') + '<div class="check">✓</div></div>' +
+    '<div class="last">' + prettyLast(e.last) + '</div>' + sets +
+    '<div class="card-foot">' +
+    (last.length && !filled ? '<button class="btn primary" data-act="repeat">↺ Как в прошлый раз</button>' : '') +
+    (show < 4 ? '<button class="btn" data-act="more">+ подход</button>' : '') +
+    '<div class="tonnage">тоннаж <b data-t>' + fmtT(e.tonnage) + '</b> кг</div></div></div>';
+}
+
+function extraPicker(e) {
+  return '<div class="card extra" data-row="' + e.row + '">' +
+    '<div class="card-head"><div class="card-name">+ Доп. упражнение</div></div>' +
+    '<select data-act="pick"><option value="">Выбери упражнение…</option>' +
+    state.today.options.map(o => '<option>' + esc(o) + '</option>').join('') +
+    '<option value="__own">Своё название…</option></select>' +
+    '<input class="text" data-act="own" placeholder="Например: шраги с гантелями" hidden></div>';
+}
+
+function bindToday() {
+  $view.querySelectorAll('.card[data-row]').forEach(card => {
+    const row = Number(card.dataset.row);
+    card.querySelectorAll('.set input').forEach(inp => inp.addEventListener('change', () => saveSet(card, row, inp.closest('.set'))));
+    const rep = card.querySelector('[data-act=repeat]');
+    if (rep) rep.addEventListener('click', () => repeatLast(card, row));
+    const more = card.querySelector('[data-act=more]');
+    if (more) more.addEventListener('click', () => {
+      const hidden = card.querySelector('.set[hidden]');
+      if (hidden) { hidden.hidden = false; hidden.querySelector('input').focus(); }
+      if (!card.querySelector('.set[hidden]')) more.remove();
+    });
+    const pick = card.querySelector('[data-act=pick]');
+    if (pick) {
+      const own = card.querySelector('[data-act=own]');
+      pick.addEventListener('change', () => {
+        if (pick.value === '__own') { own.hidden = false; own.focus(); return; }
+        if (pick.value) setExercise(row, pick.value);
+      });
+      own.addEventListener('change', () => own.value.trim() && setExercise(row, own.value.trim()));
+    }
+  });
+}
+
+async function saveSet(card, row, setEl, silent) {
+  const i = Number(setEl.dataset.set);
+  const kg = parseNum(setEl.querySelector('[data-k=kg]').value);
+  const reps = parseNum(setEl.querySelector('[data-k=reps]').value);
+  if ((kg != null && isNaN(kg)) || (reps != null && isNaN(reps))) { toast('Введи число, например 32,5'); return; }
+  const st = setEl.querySelector('.state');
+  st.className = 'state'; st.innerHTML = '<span class="spin"></span>';
+  try {
+    const res = await api('save', { row: row, set: i, kg: kg, reps: reps });
+    st.textContent = '✓';
+    setEl.classList.toggle('filled', kg != null || reps != null);
+    applyExercise(card, res.exercise, res.week);
+    if (!silent) haptic('success');
+  } catch (err) {
+    st.className = 'state err'; st.textContent = '!';
+    toast(err.message); haptic('error');
+  }
+}
+
+function applyExercise(card, e, week) {
+  const ex = state.today.today.exercises;
+  const k = ex.findIndex(x => x.row === e.row);
+  if (k >= 0) ex[k] = e;
+  if (week) state.today.week = week;
+  card.querySelector('[data-t]').textContent = fmtT(e.tonnage);
+  const planSets = Number(card.dataset.plan) || 0;
+  card.classList.toggle('done', planSets > 0 && e.sets.filter(s => s[1] != null).length >= planSets);
+  const total = ex.reduce((s, x) => s + (x.tonnage || 0), 0);
+  const t = document.getElementById('tTonnage');
+  if (t) t.innerHTML = fmtT(total) + ' <small>кг</small>';
+}
+
+async function repeatLast(card, row) {
+  const e = state.today.today.exercises.find(x => x.row === row);
+  const plan = parsePlan(e.plan);
+  const last = parseLast(e.last, plan);
+  const btn = card.querySelector('[data-act=repeat]');
+  if (btn) btn.remove();
+  for (let i = 0; i < Math.min(4, last.length); i++) {
+    const setEl = card.querySelector('.set[data-set="' + i + '"]');
+    setEl.hidden = false;
+    setEl.querySelector('[data-k=kg]').value = fmtNum(last[i][0]);
+    setEl.querySelector('[data-k=reps]').value = fmtNum(last[i][1]);
+    await saveSet(card, row, setEl, true);
+  }
+  haptic('success');
+}
+
+async function setExercise(row, name) {
+  try {
+    state.today = await api('exercise', { row: row, name: name });
+    haptic('success');
+    renderToday();
+  } catch (err) { toast(err.message); }
+}
+
+/* ---------- «Прогресс» ---------- */
+function renderProgress() {
+  const p = state.progress;
+  if (!p) return skeleton();
+  document.documentElement.style.setProperty('--day', 'var(--lime)');
+  let html = demoBanner() + '<div class="eyebrow">С начала программы</div><div class="title">Прогресс</div>';
+  html += '<div class="tiles four">' + [
+    ['Тренировок', p.tiles.workouts, 'var(--lime)'], ['Тоннаж всего', p.tiles.tonnage, 'var(--orange)'],
+    ['За 7 дней', p.tiles.week, 'var(--cyan)'], ['Рекордов', p.tiles.prs, 'var(--red)']
+  ].map(t => '<div class="tile" style="--c:' + t[2] + '"><div class="k">' + t[0] + '</div><div class="v">' + esc(t[1]) + '</div></div>').join('') + '</div>';
+  const colors = { 'Пн': 'var(--lime)', 'Ср': 'var(--orange)', 'Пт': 'var(--cyan)' };
+  const names = { 'Пн': 'Понедельник', 'Ср': 'Среда', 'Пт': 'Пятница' };
+  ['Пн', 'Ср', 'Пт'].forEach(day => {
+    const list = p.exercises.filter(e => e.day === day);
+    if (!list.length) return;
+    html += '<div class="section">' + names[day] + '</div>';
+    list.forEach(e => {
+      const g = e.gainPct || '';
+      const cls = g.indexOf('+') === 0 ? 'up' : g.indexOf('-') === 0 ? 'down' : 'zero';
+      const best = e.best ? e.best + ' кг' : (e.maxReps ? e.maxReps + ' раз' : '—');
+      html += '<div class="row"><span class="pill" style="background:' + colors[day] + '">' + day + '</span>' +
+        '<div class="nm">' + esc(e.name) + '<div class="sm">старт ' + (e.start ? esc(e.start) + ' кг' : '—') + ' · тренировок ' + esc(e.count) + '</div></div>' +
+        '<div style="text-align:right"><div class="val">' + esc(best) + '</div><div class="sm ' + cls + '">' + esc(g || '') + '</div></div></div>';
+    });
+  });
+  $view.innerHTML = html;
+}
+
+/* ---------- «История» ---------- */
+function renderHistory() {
+  const h = state.history;
+  if (!h) return skeleton();
+  document.documentElement.style.setProperty('--day', 'var(--lime)');
+  let html = demoBanner() + '<div class="eyebrow">По неделям</div><div class="title">История</div>';
+  html += '<div class="section">Тоннаж за неделю, кг</div><div class="chart">' + barChart(h.weeks) + '</div>';
+  html += '<div class="section">Рабочий вес по тренировкам</div>';
+  if (!h.names.length) html += '<div class="empty">Пока нет записей</div>';
+  else {
+    html += '<div class="chips">' + h.names.map(n => '<button class="' + (n === state.pick ? 'on' : '') + '" data-n="' + esc(n) + '">' + esc(n) + '</button>').join('') + '</div>';
+    html += '<div class="chart">' + (h.points.length ? lineChart(h.points) : '<div class="empty">Выбери упражнение</div>') + '</div>';
+  }
+  $view.innerHTML = html;
+  $view.querySelectorAll('.chips button').forEach(b => b.addEventListener('click', async () => {
+    state.pick = b.dataset.n;
+    $view.querySelectorAll('.chips button').forEach(x => x.classList.toggle('on', x === b));
+    try { state.history = await api('history', { name: state.pick }); renderHistory(); } catch (err) { toast(err.message); }
+  }));
+}
+
+function barChart(weeks) {
+  const W = 340, H = 170, pad = 22, data = weeks.slice(-12);
+  const max = Math.max(1, ...data.map(w => w.tonnage));
+  const bw = (W - pad) / data.length;
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '">';
+  data.forEach((w, i) => {
+    const h = (H - 40) * w.tonnage / max, x = pad / 2 + i * bw + bw * .15, y = H - 20 - h;
+    s += '<rect x="' + x + '" y="' + y + '" width="' + bw * .7 + '" height="' + Math.max(h, 2) + '" rx="4" fill="' + (i === data.length - 1 ? '#FF8A3D' : '#3a3f4d') + '"/>';
+    if (w.tonnage) s += '<text x="' + (x + bw * .35) + '" y="' + (y - 5) + '" fill="#D9DEE8" font-size="9" font-weight="700" text-anchor="middle">' + (w.tonnage >= 1000 ? (w.tonnage / 1000).toFixed(1).replace('.', ',') + 'т' : w.tonnage) + '</text>';
+    s += '<text x="' + (x + bw * .35) + '" y="' + (H - 6) + '" fill="#8E95A6" font-size="9" text-anchor="middle">Н' + w.week + '</text>';
+  });
+  return s + '</svg>';
+}
+
+function lineChart(points) {
+  const W = 340, H = 180, px = 30, py = 26;
+  const vals = points.map(p => p.weight);
+  let min = Math.min(...vals), max = Math.max(...vals);
+  if (min === max) { min -= 5; max += 5; }
+  const X = i => px + (points.length === 1 ? (W - 2 * px) / 2 : i * (W - 2 * px) / (points.length - 1));
+  const Y = v => H - py - (v - min) / (max - min) * (H - 2 * py);
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '">';
+  s += '<polyline fill="none" stroke="#C6FF3D" stroke-width="3" stroke-linejoin="round" points="' + points.map((p, i) => X(i) + ',' + Y(p.weight)).join(' ') + '"/>';
+  points.forEach((p, i) => {
+    s += '<circle cx="' + X(i) + '" cy="' + Y(p.weight) + '" r="4.5" fill="#121418" stroke="#C6FF3D" stroke-width="2.5"/>';
+    s += '<text x="' + X(i) + '" y="' + (Y(p.weight) - 10) + '" fill="#F2F4F8" font-size="10" font-weight="700" text-anchor="middle">' + fmtNum(p.weight) + '</text>';
+    s += '<text x="' + X(i) + '" y="' + (H - 6) + '" fill="#8E95A6" font-size="9" text-anchor="middle">' + dm(p.date) + '</text>';
+  });
+  return s + '</svg>';
+}
+
+/* ---------- общее ---------- */
+function skeleton() { $view.innerHTML = demoBanner() + '<div class="skeleton" style="height:70px"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>'; }
+function demoBanner() { return DEMO ? '<div class="demo">Демо-режим: открой через Telegram, чтобы работать с таблицей</div>' : ''; }
+
+async function show(tab) {
+  state.tab = tab;
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  window.scrollTo(0, 0);
+  const render = { today: renderToday, progress: renderProgress, history: renderHistory }[tab];
+  render();
+  try {
+    if (tab === 'today') state.today = await api('today');
+    if (tab === 'progress') state.progress = await api('progress');
+    if (tab === 'history') {
+      const h = await api('history', { name: state.pick });
+      if (!state.pick && h.names.length) { state.pick = h.names[0]; state.history = await api('history', { name: state.pick }); }
+      else state.history = h;
+    }
+    if (state.tab === tab) render();
+  } catch (err) { toast(err.message); }
+}
+document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => show(b.dataset.tab)));
+
+/* ---------- демо-данные (когда открыто не из Telegram) ---------- */
+const DEMO_DB = (() => {
+  const mk = (row, name, plan, last, sets, extra) => ({ row, name, plan, last, sets: sets || [[null, null], [null, null], [null, null], [null, null]], tonnage: 0, extra: !!extra });
+  return {
+    today: {
+      date: '2026-10-19', weekday: 1,
+      today: { date: '2026-10-19', weekday: 1, group: 'Грудь и бицепс', exercises: [
+        mk(29, 'Жим лежа', '3×10', '35×10   35×10   35×10', [[37.5, 10], [37.5, 9], [null, null], [null, null]]),
+        mk(30, 'Бабочка', '3×12', '41,25×12   41,25×12   41,25×12'),
+        mk(31, 'Бицепс со штангой', '4×10', '17,5×12   20×10   20×10   20×10'),
+        mk(32, 'Жим на наклонной', '3×10', '30×10   30×10   30×10'),
+        mk(33, 'Молотки', '3×12', '8×12   8×12   8×12'),
+        mk(34, 'Жим гантелей на наклонной', '3×12', '8×12   8×12   8×12'),
+        mk(35, 'Махи руками с гантелями', '3×15', '6×15   6×15   6×15'),
+        mk(36, '', '', '', null, true)
+      ] },
+      next: null,
+      week: { done: 0, total: 3, tonnage: 0, prs: 1 },
+      options: ['Жим лежа', 'Бабочка', 'Бицепс со штангой', 'Молотки', 'Шраги с гантелями', 'Подтягивания']
+    },
+    progress: {
+      tiles: { workouts: '3', tonnage: '22 657', week: '22 657', prs: '1' },
+      exercises: [
+        { day: 'Пн', name: 'Жим лежа', start: '30', best: '35', gainPct: '+17%', maxReps: '10', count: '1' },
+        { day: 'Пн', name: 'Бицепс со штангой', start: '15', best: '20', gainPct: '+33%', maxReps: '12', count: '2' },
+        { day: 'Ср', name: 'Жим ногами сидя', start: '33,75', best: '37,5', gainPct: '+11%', maxReps: '12', count: '1' },
+        { day: 'Ср', name: 'Пресс на брусьях', start: '', best: '', gainPct: '', maxReps: '30', count: '1' },
+        { day: 'Пт', name: 'Тяга к груди', start: '20', best: '30', gainPct: '+50%', maxReps: '12', count: '1' },
+        { day: 'Пт', name: 'Предплечья', start: '18,75', best: '18,75', gainPct: '0%', maxReps: '', count: '0' }
+      ]
+    },
+    history: { weeks: [{ week: 1, tonnage: 22657 }, { week: 2, tonnage: 23410 }], names: ['Жим лежа', 'Бицепс со штангой'],
+      points: { 'Жим лежа': [{ date: '2026-10-12', weight: 35 }, { date: '2026-10-19', weight: 37.5 }],
+                'Бицепс со штангой': [{ date: '2026-10-12', weight: 17.5 }, { date: '2026-10-16', weight: 20 }] } }
+  };
+})();
+function demoApi(action, p) {
+  const db = DEMO_DB;
+  return new Promise(res => setTimeout(() => {
+    if (action === 'today') return res(JSON.parse(JSON.stringify(db.today)));
+    if (action === 'progress') return res(db.progress);
+    if (action === 'history') return res({ weeks: db.history.weeks, names: db.history.names, points: db.history.points[p.name] || [] });
+    if (action === 'save') {
+      const e = db.today.today.exercises.find(x => x.row === p.row);
+      e.sets[p.set] = [p.kg, p.reps];
+      e.tonnage = e.sets.reduce((s, x) => s + (x[0] || 0) * (x[1] || 0), 0);
+      return res({ exercise: JSON.parse(JSON.stringify(e)), week: db.today.week });
+    }
+    if (action === 'exercise') {
+      const e = db.today.today.exercises.find(x => x.row === p.row);
+      e.name = p.name; e.last = '—';
+      return res(JSON.parse(JSON.stringify(db.today)));
+    }
+  }, 250));
+}
+DEMO_DB.today.today.exercises[0].tonnage = 37.5 * 10 + 37.5 * 9;
+
+show('today');
+</script>
+</body>
+</html>
