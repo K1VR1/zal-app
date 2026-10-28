@@ -127,6 +127,48 @@
   @keyframes up { from { transform: translateY(40px); opacity: 0; } }
   .sheet .btn.primary { width: 100%; padding: 14px; font-size: 15px; margin-top: 16px; }
   .note { font-size: 12px; color: var(--muted); margin-top: 10px; text-align: center; }
+  .hint.warn { color: var(--orange); background: color-mix(in srgb, var(--orange) 12%, var(--card2)); }
+  .noteline { font-size: 12px; color: var(--soft); margin: 6px 0 0; padding: 6px 10px; border-radius: 9px; background: color-mix(in srgb, var(--cyan) 10%, var(--card2)); cursor: pointer; }
+  .noteedit { display: flex; gap: 6px; margin-top: 8px; }
+  .noteedit input { flex: 1; height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: 500 14px 'Montserrat', sans-serif; padding: 0 10px; outline: none; }
+  .noteedit input:focus { border-color: var(--cyan); }
+  .btn.ghost { background: none; color: var(--muted); padding: 9px 6px; }
+  .movebox { background: var(--card); border-radius: 16px; padding: 16px; margin: 0 0 12px; border: 1px dashed color-mix(in srgb, var(--orange) 60%, transparent); }
+  .movebox p { margin: 0 0 12px; font-size: 14px; color: var(--soft); line-height: 1.4; }
+  .movebox .btn { width: 100%; padding: 13px; font-size: 14px; }
+  .btn.wide { width: 100%; padding: 12px; margin-bottom: 16px; }
+
+  /* таймер отдыха */
+  #rest { position: fixed; left: 12px; right: 12px; bottom: calc(76px + env(safe-area-inset-bottom)); max-width: 536px; margin: 0 auto; z-index: 15;
+    background: var(--card2); border: 1px solid var(--line); border-radius: 16px; padding: 8px; display: flex; align-items: center; gap: 6px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.5); overflow: hidden; }
+  #rest .rbar { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--day); transition: width .25s linear; }
+  #rest button { border: 0; background: var(--card); color: var(--soft); font: 700 13px 'Montserrat', sans-serif; border-radius: 10px; padding: 10px 11px; cursor: pointer; }
+  #rest .rt { flex: 1; text-align: center; cursor: pointer; line-height: 1.1; }
+  #rest .rt b { display: block; font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--day); }
+  #rest .rt small { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  #rest.go { background: var(--day); }
+  #rest.go .rt b, #rest.go .rt small { color: var(--bg); }
+  body.timer { padding-bottom: calc(150px + env(safe-area-inset-bottom)); }
+  body.timer #toast { bottom: calc(150px + env(safe-area-inset-bottom)); }
+
+  /* вес и достижения */
+  .wform { display: flex; gap: 8px; margin-top: 10px; }
+  .wform .field { flex: 1; }
+  .wform .btn { padding: 0 18px; }
+  .streak { display: flex; align-items: center; gap: 12px; background: var(--card); border-radius: 14px; padding: 12px 14px; margin-bottom: 6px; }
+  .streak .fire { font-size: 28px; }
+  .streak b { font-size: 18px; font-weight: 800; color: var(--orange); }
+  .streak .sm { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .badges { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .badge { background: var(--card); border-radius: 14px; padding: 10px 4px 8px; text-align: center; }
+  .badge .bi { font-size: 26px; }
+  .badge .bt { font-size: 10px; font-weight: 700; margin-top: 4px; line-height: 1.2; color: var(--soft); }
+  .badge .bp { font-size: 9px; color: var(--muted); margin-top: 3px; font-weight: 600; }
+  .badge.off .bi { filter: grayscale(1); opacity: .3; }
+  .badge.off .bt { color: var(--muted); }
+  .badge.on { background: color-mix(in srgb, var(--orange) 14%, var(--card)); }
+  #cele.gold { background: linear-gradient(135deg, #FFB547, #FF8A3D); color: #1a1205; }
   #toast { position: fixed; left: 16px; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom)); max-width: 528px; margin: 0 auto;
     background: var(--red); color: #fff; font-weight: 600; font-size: 14px; padding: 12px 14px; border-radius: 12px; display: none; z-index: 10; }
 </style>
@@ -140,6 +182,13 @@
 </nav>
 <div id="toast"></div>
 <div id="cele"></div>
+<div id="rest" hidden>
+  <div class="rbar"></div>
+  <button data-r="-15">−15</button>
+  <div class="rt" data-r="cycle"><b id="restT">1:30</b><small id="restS">отдых · тап — сменить</small></div>
+  <button data-r="15">+15</button>
+  <button data-r="x">✕</button>
+</div>
 
 <script>
 // Вставь сюда ссылку на веб-приложение Apps Script (заканчивается на /exec)
@@ -210,7 +259,7 @@ function prettyLast(last) {
 function renderToday() {
   const d = state.today;
   if (!d) return skeleton();
-  const wd = d.today ? d.today.weekday : d.weekday;
+  const wd = d.today ? (d.today.pw || d.today.weekday) : d.weekday;
   document.documentElement.style.setProperty('--day', DAY_COLOR[wd] || 'var(--lime)');
   let html = demoBanner();
   html += '<div class="eyebrow">' + DAYS[d.weekday] + ' · ' + dm(d.date) + '</div>';
@@ -226,6 +275,7 @@ function renderToday() {
     ], 'tTonnage');
     ex.forEach(e => { html += e.extra && !e.name ? extraPicker(e) : exerciseCard(e); });
     html += '<button class="btn primary finish" data-act="finish">🏁 Закончить тренировку</button>';
+    if (d.move && d.move.kind === 'tomorrow') html += '<button class="btn wide" data-act="move">↪ Не успеваю сегодня — перенести на завтра</button>';
   } else {
     html += '<div class="title">День <span class="accent">отдыха</span></div>';
     html += tiles([
@@ -233,12 +283,16 @@ function renderToday() {
       ['Тоннаж недели', fmtT(d.week.tonnage), 'var(--orange)'],
       ['Рекорды', d.week.prs, 'var(--red)']
     ]);
+    if (d.move && d.move.kind === 'today') {
+      html += '<div class="movebox"><p>Пропустил тренировку <b>' + esc(d.move.group.toLowerCase()) + '</b> (' + DAYS[d.move.weekday].toLowerCase() + ', ' + dm(d.move.from) +
+        ')? Можно сделать её сегодня — план и подсказки сохранятся.</p><button class="btn primary" data-act="move">Сделать сегодня</button></div>';
+    }
     html += '<div class="rest"><div class="big">💤</div><p>Мышцы растут, пока ты восстанавливаешься.</p></div>';
     if (d.next) {
       html += '<div class="section">Следующая · ' + DAYS[d.next.weekday] + ', ' + dm(d.next.date) + ' · ' + esc(d.next.group) + '</div>';
       d.next.exercises.forEach(e => {
         html += '<div class="row"><div class="nm">' + esc(e.name) + '<div class="sm">' + prettyLast(e.last) + '</div></div>' +
-          '<span class="chip" style="color:' + (DAY_COLOR[d.next.weekday] || 'var(--lime)') + '">' + esc(e.plan) + '</span></div>';
+          '<span class="chip" style="color:' + (DAY_COLOR[d.next.pw || d.next.weekday] || 'var(--lime)') + '">' + esc(e.plan) + '</span></div>';
       });
     }
   }
@@ -258,13 +312,15 @@ function exerciseCard(e) {
   const lastIdx = e.sets.reduce((m, s, i) => (s[0] != null || s[1] != null) ? i : m, -1);
   const show = Math.min(4, Math.max(plan.sets, lastIdx + 1, 1));
   const h = hintFor(e);
+  const note = (state.today.notes || {})[e.name] || '';
+  const canNote = (state.today.options || []).indexOf(e.name) >= 0;
   let sets = '';
   for (let i = 0; i < 4; i++) {
     const s = e.sets[i], l = last[i] || last[last.length - 1] || [null, plan.reps];
     const on = s[0] != null || s[1] != null;
     sets += '<div class="set' + (on ? ' filled' : '') + '" data-set="' + i + '"' + (i >= show ? ' hidden' : '') + '>' +
       '<div class="n">' + (i + 1) + '</div>' +
-      '<div class="field"><input inputmode="decimal" data-k="kg" value="' + fmtNum(s[0]) + '" placeholder="' + fmtNum(h && h.kg ? h.kg : l[0]) + '"><span>кг</span></div>' +
+      '<div class="field"><input inputmode="decimal" data-k="kg" value="' + fmtNum(s[0]) + '" placeholder="' + fmtNum(h && h.kg != null ? h.kg : l[0]) + '"><span>кг</span></div>' +
       '<div class="x">×</div>' +
       '<div class="field"><input inputmode="numeric" data-k="reps" value="' + fmtNum(s[1]) + '" placeholder="' + fmtNum(l[1]) + '"><span>раз</span></div>' +
       '<div class="state"></div></div>';
@@ -273,11 +329,13 @@ function exerciseCard(e) {
   return '<div class="card' + (done ? ' done' : '') + (e.extra ? ' extra' : '') + '" data-row="' + e.row + '" data-plan="' + plan.sets + '">' +
     '<div class="card-head"><div class="card-name">' + esc(e.name) + '</div>' +
     (e.plan ? '<span class="chip">' + esc(e.plan) + '</span>' : '') + '<div class="check">✓</div></div>' +
+    (note ? '<div class="noteline" data-act="note">📝 ' + esc(note) + '</div>' : '') +
     '<div class="last">' + prettyLast(e.last) + '</div>' +
-    (h ? '<div class="hint' + (h.up ? ' up' : '') + '">💡 ' + esc(h.text) + '</div>' : '') + sets +
+    (h && h.text ? '<div class="hint' + (h.cls ? ' ' + h.cls : '') + '">' + (h.cls === 'warn' ? '⚠️ ' : '💡 ') + esc(h.text) + '</div>' : '') + sets +
     '<div class="card-foot">' +
     (last.length && !filled ? '<button class="btn primary" data-act="repeat">↺ Как в прошлый раз</button>' : '') +
     (show < 4 ? '<button class="btn" data-act="more">+ подход</button>' : '') +
+    (canNote && !note ? '<button class="btn ghost" data-act="note" title="Заметка">📝</button>' : '') +
     '<div class="tonnage">тоннаж <b data-t>' + fmtT(e.tonnage) + '</b> кг</div></div></div>';
 }
 
@@ -293,8 +351,14 @@ function extraPicker(e) {
 function bindToday() {
   const fin = $view.querySelector('[data-act=finish]');
   if (fin) fin.addEventListener('click', showSummary);
-  $view.querySelectorAll('.card[data-row]').forEach(card => {
+  const mv = $view.querySelector('[data-act=move]');
+  if (mv) mv.addEventListener('click', () => moveWorkout(mv));
+  $view.querySelectorAll('.card[data-row]').forEach(bindCard);
+}
+
+function bindCard(card) {
     const row = Number(card.dataset.row);
+    card.querySelectorAll('[data-act=note]').forEach(b => b.addEventListener('click', () => editNote(card, row)));
     card.querySelectorAll('.set input').forEach(inp => inp.addEventListener('change', () => saveSet(card, row, inp.closest('.set'))));
     const rep = card.querySelector('[data-act=repeat]');
     if (rep) rep.addEventListener('click', () => repeatLast(card, row));
@@ -313,8 +377,117 @@ function bindToday() {
       });
       own.addEventListener('change', () => own.value.trim() && setExercise(row, own.value.trim()));
     }
-  });
 }
+
+function rerenderCard(card, row) {
+  const e = state.today.today.exercises.find(x => x.row === row);
+  const tmp = document.createElement('div');
+  tmp.innerHTML = exerciseCard(e);
+  const fresh = tmp.firstChild;
+  card.replaceWith(fresh);
+  bindCard(fresh);
+  return fresh;
+}
+
+/* ---------- заметки к упражнениям ---------- */
+function editNote(card, row) {
+  const e = state.today.today.exercises.find(x => x.row === row);
+  if (card.querySelector('.noteedit')) return;
+  const box = document.createElement('div');
+  box.className = 'noteedit';
+  box.innerHTML = '<input maxlength="200" placeholder="Сиденье на 4, хват шире…" value="' + esc((state.today.notes || {})[e.name] || '') + '"><button class="btn primary">OK</button>';
+  const head = card.querySelector('.card-head');
+  head.after(box);
+  const old = card.querySelector('.noteline'); if (old) old.hidden = true;
+  const inp = box.querySelector('input');
+  inp.focus();
+  const save = () => {
+    const text = inp.value.trim();
+    state.today.notes = state.today.notes || {};
+    if (text) state.today.notes[e.name] = text; else delete state.today.notes[e.name];
+    storeToday();
+    rerenderCard(card, row);
+    haptic('success');
+    api('note', { name: e.name, text: text }).catch(err => toast('Заметка не сохранилась: ' + err.message));
+  };
+  box.querySelector('button').addEventListener('click', save);
+  inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') save(); });
+}
+
+/* ---------- перенос тренировки ---------- */
+function moveWorkout(btn) {
+  const m = state.today.move;
+  const go = async ok => {
+    if (!ok) return;
+    btn.disabled = true; btn.innerHTML = '<span class="spin"></span>';
+    try {
+      state.today = await api('move', { from: m.from, to: m.to });
+      storeToday();
+      haptic('success');
+      renderToday();
+      if (m.kind === 'tomorrow') toast2('Перенёс на завтра 👌');
+    } catch (err) { toast(err.message); btn.disabled = false; btn.textContent = 'Попробовать ещё раз'; }
+  };
+  const q = m.kind === 'tomorrow' ? 'Перенести сегодняшнюю тренировку на завтра?' : 'Сделать пропущенную тренировку сегодня?';
+  if (tg && tg.showConfirm && !DEMO) tg.showConfirm(q, go); else go(true);
+}
+function toast2(msg) {
+  const t = document.getElementById('toast');
+  t.style.background = 'var(--card2)'; toast(msg);
+  setTimeout(() => t.style.background = '', 4100);
+}
+
+/* ---------- таймер отдыха ---------- */
+const REST = { end: 0, total: 0, t: null, steps: [60, 90, 120, 180] };
+const $rest = document.getElementById('rest');
+function restLen() { return cache.restSec || 90; }
+function startRest(sec) {
+  REST.total = sec || restLen();
+  REST.end = Date.now() + REST.total * 1000;
+  $rest.hidden = false; $rest.classList.remove('go');
+  document.body.classList.add('timer');
+  document.getElementById('restS').textContent = 'отдых · тап — сменить';
+  clearInterval(REST.t); clearTimeout(REST.h);
+  REST.t = setInterval(restTick, 250); restTick();
+}
+function restTick() {
+  const left = Math.ceil((REST.end - Date.now()) / 1000);
+  if (left <= 0) return restDone();
+  document.getElementById('restT').textContent = Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0');
+  $rest.querySelector('.rbar').style.width = Math.max(0, Math.min(100, left / REST.total * 100)) + '%';
+}
+function restDone() {
+  clearInterval(REST.t);
+  $rest.classList.add('go');
+  document.getElementById('restT').textContent = 'Погнали! 💪';
+  document.getElementById('restS').textContent = 'следующий подход';
+  $rest.querySelector('.rbar').style.width = '0';
+  haptic('success');
+  try { navigator.vibrate && navigator.vibrate([300, 120, 300]); } catch (e) {}
+  [400, 800].forEach(ms => setTimeout(() => { try { tg && tg.HapticFeedback.impactOccurred('heavy'); } catch (e) {} }, ms));
+  REST.h = setTimeout(stopRest, 6000);
+}
+function stopRest() {
+  clearInterval(REST.t); clearTimeout(REST.h);
+  $rest.hidden = true; document.body.classList.remove('timer');
+}
+$rest.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-r]'); if (!b) return;
+  const r = b.dataset.r;
+  if (r === 'x') return stopRest();
+  if ($rest.classList.contains('go')) return r === 'cycle' ? startRest() : stopRest();
+  if (r === 'cycle') {
+    const i = REST.steps.indexOf(restLen());
+    cache.restSec = REST.steps[(i + 1) % REST.steps.length]; saveCache();
+    startRest(cache.restSec);
+    toast2('Отдых теперь ' + (cache.restSec % 60 ? cache.restSec + ' сек' : cache.restSec / 60 + ' мин'));
+    return;
+  }
+  REST.end += Number(r) * 1000; REST.total = Math.max(REST.total + Number(r), 15);
+  if (REST.end - Date.now() < 1000) return restDone();
+  restTick();
+});
+document.addEventListener('visibilitychange', () => { if (!document.hidden && !$rest.hidden && !$rest.classList.contains('go')) restTick(); });
 
 /* ---------- кэш и фоновое сохранение ---------- */
 const CACHE_KEY = 'zal_cache_v1';
@@ -390,6 +563,7 @@ function saveSet(card, row, setEl, silent) {
   storeToday();
   enqueue({ row: row, set: i, kg: kg, reps: reps });
   if (!silent) haptic('success');
+  if (!silent && reps != null && (kg != null || BODYWEIGHT.indexOf(e.name) >= 0)) startRest();
 }
 
 function applyExercise(card, e) {
@@ -432,19 +606,26 @@ const BODYWEIGHT = ['Подтягивания', 'Пресс на брусьях'
 
 function hintFor(e) {
   const plan = parsePlan(e.plan);
-  if (!e.last || /^(старт|—)/.test(e.last) || plan.reps == null) return null;
+  const bw = e.name === 'Подтягивания' && state.today && state.today.bodyweight ? state.today.bodyweight : null;
+  if (!e.last || /^(старт|—)/.test(e.last) || plan.reps == null) return bw ? { kg: bw, text: '' } : null;
   const last = parseLast(e.last, plan).slice(0, plan.sets);
   if (!last.length) return null;
   const hit = last.length >= plan.sets && last.every(x => (x[1] || 0) >= plan.reps);
   const top = Math.max.apply(null, last.map(x => x[0] || 0));
   if (BODYWEIGHT.indexOf(e.name) >= 0 || !top) {
     const best = Math.max.apply(null, last.map(x => x[1] || 0));
-    return hit ? { kg: null, up: true, text: 'Все подходы по плану: попробуй по ' + (best + 1) + ' повторов' } : null;
+    return hit ? { kg: bw, cls: 'up', text: 'Все подходы по плану: попробуй по ' + (best + 1) + ' повторов' } : (bw ? { kg: bw, text: '' } : null);
   }
   const step = top >= 20 ? 2.5 : 1;
+  // застой: 3 тренировки подряд на одном весе и план так и не добит
+  const rec = ((state.today && state.today.recent) || {})[e.name] || [];
+  if (!hit && rec.length >= 3 && rec.slice(0, 3).every(r => r.kg === top)) {
+    const down = Math.max(step, Math.round(top * 0.9 / step) * step);
+    return { kg: down, cls: 'warn', text: 'Застой: 3 тренировки подряд на ' + fmtNum(top) + ' кг. Сбрось до ' + fmtNum(down) + ' кг, сделай все повторы и разгонись заново' };
+  }
   return hit
-    ? { kg: top + step, up: true, text: 'Попробуй ' + fmtNum(top + step) + ' кг: в прошлый раз все подходы по плану' }
-    : { kg: top, up: false, text: 'Держи ' + fmtNum(top) + ' кг и добей по ' + plan.reps + ' повторов' };
+    ? { kg: top + step, cls: 'up', text: 'Попробуй ' + fmtNum(top + step) + ' кг: в прошлый раз все подходы по плану' }
+    : { kg: top, text: 'Держи ' + fmtNum(top) + ' кг и добей по ' + plan.reps + ' повторов' };
 }
 
 function session() {
@@ -471,6 +652,7 @@ function checkRecord(card, e, kg, reps) {
   ss.prs = ss.prs.filter(p => p.name !== e.name).concat([{ name: e.name, kg: kg, prev: old ? old.prev : prev }]);
   card.classList.remove('pr'); void card.offsetWidth; card.classList.add('pr');
   const c = document.getElementById('cele');
+  c.classList.remove('gold');
   c.innerHTML = '<div class="t1">🏆 Новый рекорд</div><div class="t2">' + esc(e.name) + '</div><div class="t3">' + fmtNum(kg) + ' кг · было ' + fmtNum(prev) + '</div>';
   c.classList.add('on');
   try { tg && tg.HapticFeedback.impactOccurred('heavy'); } catch (err) {}
@@ -532,6 +714,17 @@ function renderProgress() {
     ['Тренировок', p.tiles.workouts, 'var(--lime)'], ['Тоннаж всего', p.tiles.tonnage, 'var(--orange)'],
     ['За 7 дней', p.tiles.week, 'var(--cyan)'], ['Рекордов', p.tiles.prs, 'var(--red)']
   ].map(t => '<div class="tile" style="--c:' + t[2] + '"><div class="k">' + t[0] + '</div><div class="v">' + esc(t[1]) + '</div></div>').join('') + '</div>';
+  if (p.achievements) {
+    html += '<div class="streak"><div class="fire">' + (p.streak ? '🔥' : '📅') + '</div><div><b>' + (p.streak ? p.streak + ' ' + plural(p.streak, 'неделя', 'недели', 'недель') + ' подряд' : 'Серия пока не началась') + '</b>' +
+      '<div class="sm">Эта неделя: ' + (p.thisWeek || 0) + ' из 3' + (p.bestStreak > p.streak ? ' · лучшая серия ' + p.bestStreak : '') + ' · считаются недели с тремя тренировками</div></div></div>';
+  }
+  html += weightBlock(p);
+  if (p.achievements) {
+    const got = p.achievements.filter(a => a.got).length;
+    html += '<div class="section">Достижения · ' + got + ' из ' + p.achievements.length + '</div><div class="badges">' +
+      p.achievements.map(a => '<div class="badge ' + (a.got ? 'on' : 'off') + '"><div class="bi">' + a.icon + '</div><div class="bt">' + esc(a.title) + '</div>' +
+        '<div class="bp">' + (a.got ? esc(a.desc) : progressText(a)) + '</div></div>').join('') + '</div>';
+  }
   const colors = { 'Пн': 'var(--lime)', 'Ср': 'var(--orange)', 'Пт': 'var(--cyan)' };
   const names = { 'Пн': 'Понедельник', 'Ср': 'Среда', 'Пт': 'Пятница' };
   ['Пн', 'Ср', 'Пт'].forEach(day => {
@@ -548,6 +741,63 @@ function renderProgress() {
     });
   });
   $view.innerHTML = html;
+  const wb = $view.querySelector('[data-act=weight]');
+  if (wb) {
+    const inp = $view.querySelector('#wInput');
+    const go = async () => {
+      const kg = parseNum(inp.value);
+      if (!(kg >= 30 && kg <= 250)) { toast('Введи вес, например 71,5'); return; }
+      wb.disabled = true; wb.innerHTML = '<span class="spin"></span>';
+      try {
+        const r = await api('weight', { kg: kg });
+        state.progress.weights = r.list; cache.progress = state.progress; saveCache();
+        if (state.today) { state.today.bodyweight = r.kg; storeToday(); }
+        haptic('success'); renderProgress();
+      } catch (err) { toast(err.message); wb.disabled = false; wb.textContent = 'Записать'; }
+    };
+    wb.addEventListener('click', go);
+    inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') go(); });
+  }
+}
+
+function plural(n, a, b, c) { n = Math.abs(n) % 100; const m = n % 10; return n > 10 && n < 20 ? c : m === 1 ? a : m >= 2 && m <= 4 ? b : c; }
+function progressText(a) {
+  const big = a.need >= 1000;
+  return big ? (Math.floor(a.have / 100) / 10).toString().replace('.', ',') + ' / ' + a.need / 1000 + ' т' : a.have + ' / ' + a.need;
+}
+
+function weightBlock(p) {
+  const w = p.weights || [];
+  let html = '<div class="section">Вес тела</div>';
+  if (w.length) {
+    const last = w[w.length - 1].kg, first = w[0].kg, d = Math.round((last - first) * 10) / 10;
+    html += '<div class="tiles"><div class="tile" style="--c:var(--cyan)"><div class="k">Сейчас</div><div class="v">' + fmtNum(last) + ' <small>кг</small></div></div>' +
+      '<div class="tile" style="--c:' + (d > 0 ? 'var(--orange)' : 'var(--lime)') + '"><div class="k">С ' + dm(w[0].date) + '</div><div class="v">' + (d > 0 ? '+' : '') + fmtNum(d) + ' <small>кг</small></div></div>' +
+      '<div class="tile" style="--c:var(--soft)"><div class="k">Замеров</div><div class="v">' + w.length + '</div></div></div>';
+    if (w.length > 1) html += '<div class="chart">' + lineChart(w.slice(-12).map(x => ({ date: x.date, weight: x.kg })), '#3DD9FF') + '</div>';
+  } else {
+    html += '<div class="row"><div class="nm sm">Взвешивайся раз в неделю — тут появится график. Можно и через бота: просто пришли ему число.</div></div>';
+  }
+  html += '<div class="wform"><div class="field"><input id="wInput" inputmode="decimal" placeholder="' + (w.length ? fmtNum(w[w.length - 1].kg) : '70') + '"><span>кг</span></div>' +
+    '<button class="btn primary" data-act="weight">Записать</button></div>';
+  return html;
+}
+
+function checkBadges(p) {
+  if (!p || !p.achievements) return;
+  const got = p.achievements.filter(a => a.got).map(a => a.id);
+  if (!cache.badges) { cache.badges = got; saveCache(); return; }
+  const fresh = p.achievements.filter(a => a.got && cache.badges.indexOf(a.id) < 0);
+  cache.badges = got; saveCache();
+  if (!fresh.length) return;
+  const a = fresh[0];
+  const c = document.getElementById('cele');
+  c.classList.add('gold');
+  c.innerHTML = '<div class="t1">🏅 Новое достижение</div><div class="t2">' + a.icon + ' ' + esc(a.title) + '</div><div class="t3">' + esc(a.desc) +
+    (fresh.length > 1 ? ' · и ещё ' + (fresh.length - 1) : '') + '</div>';
+  c.classList.add('on');
+  try { tg && tg.HapticFeedback.notificationOccurred('success'); } catch (err) {}
+  clearTimeout(checkRecord.t); checkRecord.t = setTimeout(() => { c.classList.remove('on'); setTimeout(() => c.classList.remove('gold'), 400); }, 3200);
 }
 
 /* ---------- «История» ---------- */
@@ -585,7 +835,8 @@ function barChart(weeks) {
   return s + '</svg>';
 }
 
-function lineChart(points) {
+function lineChart(points, color) {
+  color = color || '#C6FF3D';
   const W = 340, H = 180, px = 30, py = 26;
   const vals = points.map(p => p.weight);
   let min = Math.min(...vals), max = Math.max(...vals);
@@ -593,9 +844,9 @@ function lineChart(points) {
   const X = i => px + (points.length === 1 ? (W - 2 * px) / 2 : i * (W - 2 * px) / (points.length - 1));
   const Y = v => H - py - (v - min) / (max - min) * (H - 2 * py);
   let s = '<svg viewBox="0 0 ' + W + ' ' + H + '">';
-  s += '<polyline fill="none" stroke="#C6FF3D" stroke-width="3" stroke-linejoin="round" points="' + points.map((p, i) => X(i) + ',' + Y(p.weight)).join(' ') + '"/>';
+  s += '<polyline fill="none" stroke="' + color + '" stroke-width="3" stroke-linejoin="round" points="' + points.map((p, i) => X(i) + ',' + Y(p.weight)).join(' ') + '"/>';
   points.forEach((p, i) => {
-    s += '<circle cx="' + X(i) + '" cy="' + Y(p.weight) + '" r="4.5" fill="#121418" stroke="#C6FF3D" stroke-width="2.5"/>';
+    s += '<circle cx="' + X(i) + '" cy="' + Y(p.weight) + '" r="4.5" fill="#121418" stroke="' + color + '" stroke-width="2.5"/>';
     s += '<text x="' + X(i) + '" y="' + (Y(p.weight) - 10) + '" fill="#F2F4F8" font-size="10" font-weight="700" text-anchor="middle">' + fmtNum(p.weight) + '</text>';
     s += '<text x="' + X(i) + '" y="' + (H - 6) + '" fill="#8E95A6" font-size="9" text-anchor="middle">' + dm(p.date) + '</text>';
   });
@@ -625,7 +876,7 @@ async function show(tab) {
       const changed = JSON.stringify(fresh) !== JSON.stringify(state.today);
       state.today = fresh; storeToday();
       if (changed && state.tab === tab) render();
-      if (fresh.today) api('progress').then(p => { state.progress = p; cache.progress = p; saveCache(); }).catch(() => {});
+      api('progress').then(p => { state.progress = p; cache.progress = p; saveCache(); checkBadges(p); }).catch(() => {});
       return;
     }
     if (tab === 'progress') {
@@ -633,6 +884,7 @@ async function show(tab) {
       const changed = JSON.stringify(fresh) !== JSON.stringify(state.progress);
       state.progress = fresh; cache.progress = fresh; saveCache();
       if (changed && state.tab === tab) render();
+      checkBadges(fresh);
       return;
     }
     if (tab === 'history') {
@@ -652,11 +904,11 @@ const DEMO_DB = (() => {
   return {
     today: {
       date: '2026-10-19', weekday: 1,
-      today: { date: '2026-10-19', weekday: 1, group: 'Грудь и бицепс', exercises: [
+      today: { date: '2026-10-19', weekday: 1, pw: 1, group: 'Грудь и бицепс', exercises: [
         mk(29, 'Жим лежа', '3×10', '35×10   35×10   35×10', [[37.5, 10], [37.5, 9], [null, null], [null, null]]),
         mk(30, 'Бабочка', '3×12', '41,25×12   41,25×12   41,25×12'),
         mk(31, 'Бицепс со штангой', '4×10', '17,5×12   20×10   20×10   20×10'),
-        mk(32, 'Жим на наклонной', '3×10', '30×10   30×10   30×10'),
+        mk(32, 'Жим на наклонной', '3×10', '30×10   30×9   30×8'),
         mk(33, 'Молотки', '3×12', '8×12   8×12   8×12'),
         mk(34, 'Жим гантелей на наклонной', '3×12', '8×12   8×12   8×12'),
         mk(35, 'Махи руками с гантелями', '3×15', '6×15   6×15   6×15'),
@@ -664,7 +916,11 @@ const DEMO_DB = (() => {
       ] },
       next: null,
       week: { done: 0, total: 3, tonnage: 0, prs: 1 },
-      options: ['Жим лежа', 'Бабочка', 'Бицепс со штангой', 'Молотки', 'Шраги с гантелями', 'Подтягивания']
+      notes: { 'Жим лежа': 'Скамья на 3, лопатки сведены' },
+      recent: { 'Жим на наклонной': [{ kg: 30, sets: 3, reps: 10 }, { kg: 30, sets: 3, reps: 10 }, { kg: 30, sets: 3, reps: 10 }] },
+      bodyweight: 70.5,
+      move: { kind: 'tomorrow', from: '2026-10-19', to: '2026-10-20' },
+      options: ['Жим лежа', 'Бабочка', 'Бицепс со штангой', 'Жим на наклонной', 'Молотки', 'Жим гантелей на наклонной', 'Махи руками с гантелями', 'Шраги с гантелями', 'Подтягивания']
     },
     progress: {
       tiles: { workouts: '3', tonnage: '22 657', week: '22 657', prs: '1' },
@@ -675,6 +931,18 @@ const DEMO_DB = (() => {
         { day: 'Ср', name: 'Пресс на брусьях', start: '', best: '', gainPct: '', maxReps: '30', count: '1' },
         { day: 'Пт', name: 'Тяга к груди', start: '20', best: '30', gainPct: '+50%', maxReps: '12', count: '1' },
         { day: 'Пт', name: 'Предплечья', start: '18,75', best: '18,75', gainPct: '0%', maxReps: '', count: '0' }
+      ],
+      streak: 1, bestStreak: 1, thisWeek: 2,
+      weights: [{ date: '2026-10-05', kg: 71.8 }, { date: '2026-10-12', kg: 71.2 }, { date: '2026-10-19', kg: 70.5 }],
+      achievements: [
+        { id: 'w1', icon: '🎯', title: 'Первый шаг', desc: 'Первая тренировка', got: true, have: 1, need: 1 },
+        { id: 'w10', icon: '💪', title: 'Десятка', desc: '10 тренировок', got: false, have: 5, need: 10 },
+        { id: 's1', icon: '📅', title: 'Полная неделя', desc: '3 тренировки за неделю', got: true, have: 1, need: 1 },
+        { id: 's4', icon: '🔥', title: 'Месяц без пропусков', desc: '4 полные недели подряд', got: false, have: 1, need: 4 },
+        { id: 't10', icon: '🧱', title: '10 тонн', desc: 'Тоннаж всего 10 т', got: true, have: 10000, need: 10000 },
+        { id: 't50', icon: '🚚', title: '50 тонн', desc: 'Тоннаж всего 50 т', got: false, have: 37240, need: 50000 },
+        { id: 'p5', icon: '🏆', title: 'Рекордсмен', desc: '5 личных рекордов', got: true, have: 5, need: 5 },
+        { id: 'k50', icon: '🪨', title: 'Полтинник', desc: 'Рабочий вес 50 кг', got: false, have: 42.5, need: 50 }
       ]
     },
     history: { weeks: [{ week: 1, tonnage: 22657 }, { week: 2, tonnage: 23410 }], names: ['Жим лежа', 'Бицепс со штангой'],
@@ -694,6 +962,10 @@ function demoApi(action, p) {
       e.tonnage = e.sets.reduce((s, x) => s + (x[0] || 0) * (x[1] || 0), 0);
       return res({ exercise: JSON.parse(JSON.stringify(e)), week: db.today.week });
     }
+    if (action === 'note') return res({ name: p.name, text: p.text });
+    if (action === 'weight') { db.progress.weights.push({ date: '2026-10-26', kg: p.kg }); return res({ kg: p.kg, list: db.progress.weights }); }
+    if (action === 'move') { const t = JSON.parse(JSON.stringify(db.today)); t.today = null; t.move = null; t.next = { date: p.to, weekday: 2, pw: 1, group: 'Грудь и бицепс', exercises: db.today.today.exercises.filter(e => e.name).map(e => ({ name: e.name, plan: e.plan, last: e.last })) }; return res(t); }
+    if (action === 'saveMany') return res({ saved: (p.items || []).length });
     if (action === 'exercise') {
       const e = db.today.today.exercises.find(x => x.row === p.row);
       e.name = p.name; e.last = '—';
