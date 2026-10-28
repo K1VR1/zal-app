@@ -61,6 +61,8 @@
   .state.err { color: var(--red); }
   .spin { width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--day); border-radius: 50%; animation: r .7s linear infinite; display: inline-block; }
   @keyframes r { to { transform: rotate(360deg); } }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; animation: pl 1s ease-in-out infinite; }
+  @keyframes pl { 50% { opacity: .3; } }
 
   .card-foot { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
   .btn { white-space: nowrap; border: 0; border-radius: 10px; padding: 9px 12px; font-size: 13px; font-weight: 700; background: var(--card2); color: var(--soft); cursor: pointer; }
@@ -287,39 +289,74 @@ function bindToday() {
   });
 }
 
-async function saveSet(card, row, setEl, silent) {
+/* ---------- кэш и фоновое сохранение ---------- */
+const CACHE_KEY = 'zal_cache_v1';
+const cache = (() => { try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch (e) { return {}; } })();
+function saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch (e) {} }
+function localISO() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function storeToday() { cache.today = state.today; cache.todayAt = localISO(); saveCache(); }
+
+const queue = [];
+let busy = false;
+function pending() { return busy || queue.length > 0; }
+function guardClose() {
+  try { if (tg) pending() ? tg.enableClosingConfirmation() : tg.disableClosingConfirmation(); } catch (e) {}
+}
+function enqueue(job) {
+  const k = queue.findIndex(j => j.row === job.row && j.set === job.set);
+  if (k >= 0) queue[k] = job; else queue.push(job);
+  markSet(job, 'wait');
+  guardClose();
+  pump();
+}
+async function pump() {
+  if (busy || !queue.length) return;
+  busy = true;
+  const job = queue.shift();
+  try {
+    await api('save', { row: job.row, set: job.set, kg: job.kg, reps: job.reps });
+    if (!queue.some(j => j.row === job.row && j.set === job.set)) markSet(job, 'ok');
+  } catch (err) {
+    job.tries = (job.tries || 0) + 1;
+    if (job.tries < 3) { queue.unshift(job); await new Promise(r => setTimeout(r, 1500)); }
+    else { markSet(job, 'err'); toast('Не сохранилось: ' + err.message); haptic('error'); }
+  }
+  busy = false;
+  guardClose();
+  pump();
+}
+function markSet(job, kind) {
+  const el = document.querySelector('.card[data-row="' + job.row + '"] .set[data-set="' + job.set + '"] .state');
+  if (!el) return;
+  el.className = 'state' + (kind === 'err' ? ' err' : '');
+  el.innerHTML = kind === 'wait' ? '<span class="dot"></span>' : kind === 'ok' ? '✓' : '!';
+}
+
+function saveSet(card, row, setEl, silent) {
   const i = Number(setEl.dataset.set);
   const kg = parseNum(setEl.querySelector('[data-k=kg]').value);
   const reps = parseNum(setEl.querySelector('[data-k=reps]').value);
   if ((kg != null && isNaN(kg)) || (reps != null && isNaN(reps))) { toast('Введи число, например 32,5'); return; }
-  const st = setEl.querySelector('.state');
-  st.className = 'state'; st.innerHTML = '<span class="spin"></span>';
-  try {
-    const res = await api('save', { row: row, set: i, kg: kg, reps: reps });
-    st.textContent = '✓';
-    setEl.classList.toggle('filled', kg != null || reps != null);
-    applyExercise(card, res.exercise, res.week);
-    if (!silent) haptic('success');
-  } catch (err) {
-    st.className = 'state err'; st.textContent = '!';
-    toast(err.message); haptic('error');
-  }
+  const e = state.today.today.exercises.find(x => x.row === row);
+  e.sets[i] = [kg, reps];
+  e.tonnage = e.sets.reduce((s, x) => s + (x[0] || 0) * (x[1] || 0), 0);
+  setEl.classList.toggle('filled', kg != null || reps != null);
+  applyExercise(card, e);
+  storeToday();
+  enqueue({ row: row, set: i, kg: kg, reps: reps });
+  if (!silent) haptic('success');
 }
 
-function applyExercise(card, e, week) {
-  const ex = state.today.today.exercises;
-  const k = ex.findIndex(x => x.row === e.row);
-  if (k >= 0) ex[k] = e;
-  if (week) state.today.week = week;
+function applyExercise(card, e) {
   card.querySelector('[data-t]').textContent = fmtT(e.tonnage);
   const planSets = Number(card.dataset.plan) || 0;
   card.classList.toggle('done', planSets > 0 && e.sets.filter(s => s[1] != null).length >= planSets);
-  const total = ex.reduce((s, x) => s + (x.tonnage || 0), 0);
+  const total = state.today.today.exercises.reduce((s, x) => s + (x.tonnage || 0), 0);
   const t = document.getElementById('tTonnage');
   if (t) t.innerHTML = fmtT(total) + ' <small>кг</small>';
 }
 
-async function repeatLast(card, row) {
+function repeatLast(card, row) {
   const e = state.today.today.exercises.find(x => x.row === row);
   const plan = parsePlan(e.plan);
   const last = parseLast(e.last, plan);
@@ -330,7 +367,7 @@ async function repeatLast(card, row) {
     setEl.hidden = false;
     setEl.querySelector('[data-k=kg]').value = fmtNum(last[i][0]);
     setEl.querySelector('[data-k=reps]').value = fmtNum(last[i][1]);
-    await saveSet(card, row, setEl, true);
+    saveSet(card, row, setEl, true);
   }
   haptic('success');
 }
@@ -338,6 +375,7 @@ async function repeatLast(card, row) {
 async function setExercise(row, name) {
   try {
     state.today = await api('exercise', { row: row, name: name });
+    storeToday();
     haptic('success');
     renderToday();
   } catch (err) { toast(err.message); }
@@ -388,7 +426,7 @@ function renderHistory() {
   $view.querySelectorAll('.chips button').forEach(b => b.addEventListener('click', async () => {
     state.pick = b.dataset.n;
     $view.querySelectorAll('.chips button').forEach(x => x.classList.toggle('on', x === b));
-    try { state.history = await api('history', { name: state.pick }); renderHistory(); } catch (err) { toast(err.message); }
+    try { state.history = await api('history', { name: state.pick }); cache.history = state.history; cache.pick = state.pick; saveCache(); renderHistory(); } catch (err) { toast(err.message); }
   }));
 }
 
@@ -432,16 +470,36 @@ async function show(tab) {
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
   window.scrollTo(0, 0);
   const render = { today: renderToday, progress: renderProgress, history: renderHistory }[tab];
+  if (!DEMO) {
+    if (tab === 'today' && !state.today && cache.today && cache.todayAt === localISO()) state.today = cache.today;
+    if (tab === 'progress' && !state.progress && cache.progress) state.progress = cache.progress;
+    if (tab === 'history' && !state.history && cache.history) { state.history = cache.history; state.pick = cache.pick || null; }
+  }
   render();
   try {
-    if (tab === 'today') state.today = await api('today');
-    if (tab === 'progress') state.progress = await api('progress');
-    if (tab === 'history') {
-      const h = await api('history', { name: state.pick });
-      if (!state.pick && h.names.length) { state.pick = h.names[0]; state.history = await api('history', { name: state.pick }); }
-      else state.history = h;
+    if (tab === 'today') {
+      const fresh = await api('today');
+      const typing = document.activeElement && document.activeElement.tagName === 'INPUT';
+      if (pending() || typing) return;
+      const changed = JSON.stringify(fresh) !== JSON.stringify(state.today);
+      state.today = fresh; storeToday();
+      if (changed && state.tab === tab) render();
+      return;
     }
-    if (state.tab === tab) render();
+    if (tab === 'progress') {
+      const fresh = await api('progress');
+      const changed = JSON.stringify(fresh) !== JSON.stringify(state.progress);
+      state.progress = fresh; cache.progress = fresh; saveCache();
+      if (changed && state.tab === tab) render();
+      return;
+    }
+    if (tab === 'history') {
+      let h = await api('history', { name: state.pick });
+      if (!state.pick && h.names.length) { state.pick = h.names[0]; h = await api('history', { name: state.pick }); }
+      const changed = JSON.stringify(h) !== JSON.stringify(state.history);
+      state.history = h; cache.history = h; cache.pick = state.pick; saveCache();
+      if (changed && state.tab === tab) render();
+    }
   } catch (err) { toast(err.message); }
 }
 document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => show(b.dataset.tab)));
