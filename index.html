@@ -107,6 +107,26 @@
   .skeleton { height: 120px; border-radius: 16px; background: linear-gradient(90deg, var(--card) 0%, var(--card2) 50%, var(--card) 100%);
     background-size: 200% 100%; animation: sh 1.2s infinite; margin-bottom: 10px; }
   @keyframes sh { to { background-position: -200% 0; } }
+
+  /* подсказки, рекорды, итог */
+  .hint { font-size: 12px; font-weight: 600; margin: -4px 0 10px; padding: 7px 10px; border-radius: 9px; background: var(--card2); color: var(--soft); }
+  .hint.up { color: var(--lime); background: color-mix(in srgb, var(--lime) 12%, var(--card2)); }
+  .card.pr { animation: prg 1.6s ease-out; }
+  @keyframes prg { 0% { box-shadow: 0 0 0 0 rgba(255,84,112,.9); } 100% { box-shadow: 0 0 0 20px rgba(255,84,112,0); } }
+  #cele { position: fixed; left: 50%; top: 16%; transform: translate(-50%, -20px) scale(.9); opacity: 0; pointer-events: none; z-index: 20;
+    background: var(--red); color: #fff; border-radius: 18px; padding: 16px 22px; text-align: center; font-weight: 800; min-width: 250px;
+    transition: all .35s cubic-bezier(.2, 1.4, .4, 1); box-shadow: 0 12px 40px rgba(0,0,0,.55); }
+  #cele.on { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  #cele .t1 { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; opacity: .9; }
+  #cele .t2 { font-size: 21px; margin-top: 4px; }
+  #cele .t3 { font-size: 14px; font-weight: 600; opacity: .95; margin-top: 2px; }
+  .btn.finish { width: 100%; margin: 8px 0 16px; padding: 15px; font-size: 15px; }
+  .sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 30; display: flex; align-items: flex-end; justify-content: center; }
+  .sheet { background: var(--bg); border-top: 3px solid var(--day); border-radius: 22px 22px 0 0; width: 100%; max-width: 560px;
+    padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); max-height: 88vh; overflow: auto; animation: up .3s ease-out; }
+  @keyframes up { from { transform: translateY(40px); opacity: 0; } }
+  .sheet .btn.primary { width: 100%; padding: 14px; font-size: 15px; margin-top: 16px; }
+  .note { font-size: 12px; color: var(--muted); margin-top: 10px; text-align: center; }
   #toast { position: fixed; left: 16px; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom)); max-width: 528px; margin: 0 auto;
     background: var(--red); color: #fff; font-weight: 600; font-size: 14px; padding: 12px 14px; border-radius: 12px; display: none; z-index: 10; }
 </style>
@@ -119,6 +139,7 @@
   <button data-tab="history"><span class="ic">📊</span>История</button>
 </nav>
 <div id="toast"></div>
+<div id="cele"></div>
 
 <script>
 // Вставь сюда ссылку на веб-приложение Apps Script (заканчивается на /exec)
@@ -204,6 +225,7 @@ function renderToday() {
       ['Рекорды', d.week.prs, 'var(--red)']
     ], 'tTonnage');
     ex.forEach(e => { html += e.extra && !e.name ? extraPicker(e) : exerciseCard(e); });
+    html += '<button class="btn primary finish" data-act="finish">🏁 Закончить тренировку</button>';
   } else {
     html += '<div class="title">День <span class="accent">отдыха</span></div>';
     html += tiles([
@@ -235,13 +257,14 @@ function exerciseCard(e) {
   const filled = e.sets.filter(s => s[0] != null || s[1] != null).length;
   const lastIdx = e.sets.reduce((m, s, i) => (s[0] != null || s[1] != null) ? i : m, -1);
   const show = Math.min(4, Math.max(plan.sets, lastIdx + 1, 1));
+  const h = hintFor(e);
   let sets = '';
   for (let i = 0; i < 4; i++) {
     const s = e.sets[i], l = last[i] || last[last.length - 1] || [null, plan.reps];
     const on = s[0] != null || s[1] != null;
     sets += '<div class="set' + (on ? ' filled' : '') + '" data-set="' + i + '"' + (i >= show ? ' hidden' : '') + '>' +
       '<div class="n">' + (i + 1) + '</div>' +
-      '<div class="field"><input inputmode="decimal" data-k="kg" value="' + fmtNum(s[0]) + '" placeholder="' + fmtNum(l[0]) + '"><span>кг</span></div>' +
+      '<div class="field"><input inputmode="decimal" data-k="kg" value="' + fmtNum(s[0]) + '" placeholder="' + fmtNum(h && h.kg ? h.kg : l[0]) + '"><span>кг</span></div>' +
       '<div class="x">×</div>' +
       '<div class="field"><input inputmode="numeric" data-k="reps" value="' + fmtNum(s[1]) + '" placeholder="' + fmtNum(l[1]) + '"><span>раз</span></div>' +
       '<div class="state"></div></div>';
@@ -250,7 +273,8 @@ function exerciseCard(e) {
   return '<div class="card' + (done ? ' done' : '') + (e.extra ? ' extra' : '') + '" data-row="' + e.row + '" data-plan="' + plan.sets + '">' +
     '<div class="card-head"><div class="card-name">' + esc(e.name) + '</div>' +
     (e.plan ? '<span class="chip">' + esc(e.plan) + '</span>' : '') + '<div class="check">✓</div></div>' +
-    '<div class="last">' + prettyLast(e.last) + '</div>' + sets +
+    '<div class="last">' + prettyLast(e.last) + '</div>' +
+    (h ? '<div class="hint' + (h.up ? ' up' : '') + '">💡 ' + esc(h.text) + '</div>' : '') + sets +
     '<div class="card-foot">' +
     (last.length && !filled ? '<button class="btn primary" data-act="repeat">↺ Как в прошлый раз</button>' : '') +
     (show < 4 ? '<button class="btn" data-act="more">+ подход</button>' : '') +
@@ -267,6 +291,8 @@ function extraPicker(e) {
 }
 
 function bindToday() {
+  const fin = $view.querySelector('[data-act=finish]');
+  if (fin) fin.addEventListener('click', showSummary);
   $view.querySelectorAll('.card[data-row]').forEach(card => {
     const row = Number(card.dataset.row);
     card.querySelectorAll('.set input').forEach(inp => inp.addEventListener('change', () => saveSet(card, row, inp.closest('.set'))));
@@ -358,6 +384,9 @@ function saveSet(card, row, setEl, silent) {
   e.tonnage = e.sets.reduce((s, x) => s + (x[0] || 0) * (x[1] || 0), 0);
   setEl.classList.toggle('filled', kg != null || reps != null);
   applyExercise(card, e);
+  const ss = session();
+  if (!ss.start && (kg != null || reps != null)) ss.start = Date.now();
+  checkRecord(card, e, kg, reps);
   storeToday();
   enqueue({ row: row, set: i, kg: kg, reps: reps });
   if (!silent) haptic('success');
@@ -395,6 +424,102 @@ async function setExercise(row, name) {
     haptic('success');
     renderToday();
   } catch (err) { toast(err.message); }
+}
+
+
+/* ---------- подсказки веса, рекорды, итог тренировки ---------- */
+const BODYWEIGHT = ['Подтягивания', 'Пресс на брусьях'];
+
+function hintFor(e) {
+  const plan = parsePlan(e.plan);
+  if (!e.last || /^(старт|—)/.test(e.last) || plan.reps == null) return null;
+  const last = parseLast(e.last, plan).slice(0, plan.sets);
+  if (!last.length) return null;
+  const hit = last.length >= plan.sets && last.every(x => (x[1] || 0) >= plan.reps);
+  const top = Math.max.apply(null, last.map(x => x[0] || 0));
+  if (BODYWEIGHT.indexOf(e.name) >= 0 || !top) {
+    const best = Math.max.apply(null, last.map(x => x[1] || 0));
+    return hit ? { kg: null, up: true, text: 'Все подходы по плану: попробуй по ' + (best + 1) + ' повторов' } : null;
+  }
+  const step = top >= 20 ? 2.5 : 1;
+  return hit
+    ? { kg: top + step, up: true, text: 'Попробуй ' + fmtNum(top + step) + ' кг: в прошлый раз все подходы по плану' }
+    : { kg: top, up: false, text: 'Держи ' + fmtNum(top) + ' кг и добей по ' + plan.reps + ' повторов' };
+}
+
+function session() {
+  if (!cache.session || cache.session.date !== localISO()) cache.session = { date: localISO(), start: null, prs: [] };
+  return cache.session;
+}
+
+function bestMap() {
+  const m = {};
+  const p = state.progress || cache.progress;
+  if (p) p.exercises.forEach(x => { const v = parseNum(x.best); if (v != null && !isNaN(v)) m[x.name] = v; });
+  if (cache.bests && cache.bestsAt === localISO()) Object.keys(cache.bests).forEach(k => { m[k] = Math.max(m[k] || 0, cache.bests[k]); });
+  return m;
+}
+
+function checkRecord(card, e, kg, reps) {
+  if (!kg || !reps || BODYWEIGHT.indexOf(e.name) >= 0) return;
+  const prev = bestMap()[e.name];
+  if (prev == null || kg <= prev) return;
+  if (!cache.bests || cache.bestsAt !== localISO()) { cache.bests = {}; cache.bestsAt = localISO(); }
+  cache.bests[e.name] = kg;
+  const ss = session();
+  const old = ss.prs.find(p => p.name === e.name);
+  ss.prs = ss.prs.filter(p => p.name !== e.name).concat([{ name: e.name, kg: kg, prev: old ? old.prev : prev }]);
+  card.classList.remove('pr'); void card.offsetWidth; card.classList.add('pr');
+  const c = document.getElementById('cele');
+  c.innerHTML = '<div class="t1">🏆 Новый рекорд</div><div class="t2">' + esc(e.name) + '</div><div class="t3">' + fmtNum(kg) + ' кг · было ' + fmtNum(prev) + '</div>';
+  c.classList.add('on');
+  try { tg && tg.HapticFeedback.impactOccurred('heavy'); } catch (err) {}
+  clearTimeout(checkRecord.t); checkRecord.t = setTimeout(() => c.classList.remove('on'), 2800);
+}
+
+function lastTonnage(e) {
+  if (!e.last || /^старт/.test(e.last)) return 0;
+  return parseLast(e.last, parsePlan(e.plan)).reduce((s, x) => s + (x[0] || 0) * (x[1] || 0), 0);
+}
+
+function showSummary() {
+  const t = state.today.today;
+  const ex = t.exercises.filter(e => e.name);
+  const done = ex.filter(e => e.sets.some(s => s[1] != null));
+  const sets = ex.reduce((n, e) => n + e.sets.filter(s => s[1] != null).length, 0);
+  const tonnage = ex.reduce((s, e) => s + (e.tonnage || 0), 0);
+  const prevT = done.reduce((s, e) => s + lastTonnage(e), 0);
+  const delta = prevT ? Math.round((tonnage / prevT - 1) * 100) : null;
+  const ss = session();
+  const mins = ss.start ? Math.max(1, Math.round((Date.now() - ss.start) / 60000)) : null;
+  let html = '<div class="sheet"><div class="eyebrow">' + esc(t.group) + ' · ' + dm(t.date) + '</div>' +
+    '<div class="title">Тренировка <span class="accent">завершена</span></div>';
+  html += tiles([
+    ['Тоннаж', fmtT(tonnage) + (delta != null ? ' <small class="' + (delta >= 0 ? 'up' : 'down') + '" style="color:' + (delta >= 0 ? 'var(--lime)' : 'var(--red)') + '">' + (delta >= 0 ? '+' : '') + delta + '%</small>' : ''), 'var(--day)'],
+    ['Подходов', sets + ' <small>в ' + done.length + ' упр.</small>', 'var(--orange)'],
+    ['Время', mins ? mins + ' <small>мин</small>' : '—', 'var(--cyan)']
+  ]);
+  html += '<div class="section">Рекорды</div>';
+  html += ss.prs.length
+    ? ss.prs.map(p => '<div class="row"><span class="pill" style="background:var(--red)">PR</span><div class="nm">' + esc(p.name) + '</div><div class="val">' + fmtNum(p.kg) + ' кг <span class="sm">было ' + fmtNum(p.prev) + '</span></div></div>').join('')
+    : '<div class="row"><div class="nm sm">Сегодня без рекордов. Ничего, они копятся 💪</div></div>';
+  html += '<div class="section">По сравнению с прошлым разом</div>';
+  done.forEach(e => {
+    const was = lastTonnage(e), now = e.tonnage || 0;
+    const d = was ? Math.round((now / was - 1) * 100) : null;
+    html += '<div class="row"><div class="nm">' + esc(e.name) + '<div class="sm">' + fmtT(now) + ' кг' + (was ? ' · было ' + fmtT(was) : '') + '</div></div>' +
+      '<div class="val" style="color:' + (d == null ? 'var(--muted)' : d > 0 ? 'var(--lime)' : d < 0 ? 'var(--red)' : 'var(--soft)') + '">' + (d == null ? 'новое' : (d > 0 ? '+' : '') + d + '%') + '</div></div>';
+  });
+  if (pending()) html += '<div class="note">Пара подходов ещё отправляется в таблицу — не закрывай приложение секунду-другую.</div>';
+  html += '<button class="btn primary" data-act="close">Готово</button></div>';
+  const bg = document.createElement('div');
+  bg.className = 'sheet-bg';
+  bg.innerHTML = html;
+  document.body.appendChild(bg);
+  haptic('success');
+  const close = () => bg.remove();
+  bg.querySelector('[data-act=close]').addEventListener('click', close);
+  bg.addEventListener('click', ev => { if (ev.target === bg) close(); });
 }
 
 /* ---------- «Прогресс» ---------- */
@@ -500,6 +625,7 @@ async function show(tab) {
       const changed = JSON.stringify(fresh) !== JSON.stringify(state.today);
       state.today = fresh; storeToday();
       if (changed && state.tab === tab) render();
+      if (fresh.today) api('progress').then(p => { state.progress = p; cache.progress = p; saveCache(); }).catch(() => {});
       return;
     }
     if (tab === 'progress') {
