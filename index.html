@@ -59,6 +59,7 @@
   .field span { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--muted); pointer-events: none; }
   .state { font-size: 14px; text-align: center; color: var(--day); }
   .state.err { color: var(--red); }
+  .state.pending { color: #4a5062; }
   .spin { width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--day); border-radius: 50%; animation: r .7s linear infinite; display: inline-block; }
   @keyframes r { to { transform: rotate(360deg); } }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; animation: pl 1s ease-in-out infinite; }
@@ -307,19 +308,33 @@ function enqueue(job) {
   if (k >= 0) queue[k] = job; else queue.push(job);
   markSet(job, 'wait');
   guardClose();
-  pump();
+  clearTimeout(enqueue.t);
+  enqueue.t = setTimeout(pump, 400);
 }
+let batchOK = true; // новый скрипт умеет сохранять пачкой
 async function pump() {
   if (busy || !queue.length) return;
   busy = true;
-  const job = queue.shift();
+  const jobs = batchOK ? queue.splice(0, queue.length) : [queue.shift()];
   try {
-    await api('save', { row: job.row, set: job.set, kg: job.kg, reps: job.reps });
-    if (!queue.some(j => j.row === job.row && j.set === job.set)) markSet(job, 'ok');
+    if (batchOK) {
+      try {
+        await api('saveMany', { items: jobs.map(j => ({ row: j.row, set: j.set, kg: j.kg, reps: j.reps })) });
+      } catch (err) {
+        if (String(err.message).indexOf('Неизвестное действие') < 0) throw err;
+        batchOK = false;
+        for (const j of jobs) await api('save', { row: j.row, set: j.set, kg: j.kg, reps: j.reps });
+      }
+    } else {
+      const j = jobs[0];
+      await api('save', { row: j.row, set: j.set, kg: j.kg, reps: j.reps });
+    }
+    jobs.forEach(j => { if (!queue.some(q => q.row === j.row && q.set === j.set)) markSet(j, 'ok'); });
   } catch (err) {
-    job.tries = (job.tries || 0) + 1;
-    if (job.tries < 3) { queue.unshift(job); await new Promise(r => setTimeout(r, 1500)); }
-    else { markSet(job, 'err'); toast('Не сохранилось: ' + err.message); haptic('error'); }
+    const tries = (jobs[0].tries || 0) + 1;
+    jobs.forEach(j => { j.tries = tries; if (!queue.some(q => q.row === j.row && q.set === j.set)) queue.unshift(j); });
+    if (tries < 3) await new Promise(r => setTimeout(r, 1500));
+    else { queue.splice(0, queue.length).forEach(j => markSet(j, 'err')); toast('Не сохранилось: ' + err.message); haptic('error'); }
   }
   busy = false;
   guardClose();
@@ -329,7 +344,8 @@ function markSet(job, kind) {
   const el = document.querySelector('.card[data-row="' + job.row + '"] .set[data-set="' + job.set + '"] .state');
   if (!el) return;
   el.className = 'state' + (kind === 'err' ? ' err' : '');
-  el.innerHTML = kind === 'wait' ? '<span class="dot"></span>' : kind === 'ok' ? '✓' : '!';
+  el.classList.toggle('pending', kind === 'wait');
+  el.textContent = kind === 'err' ? '!' : '✓';
 }
 
 function saveSet(card, row, setEl, silent) {
