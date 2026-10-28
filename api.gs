@@ -255,3 +255,125 @@ function apiHistory_(name) {
   })) : [];
   return { weeks: weekList, names: names, points: points };
 }
+
+/* ---------- напоминания в боте ----------
+ * Один раз запусти setupReminders() — дальше скрипт сам раз в час проверяет время:
+ *   9:00  в пн/ср/пт — план на сегодня и кнопка «Открыть тренировку»;
+ *   20:00 в пн/ср/пт — если в этот день ничего не записано, мягкий пинок;
+ *   20:00 в воскресенье — итог недели.
+ */
+const REMIND = {
+  APP_URL: 'https://k1vr1.github.io/zal-app/',
+  MORNING: 9,
+  EVENING: 20
+};
+
+function setupReminders() {
+  ScriptApp.getProjectTriggers()
+    .filter(t => t.getHandlerFunction() === 'remind')
+    .forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('remind').timeBased().everyHours(1).create();
+  tg_('✅ Напоминания включены: утром в дни тренировок и итог недели в воскресенье вечером.');
+}
+
+function stopReminders() {
+  ScriptApp.getProjectTriggers()
+    .filter(t => t.getHandlerFunction() === 'remind')
+    .forEach(t => ScriptApp.deleteTrigger(t));
+}
+
+function remind() {
+  const now = new Date();
+  const hour = Number(Utilities.formatDate(now, tz_(), 'H'));
+  const wd = dayOfWeek_(now);
+  const training = !!APP.GROUPS[wd];
+  if (training && hour === REMIND.MORNING) once_('morning', morningText_, true);
+  if (training && hour === REMIND.EVENING) once_('evening', eveningText_, true);
+  if (wd === 7 && hour === REMIND.EVENING) once_('week', weekText_, false);
+}
+
+// отправляет не больше одного сообщения каждого вида в день
+function once_(kind, build, button) {
+  const props = PropertiesService.getScriptProperties();
+  const key = 'sent_' + kind;
+  const day = ymd_(new Date());
+  if (props.getProperty(key) === day) return;
+  const text = build();
+  if (text) tg_(text, button);
+  props.setProperty(key, day);
+}
+
+function sessionToday_() {
+  const sh = sheet_(APP.TODAY);
+  const ix = index_(sh);
+  return { ix: ix, s: readSession_(sh, ix.keys, ix.key(new Date()), true) };
+}
+
+function morningText_() {
+  const s = sessionToday_().s;
+  if (!s) return '';
+  const lines = s.exercises.filter(e => e.name).map(e => {
+    const last = e.last && e.last !== '—' && e.last.indexOf('←') < 0 ? ' — ' + e.last : '';
+    return '• <b>' + esc_(e.name) + '</b> ' + esc_(e.plan) + esc_(last);
+  });
+  return '💪 <b>Сегодня: ' + esc_(s.group) + '</b>\n\n' + lines.join('\n') +
+    '\n\nПодсказки по весу — в приложении 👇';
+}
+
+function eveningText_() {
+  const s = sessionToday_().s;
+  if (!s) return '';
+  const any = s.exercises.some(e => e.sets.some(p => p[0] !== null || p[1] !== null));
+  if (any) return '';
+  return '⏰ Сегодня по плану <b>' + esc_(s.group) + '</b>, а в журнале пока пусто.\n' +
+    'Если уже позанимался — отметь подходы, если нет — ещё не поздно 🙂';
+}
+
+function weekText_(dry) {
+  const ix = index_(sheet_(APP.TODAY));
+  const todayKey = ix.key(new Date());
+  const cur = weekStats_(ix.keys, todayKey);
+  const prev = weekStats_(ix.keys, todayKey - 7);
+  const props = PropertiesService.getScriptProperties();
+  const prsBefore = Number(props.getProperty('prs_last_week') || cur.prs);
+  if (!dry) props.setProperty('prs_last_week', String(cur.prs));
+  const newPrs = Math.max(0, cur.prs - prsBefore);
+
+  const fmt = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  let delta = '';
+  if (prev.tonnage > 0) {
+    const pct = Math.round((cur.tonnage / prev.tonnage - 1) * 100);
+    delta = ' (' + (pct > 0 ? '+' : '') + pct + '% к прошлой)';
+  }
+  const mark = cur.done >= 3 ? '🔥 Все три тренировки!' :
+    cur.done === 0 ? 'На этой неделе тренировок не было — с понедельника заново 💪' :
+    'Тренировок: ' + cur.done + ' из 3.';
+  return '📊 <b>Итог недели</b>\n\n' + mark + '\n' +
+    (cur.done ? 'Тоннаж: <b>' + fmt(cur.tonnage) + ' кг</b>' + delta + '\n' : '') +
+    (newPrs ? 'Новых рекордов: <b>' + newPrs + '</b> 🏆\n' : '') +
+    '\nЗавтра ' + (APP.GROUPS[1] ? APP.GROUPS[1].toLowerCase() : 'тренировка') + '.';
+}
+
+function esc_(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function tg_(text, button) {
+  const props = PropertiesService.getScriptProperties();
+  const token = props.getProperty('BOT_TOKEN');
+  const chat = props.getProperty('ALLOWED_USER_ID');
+  if (!token || !chat) throw new Error('Нужны BOT_TOKEN и ALLOWED_USER_ID в свойствах скрипта');
+  const body = { chat_id: chat, text: text, parse_mode: 'HTML', disable_web_page_preview: true };
+  if (button) body.reply_markup = { inline_keyboard: [[{ text: '🏋️ Открыть тренировку', web_app: { url: REMIND.APP_URL } }]] };
+  const res = UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
+    method: 'post', contentType: 'application/json', payload: JSON.stringify(body), muteHttpExceptions: true
+  });
+  if (res.getResponseCode() !== 200) throw new Error('Telegram: ' + res.getContentText());
+}
+
+// для проверки вручную: шлёт все три сообщения прямо сейчас
+function testReminders() {
+  tg_(morningText_() || '(сегодня не день тренировки — утреннего сообщения нет)', true);
+  tg_(eveningText_() || '(вечернего пинка нет: день отдыха или подходы уже записаны)', true);
+  tg_(weekText_(true));
+}
