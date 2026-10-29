@@ -767,6 +767,13 @@ function openSheet(html, opts) {
     if (contentH <= want + 30) want = Math.min(contentH, H);
     half = Math.max(0, H - want);
     if (contentH <= H - half + 4) half = Math.max(0, H - contentH);
+    // если задан «якорь» — лист на половине открывается сразу под ним (например, под графиком недель)
+    const a = opts.anchor && document.querySelector(opts.anchor);
+    if (a) {
+      const top0 = sh.offsetTop;
+      const want2 = a.getBoundingClientRect().bottom + 12 - top0;
+      half = Math.max(0, Math.min(want2, H - 240));
+    }
   };
   measure(); setY(H + 20, false);
   requestAnimationFrame(() => requestAnimationFrame(() => { measure(); setY(half, true); }));
@@ -1093,7 +1100,7 @@ function renderHistory() {
   const cur = weeks[weeks.length - 1], prev = weeks[weeks.length - 2];
   const d = prev && prev.tonnage ? pct(cur.tonnage, prev.tonnage) : null;
   let s = demoBanner() + '<div class="top"><span class="date">' + (h.start ? 'С ' + dlong(h.start) : 'По неделям') + '</span></div><h1>История</h1>';
-  s += '<div class="card" style="margin-top:0"><div class="ct"><b>Тоннаж по неделям</b>' + (d != null ? '<span>к прошлой <em class="' + (d < 0 ? 'dn' : '') + '">' + sign(d) + '%</em></span>' : '') + '</div>' +
+  s += '<div class="card" id="barsCard" style="margin-top:0"><div class="ct"><b>Тоннаж по неделям</b>' + (d != null ? '<span>к прошлой <em class="' + (d < 0 ? 'dn' : '') + '">' + sign(d) + '%</em></span>' : '') + '</div>' +
     '<div id="barsBox">' + weekBars(weeks) + '</div><div class="tapnote">Нажми на неделю — покажу подробности</div></div>';
   if (!h.names.length) s += '<div class="list" style="margin-top:10px"><div class="empty">Пока нет записей</div></div>';
   else {
@@ -1173,7 +1180,7 @@ async function openWeek(n) {
   if (weekSheet) weekSheet.close();
   bindBars(n);
   const sh = openSheet('<div id="wk"><div class="skeleton" style="height:60px;margin-top:0"></div><div class="skeleton" style="height:180px"></div></div>', {
-    expandable: true, onClose: () => { if (weekSheet === sh) weekSheet = null; if (state.tab === 'history') bindBars(); }
+    expandable: true, anchor: '#barsCard', onClose: () => { if (weekSheet === sh) weekSheet = null; if (state.tab === 'history') bindBars(); }
   });
   weekSheet = sh;
   try {
