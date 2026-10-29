@@ -144,21 +144,30 @@
   #rest.go .x { color: var(--accT); }
 
   nav { position: fixed; left: 22px; right: 22px; bottom: calc(18px + env(safe-area-inset-bottom)); max-width: 476px; margin: 0 auto; height: 66px; border-radius: 33px; display: flex; align-items: center; padding: 5px; z-index: 16; }
-  nav button { flex: 1; height: 56px; border-radius: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10.5px; font-weight: 600; color: rgba(255,255,255,.62); transition: background .2s, color .2s; }
+  nav { touch-action: none; user-select: none; -webkit-user-select: none; }
+  nav button { position: relative; z-index: 2; flex: 1; height: 56px; border-radius: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10.5px; font-weight: 600; color: rgba(255,255,255,.62); transition: color .25s, transform .25s; pointer-events: none; }
   nav button svg { width: 24px; height: 24px; stroke-width: 1.9; }
-  nav button.on { color: var(--acc); background: linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.08)); box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 0 0 1px rgba(255,255,255,.08); }
+  nav button.on { color: var(--acc); }
+  nav button.hover { transform: scale(1.06); }
+  .lens { position: absolute; z-index: 1; top: 5px; left: 0; height: 56px; border-radius: 28px; pointer-events: none; will-change: transform;
+    background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.08));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.4), inset 0 0 0 1px rgba(255,255,255,.1), 0 4px 14px rgba(0,0,0,.25);
+    transition: transform .5s cubic-bezier(.3,1.35,.45,1), background .25s, box-shadow .25s; }
+  .lens.drag { transition: transform .06s linear, background .2s, box-shadow .2s;
+    background: linear-gradient(180deg, rgba(255,255,255,.30), rgba(255,255,255,.10));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 0 1px rgba(255,255,255,.18), inset 0 0 22px rgba(255,255,255,.12), 0 10px 30px rgba(0,0,0,.45); }
 
   /* листы снизу */
-  .dim { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 30; animation: fade .2s; }
-  @keyframes fade { from { opacity: 0; } }
-  .sheet { position: fixed; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom)); max-width: 504px; margin: 0 auto; z-index: 31; border-radius: 34px; padding: 8px 16px 16px;
+  .dim { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 30; opacity: 0; will-change: opacity; }
+  .sheet { position: fixed; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom)); max-width: 504px; margin: 0 auto; z-index: 31; border-radius: 34px;
     background: linear-gradient(180deg, rgba(54,54,58,.97), rgba(28,28,30,.985)); -webkit-backdrop-filter: blur(30px) saturate(180%); backdrop-filter: blur(30px) saturate(180%);
     border: 1px solid rgba(255,255,255,.16); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 -10px 50px rgba(0,0,0,.6);
-    max-height: 64vh; overflow: auto; animation: up .28s cubic-bezier(.2,.9,.3,1); transition: max-height .3s cubic-bezier(.2,.9,.3,1); overscroll-behavior: contain; }
-  .sheet.full { max-height: calc(100vh - 24px - env(safe-area-inset-top)); }
-  @keyframes up { from { transform: translateY(60px); opacity: 0; } }
-  .grab { width: 38px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.3); margin: 0 auto 12px; }
-  .grabzone { padding: 4px 0 2px; margin: -8px -16px 0; touch-action: none; }
+    display: flex; flex-direction: column; max-height: 86vh; will-change: transform; transform: translateY(110%); }
+  .sheet.exp { top: calc(10px + env(safe-area-inset-top)); max-height: none; }
+  .sbody { padding: 0 16px 16px; overflow-y: auto; flex: 1; min-height: 0; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .sheet.exp:not(.full) .sbody { overflow-y: hidden; }
+  .grab { width: 38px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.3); margin: 0 auto; }
+  .grabzone { padding: 8px 0 14px; flex: none; touch-action: none; cursor: grab; }
   .sh { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
   .sh small { font-size: 12px; font-weight: 600; color: var(--mut); }
   .sh h2 { font-size: 24px; font-weight: 800; letter-spacing: -.03em; margin-top: 1px; }
@@ -182,14 +191,17 @@
   .wd .t { font-size: 14.5px; font-weight: 700; text-align: right; white-space: nowrap; }
   .wd .t small { display: block; font-size: 11px; font-weight: 600; }
   .wd.miss .nm b { color: var(--mut); }
-  .exl { display: none; margin: -2px 0 8px 44px; }
-  .sheet.full .exl { display: block; }
-  .exl div { display: flex; gap: 8px; font-size: 12.5px; padding: 4px 0; color: var(--soft); }
+  .exday { margin-top: 12px; }
+  .exday h4 { font-size: 13px; font-weight: 700; color: var(--mut); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .exday h4 .day { width: 26px; height: 22px; border-radius: 7px; display: grid; place-items: center; font-size: 10px; font-weight: 800; background: rgba(48,209,88,.16); color: var(--done); }
+  .exl { background: rgba(255,255,255,.05); border-radius: 16px; padding: 4px 12px; }
+  .exl div + div { border-top: .5px solid rgba(255,255,255,.08); }
+  .exl div { display: flex; gap: 8px; font-size: 12.5px; padding: 8px 0; color: var(--soft); align-items: baseline; }
   .exl div b { font-weight: 600; flex: 1; min-width: 0; }
   .exl div span { color: var(--mut); text-align: right; }
   .exl div em { font-style: normal; font-size: 9px; font-weight: 800; color: var(--accT); background: var(--org); border-radius: 4px; padding: 1px 4px; margin-left: 4px; vertical-align: 1px; }
-  .hintfull { text-align: center; font-size: 11.5px; color: var(--mut); margin-top: 8px; }
-  .sheet.full .hintfull { display: none; }
+  .hintfull { text-align: center; font-size: 11.5px; color: var(--mut); padding: 10px 0 4px; transition: opacity .2s; }
+  .sheet.full .hintfull { opacity: 0; }
   .sheet .btn { margin-top: 14px; }
   .opts { display: grid; gap: 6px; margin-top: 10px; }
   .opts button { text-align: left; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,.07); font-size: 15px; font-weight: 600; }
@@ -728,30 +740,97 @@ function markSet(job, kind) {
 /* ---------- листы, доп. упражнение, заметки, перенос ---------- */
 function openSheet(html, opts) {
   opts = opts || {};
+  const exp = !!opts.expandable;
   const dim = document.createElement('div'); dim.className = 'dim';
-  const sh = document.createElement('div'); sh.className = 'sheet';
-  sh.innerHTML = '<div class="grabzone"><div class="grab"></div></div>' + html;
+  const sh = document.createElement('div'); sh.className = 'sheet' + (exp ? ' exp' : '');
+  sh.innerHTML = '<div class="grabzone"><div class="grab"></div></div><div class="sbody">' + html + '</div>';
   document.body.appendChild(dim); document.body.appendChild(sh);
-  let closed = false;
-  const close = () => { if (closed) return; closed = true; dim.remove(); sh.remove(); if (opts.onClose) opts.onClose(); };
+  const body = sh.querySelector('.sbody');
+  let H = 0, half = 0, y = 0, closed = false;
+  // y — сдвиг листа вниз: 0 = развёрнут целиком, half = половина, H = спрятан
+  const setY = (v, anim) => {
+    y = v;
+    const t = anim ? 'transform .5s cubic-bezier(.22,1,.36,1)' : 'none';
+    sh.style.transition = t; dim.style.transition = anim ? 'opacity .5s cubic-bezier(.22,1,.36,1)' : 'none';
+    sh.style.transform = 'translateY(' + Math.round(v) + 'px)';
+    dim.style.opacity = String(Math.max(0, Math.min(1, 1 - (v - (exp ? half : 0)) / Math.max(1, H - (exp ? half : 0)))));
+    sh.classList.toggle('full', exp && v <= 2);
+  };
+  const measure = () => {
+    H = sh.getBoundingClientRect().height;
+    if (!exp) { half = 0; return; }
+    const mark = sh.querySelector('[data-half]');
+    const grabH = sh.querySelector('.grabzone').offsetHeight;
+    let want = mark ? mark.offsetTop + mark.offsetHeight + grabH + 12 : Math.min(body.scrollHeight + grabH, window.innerHeight * .62);
+    want = Math.min(want, H, window.innerHeight * .72);
+    const contentH = body.scrollHeight + grabH;
+    if (contentH <= want + 30) want = Math.min(contentH, H);
+    half = Math.max(0, H - want);
+    if (contentH <= H - half + 4) half = Math.max(0, H - contentH);
+  };
+  measure(); setY(H + 20, false);
+  requestAnimationFrame(() => requestAnimationFrame(() => { measure(); setY(half, true); }));
+  const close = () => {
+    if (closed) return; closed = true;
+    setY(H + 40, true);
+    setTimeout(() => { dim.remove(); sh.remove(); cleanup(); }, 380);
+    if (opts.onClose) opts.onClose();
+  };
   dim.addEventListener('click', close);
   const bindClose = () => sh.querySelectorAll('[data-close]').forEach(b => { if (!b._b) { b._b = 1; b.addEventListener('click', close); } });
   bindClose();
-  // свайп за «ручку» или шапку: вверх — на весь экран, вниз — свернуть / закрыть
-  let y0 = null;
-  const start = ev => { y0 = (ev.touches ? ev.touches[0] : ev).clientY; };
-  const end = ev => {
-    if (y0 == null) return;
-    const dy = (ev.changedTouches ? ev.changedTouches[0] : ev).clientY - y0; y0 = null;
-    if (dy < -40 && opts.expandable) { sh.classList.add('full'); tap(); }
-    else if (dy > 50) { if (sh.classList.contains('full')) sh.classList.remove('full'); else close(); }
-    else if (Math.abs(dy) < 6 && opts.expandable && ev.target.closest('.grabzone')) sh.classList.toggle('full');
+
+  // перетаскивание пальцем: лист едет за пальцем и докатывается по инерции
+  let drag = null;
+  const pointY = ev => (ev.touches ? ev.touches[0] : ev.changedTouches ? ev.changedTouches[0] : ev).clientY;
+  const down = ev => {
+    if (closed || ev.target.closest('button,input,select,a')) return;
+    drag = { y0: pointY(ev), from: y, mode: null, last: pointY(ev), t: Date.now(), v: 0, onGrab: !!ev.target.closest('.grabzone,.sh') };
   };
-  sh.addEventListener('touchstart', ev => { if (ev.target.closest('.grabzone,.sh') && !ev.target.closest('button')) start(ev); }, { passive: true });
-  sh.addEventListener('touchend', end);
-  const zone = sh.querySelector('.grabzone');
-  zone.addEventListener('mousedown', start); window.addEventListener('mouseup', ev => { if (document.body.contains(sh)) end(ev); });
-  return { el: sh, close: close, bindClose: bindClose };
+  const move = ev => {
+    if (!drag) return;
+    const py = pointY(ev), dy = py - drag.y0;
+    if (!drag.mode) {
+      if (Math.abs(dy) < 4) return;
+      const full = sh.classList.contains('full');
+      // в развёрнутом листе содержимое прокручивается; лист тянется, только когда прокрутка в самом верху и палец идёт вниз
+      if (!drag.onGrab && exp && full && (body.scrollTop > 0 || dy < 0)) drag.mode = 'scroll';
+      else if (!drag.onGrab && !exp && body.scrollHeight > body.clientHeight && (body.scrollTop > 0 || dy < 0)) drag.mode = 'scroll';
+      else drag.mode = 'sheet';
+    }
+    if (drag.mode !== 'sheet') return;
+    if (ev.cancelable) ev.preventDefault();
+    const now = Date.now();
+    drag.v = (py - drag.last) / Math.max(1, now - drag.t); drag.last = py; drag.t = now;
+    let ny = drag.from + dy;
+    const top = exp ? 0 : 0;
+    if (ny < top) ny = top - Math.sqrt(top - ny) * 3;   // мягкое сопротивление вверх
+    setY(ny, false);
+  };
+  let dragEnd = 0;
+  const up = () => {
+    if (!drag) return;
+    const d = drag; drag = null;
+    if (d.mode !== 'sheet') return;
+    dragEnd = Date.now();
+    const proj = y + d.v * 220;
+    const stops = exp && half > 0 ? [0, half] : [0];
+    if (proj > (exp ? half : 0) + Math.min(140, H * .25) || d.v > 1.2) return close();
+    let best = stops[0];
+    stops.forEach(s => { if (Math.abs(s - proj) < Math.abs(best - proj)) best = s; });
+    if (best !== y) tap();
+    setY(best, true);
+  };
+  sh.addEventListener('touchstart', down, { passive: true });
+  sh.addEventListener('touchmove', move, { passive: false });
+  sh.addEventListener('touchend', up); sh.addEventListener('touchcancel', up);
+  sh.addEventListener('mousedown', ev => { down(ev); });
+  const mm = ev => { if (drag) move(ev); }, mu = () => up();
+  window.addEventListener('mousemove', mm); window.addEventListener('mouseup', mu);
+  const cleanup = () => { window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu); };
+  sh.querySelector('.grabzone').addEventListener('click', () => { if (Date.now() - dragEnd < 400) return; if (exp && half > 0 && Math.abs(y - half) < 4) setY(0, true); else if (exp && y < 4 && half > 0) setY(half, true); });
+  const refresh = () => { const was = y; measure(); if (!closed) setY(was <= 2 && exp ? 0 : half, true); };
+  return { el: sh, close: close, bindClose: bindClose, refresh: refresh };
 }
 const closeBtn = '<button class="close" data-close aria-label="Закрыть">' + ic('x') + '</button>';
 
@@ -1102,7 +1181,7 @@ async function openWeek(n) {
     state.weeks[n] = w;
     if (!document.body.contains(sh.el)) return;
     sh.el.querySelector('#wk').outerHTML = weekHtml(w);
-    sh.bindClose();
+    sh.bindClose(); sh.refresh();
   } catch (err) { sh.close(); toast(String(err.message).indexOf('Неизвестное') >= 0 ? 'Обнови код API в Apps Script, чтобы смотреть недели' : err.message); }
 }
 function weekHtml(w) {
@@ -1121,12 +1200,14 @@ function weekHtml(w) {
     h += '<div class="wd ' + (d.done ? '' : 'miss') + '"><span class="day ' + cls + '">' + DSH[d.weekday] + '</span><div class="nm"><b>' + esc(d.group) + '</b><small>' + dm(d.date) +
       (d.done ? ' · ' + d.sets + ' ' + plural(d.sets, 'подход', 'подхода', 'подходов') + pr : future ? ' · впереди' : ' · пропуск') + '</small></div>' +
       (d.done ? '<div class="t">' + fmtT(d.tonnage) + ' кг' + (dd != null ? '<small style="color:' + (dd >= 0 ? 'var(--done)' : 'var(--red)') + '">' + sign(dd) + '%</small>' : '') + '</div>' : '') + '</div>';
-    if (d.exercises.length) {
-      h += '<div class="exl">' + d.exercises.map(x => '<div><b>' + esc(x.name) + (x.pr ? '<em>PR</em>' : '') + '</b><span>' + x.sets.map(s => fmtNum(s[0]) + '×' + fmtNum(s[1])).join(' · ') + '</span></div>').join('') + '</div>';
-    }
   });
   if (!w.days.length) h += '<div class="empty">На этой неделе тренировок не было</div>';
-  if (w.days.some(d => d.exercises.length)) h += '<div class="hintfull">Потяни вверх — покажу все упражнения и подходы</div>';
+  const withEx = w.days.filter(d => d.exercises.length);
+  h += '<div class="hintfull" data-half>' + (withEx.length ? 'Потяни вверх — все упражнения и подходы' : '') + '</div>';
+  withEx.forEach(d => {
+    h += '<div class="exday"><h4><span class="day">' + DSH[d.weekday] + '</span>' + esc(d.group) + ' · ' + dm(d.date) + '</h4><div class="exl">' +
+      d.exercises.map(x => '<div><b>' + esc(x.name) + (x.pr ? '<em>PR</em>' : '') + '</b><span>' + x.sets.map(s => fmtNum(s[0]) + '×' + fmtNum(s[1])).join(' · ') + '</span></div>').join('') + '</div></div>';
+  });
   return h;
 }
 
@@ -1138,6 +1219,7 @@ async function show(tab) {
   state.tab = tab;
   if (weekSheet) weekSheet.close();
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  if (typeof placeLens === 'function' && !navDrag) placeLens(TABS.indexOf(tab));
   window.scrollTo(0, 0);
   const render = { today: renderToday, progress: renderProgress, history: renderHistory }[tab];
   if (!DEMO) {
@@ -1179,7 +1261,59 @@ async function show(tab) {
     }
   } catch (err) { toast(err.message); }
 }
-document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => { tap(); show(b.dataset.tab); }));
+/* нижнее меню: стеклянная линза, которую можно водить пальцем */
+const $nav = document.querySelector('nav');
+const navBtns = Array.from($nav.querySelectorAll('button'));
+const lens = document.createElement('div'); lens.className = 'lens'; $nav.insertBefore(lens, $nav.firstChild);
+const TABS = navBtns.map(b => b.dataset.tab);
+function lensBox(i) { const b = navBtns[i]; return { x: b.offsetLeft, w: b.offsetWidth }; }
+function placeLens(i, scale) {
+  const r = lensBox(i);
+  lens.style.width = r.w + 'px';
+  lens.style.transform = 'translateX(' + r.x + 'px) scale(' + (scale || 1) + ')';
+}
+function lensAt(x, scale) {
+  const w = navBtns[0].offsetWidth, min = navBtns[0].offsetLeft, max = navBtns[navBtns.length - 1].offsetLeft;
+  const lx = Math.max(min - 6, Math.min(max + 6, x - w / 2));
+  lens.style.width = w + 'px';
+  lens.style.transform = 'translateX(' + lx + 'px) scale(' + scale + ')';
+  return lx + w / 2;
+}
+function nearestTab(cx) {
+  let best = 0, bd = 1e9;
+  navBtns.forEach((b, i) => { const c = b.offsetLeft + b.offsetWidth / 2, d = Math.abs(c - cx); if (d < bd) { bd = d; best = i; } });
+  return best;
+}
+let navDrag = null;
+$nav.addEventListener('pointerdown', ev => {
+  const rect = $nav.getBoundingClientRect();
+  navDrag = { id: ev.pointerId, x0: ev.clientX, moved: false, left: rect.left, idx: nearestTab(ev.clientX - rect.left) };
+  try { $nav.setPointerCapture(ev.pointerId); } catch (e) {}
+  lens.classList.add('drag');
+  const cx = lensAt(ev.clientX - rect.left, 1.12);
+  navBtns.forEach((b, i) => b.classList.toggle('hover', i === nearestTab(cx)));
+});
+$nav.addEventListener('pointermove', ev => {
+  if (!navDrag || ev.pointerId !== navDrag.id) return;
+  if (Math.abs(ev.clientX - navDrag.x0) > 4) navDrag.moved = true;
+  const cx = lensAt(ev.clientX - navDrag.left, 1.12);
+  const i = nearestTab(cx);
+  if (i !== navDrag.idx) { navDrag.idx = i; tap(); }
+  navBtns.forEach((b, k) => { b.classList.toggle('hover', k === i); b.classList.toggle('on', k === i); });
+});
+const navUp = ev => {
+  if (!navDrag) return;
+  const i = nearestTab(ev.clientX - navDrag.left);
+  navDrag = null;
+  lens.classList.remove('drag');
+  navBtns.forEach(b => b.classList.remove('hover'));
+  placeLens(i, 1);
+  if (TABS[i] !== state.tab) { tap(); show(TABS[i]); } else navBtns.forEach((b, k) => b.classList.toggle('on', k === i));
+};
+$nav.addEventListener('pointerup', navUp);
+$nav.addEventListener('pointercancel', navUp);
+window.addEventListener('resize', () => placeLens(TABS.indexOf(state.tab)));
+requestAnimationFrame(() => { lens.style.transition = 'none'; placeLens(TABS.indexOf(state.tab)); requestAnimationFrame(() => lens.style.transition = ''); });
 
 /* ---------- демо-данные (когда открыто не из Telegram) ---------- */
 const DEMO_DB = (() => {
