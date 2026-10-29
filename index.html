@@ -1053,7 +1053,7 @@ function weightBlock(p) {
     h += '<div class="card" style="margin-top:0"><div class="bigs"><div>Сейчас<b>' + fmtNum(last) + ' кг</b></div><div>С ' + dm(w[0].date) + '<b style="color:' + (d > 0 ? 'var(--org)' : 'var(--done)') + '">' + (d > 0 ? '+' : d < 0 ? '−' : '') + fmtNum(Math.abs(d)) + ' кг</b></div><div>Замеров<b>' + w.length + '</b></div></div>' +
       (w.length > 1 ? areaChart(w.slice(-10).map(x => ({ date: x.date, v: x.kg })), '#00E5FF') : '') + '</div>';
   } else {
-    h += '<div class="list"><div class="empty">Взвешивайся раз в неделю — тут появится график. Можно и через бота: просто пришли ему число, например 71,5</div></div>';
+    h += '<div class="list"><div class="empty">Взвешивайся раз в неделю и записывай вес ниже — тут появится график</div></div>';
   }
   h += '<div class="wform"><div class="inp"><input id="wInput" inputmode="decimal" placeholder="' + (w.length ? fmtNum(w[w.length - 1].kg) : '70') + '"><span>кг</span></div><button class="btn" data-act="weight">Записать</button></div>';
   return h;

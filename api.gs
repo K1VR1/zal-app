@@ -560,34 +560,22 @@ function apiWeek_(n) {
 }
 
 /* =====================================================================
- * БОТ: напоминания, команды, запись подходов текстом, итог месяца.
- * Один раз запусти setupReminders() — он включит оба таймера:
- *   remind() раз в час: 9:00 план, 20:00 пинок, вс 20:00 итог недели, 1-го числа итог месяца;
- *   poll()   раз в минуту: читает твои сообщения боту и отвечает.
+ * БОТ: только напоминания о тренировке.
+ * Один раз запусти setupReminders() — таймер раз в час проверяет время:
+ *   9:00  в день тренировки — план на сегодня и кнопка «Открыть тренировку»;
+ *   20:00 в день тренировки — если ничего не записано, мягкий пинок.
  * ===================================================================== */
 const REMIND = {
   APP_URL: 'https://k1vr1.github.io/zal-app/',
   MORNING: 9,
-  EVENING: 20,
-  MONTHLY: 10
+  EVENING: 20
 };
-const MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
 
 function setupReminders() {
   stopReminders();
   ScriptApp.newTrigger('remind').timeBased().everyHours(1).create();
-  ScriptApp.newTrigger('poll').timeBased().everyMinutes(1).create();
-  tgApi_('deleteWebhook', {});
-  tgApi_('setMyCommands', { commands: [
-    { command: 'today', description: 'План на сегодня' },
-    { command: 'week', description: 'Итог недели' },
-    { command: 'month', description: 'Итог месяца картинкой' },
-    { command: 'records', description: 'Мои рекорды' },
-    { command: 'weight', description: 'Вес тела' },
-    { command: 'help', description: 'Что умеет бот' }
-  ] });
-  weightSheet_();
-  tg_('✅ Бот включён: напоминания, команды и запись подходов текстом.\n\n' + helpText_());
+  try { tgApi_('deleteMyCommands', {}); } catch (e) {}
+  tg_('✅ Готово: бот теперь только напоминает о тренировках — утром план, вечером пинок, если день пропущен. Всё остальное — в приложении.', true);
 }
 
 function stopReminders() {
@@ -597,22 +585,9 @@ function stopReminders() {
 }
 
 function remind() {
-  const now = new Date();
-  const hour = Number(Utilities.formatDate(now, tz_(), 'H'));
-  const wd = dayOfWeek_(now);
-  const day = Number(Utilities.formatDate(now, tz_(), 'd'));
+  const hour = Number(Utilities.formatDate(new Date(), tz_(), 'H'));
   if (hour === REMIND.MORNING) once_('morning', morningText_, true);
   if (hour === REMIND.EVENING) once_('evening', eveningText_, true);
-  if (wd === 7 && hour === REMIND.EVENING) once_('week', () => weekText_(false, true), false);
-  if (day === 1 && hour === REMIND.MONTHLY) {
-    const props = PropertiesService.getScriptProperties();
-    const tag = Utilities.formatDate(now, tz_(), 'yyyy-MM');
-    if (props.getProperty('sent_month') !== tag) {
-      props.setProperty('sent_month', tag);
-      const prev = new Date(now.getTime() - 5 * 86400000);
-      sendMonth_(Number(Utilities.formatDate(prev, tz_(), 'yyyy')), Number(Utilities.formatDate(prev, tz_(), 'M')) - 1);
-    }
-  }
 }
 
 // отправляет не больше одного сообщения каждого вида в день
@@ -633,261 +608,20 @@ function sessionToday_() {
 }
 
 function planText_(s) {
-  const lines = s.exercises.filter(e => e.name).map(e => {
-    const last = e.last && e.last !== '—' && e.last.indexOf('←') < 0 ? ' — ' + e.last.trim().split(/\s{2,}/).join(' · ') : '';
-    return '• <b>' + esc_(e.name) + '</b> ' + esc_(e.plan) + esc_(last);
-  });
-  return lines.join('\n');
+  return s.exercises.filter(e => e.name).map(e => '• <b>' + esc_(e.name) + '</b> ' + esc_(e.plan)).join('\n');
 }
 
 function morningText_() {
   const s = sessionToday_().s;
   if (!s) return '';
-  return '💪 <b>Сегодня: ' + esc_(s.group) + '</b>\n\n' + planText_(s) + '\n\nПодсказки по весу — в приложении 👇';
+  return '💪 <b>Сегодня: ' + esc_(s.group) + '</b>\n\n' + planText_(s) + '\n\nВеса и подсказки — в приложении 👇';
 }
 
 function eveningText_() {
   const t = sessionToday_();
   if (!t.s || hasData_(t.s)) return '';
   return '⏰ Сегодня по плану <b>' + esc_(t.s.group) + '</b>, а в журнале пока пусто.\n' +
-    'Если уже позанимался — отметь подходы. Не успеваешь — тренировку можно перенести на завтра в приложении.';
-}
-
-function fmtT_(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
-function fmtN_(n) { return String(Math.round(n * 100) / 100).replace('.', ','); }
-
-function weekText_(dry, askWeight) {
-  const ix = index_(sheet_(APP.TODAY));
-  const todayKey = ix.key(new Date());
-  const cur = weekStats_(ix.keys, todayKey);
-  const prev = weekStats_(ix.keys, todayKey - 7);
-  const props = PropertiesService.getScriptProperties();
-  const prsBefore = Number(props.getProperty('prs_last_week') || cur.prs);
-  if (!dry) props.setProperty('prs_last_week', String(cur.prs));
-  const newPrs = Math.max(0, cur.prs - prsBefore);
-  const st = stats_();
-
-  let delta = '';
-  if (prev.tonnage > 0) {
-    const pct = Math.round((cur.tonnage / prev.tonnage - 1) * 100);
-    delta = ' (' + (pct > 0 ? '+' : '') + pct + '% к прошлой)';
-  }
-  const mark = cur.done >= 3 ? '🔥 Все три тренировки!' :
-    cur.done === 0 ? (askWeight ? 'На этой неделе тренировок не было — с понедельника заново 💪' : 'Пока 0 из 3 — всё впереди 💪') :
-    'Тренировок: ' + cur.done + ' из 3.';
-  let text = '📊 <b>Итог недели</b>\n\n' + mark + '\n' +
-    (cur.done ? 'Тоннаж: <b>' + fmtT_(cur.tonnage) + ' кг</b>' + delta + '\n' : '') +
-    (newPrs ? 'Новых рекордов: <b>' + newPrs + '</b> 🏆\n' : '') +
-    (st.streak >= 2 ? 'Серия: <b>' + st.streak + ' нед. подряд</b> без пропусков 🔥\n' : '');
-  if (askWeight) text += '\n⚖️ Взвесься и пришли вес числом, например <code>71,5</code> — запишу в таблицу.';
-  return text;
-}
-
-function recordsText_() {
-  const rows = sheet_(APP.PROG).getRange('B7:L27').getDisplayValues().filter(r => r[1]);
-  const names = { 'Пн': 'Понедельник', 'Ср': 'Среда', 'Пт': 'Пятница' };
-  let text = '🏆 <b>Лучшие веса</b>\n';
-  ['Пн', 'Ср', 'Пт'].forEach(d => {
-    const list = rows.filter(r => r[0] === d);
-    if (!list.length) return;
-    text += '\n<b>' + names[d] + '</b>\n';
-    list.forEach(r => {
-      const best = r[5] ? r[5] + ' кг' : (r[8] ? r[8] + ' раз' : '—');
-      text += '• ' + esc_(r[1]) + ' — <b>' + esc_(best) + '</b>' + (r[7] && r[7] !== '0%' ? ' (' + esc_(r[7]) + ')' : '') + '\n';
-    });
-  });
-  return text;
-}
-
-function weightText_() {
-  const list = weights_(10);
-  if (!list.length) return '⚖️ Вес ещё не записан. Пришли число, например <code>71,5</code>.';
-  const last = list[list.length - 1], first = list[0];
-  const d = last.kg - first.kg;
-  return '⚖️ Сейчас: <b>' + fmtN_(last.kg) + ' кг</b> (' + last.date.slice(8) + '.' + last.date.slice(5, 7) + ')' +
-    (list.length > 1 ? '\nЗа последние ' + list.length + ' записей: ' + (d > 0 ? '+' : '') + fmtN_(d) + ' кг' : '') +
-    '\n\nЧтобы записать новый — просто пришли число.';
-}
-
-function helpText_() {
-  return 'Что я умею:\n' +
-    '• /today — план на сегодня\n' +
-    '• /week — итог недели, /month — итог месяца картинкой\n' +
-    '• /records — лучшие веса\n' +
-    '• пришли число, например <code>71,5</code> — запишу вес тела\n' +
-    '• пришли <code>жим 40 10</code> — запишу подход в сегодняшнюю тренировку (<code>жим 40 10 3</code> — сразу 3 подхода), /undo — отменить';
-}
-
-/* ---------- приём сообщений (раз в минуту) ---------- */
-
-function poll() {
-  const lock = LockService.getScriptLock();
-  if (!lock.tryLock(1000)) return;
-  let updates = [];
-  try {
-    const props = PropertiesService.getScriptProperties();
-    const offset = Number(props.getProperty('tg_offset') || 0);
-    const res = tgApi_('getUpdates', { offset: offset, timeout: 0, allowed_updates: ['message'] });
-    updates = (res && res.result) || [];
-    if (updates.length) props.setProperty('tg_offset', String(updates[updates.length - 1].update_id + 1));
-  } finally {
-    lock.releaseLock();
-  }
-  const allowed = String(PropertiesService.getScriptProperties().getProperty('ALLOWED_USER_ID'));
-  updates.forEach(u => {
-    const m = u.message;
-    if (!m || !m.text || !m.chat) return;
-    if (String(m.chat.id) !== allowed) { tgTo_(m.chat.id, 'Это личный бот 🙂'); return; }
-    try { tg_(handle_(m.text.trim()), true); } catch (err) { tg_('⚠️ ' + esc_(err.message || err)); }
-  });
-}
-
-function handle_(text) {
-  const cmd = text.toLowerCase().split(/[\s@]/)[0];
-  if (cmd === '/start' || cmd === '/help') return helpText_();
-  if (cmd === '/today') {
-    const s = sessionToday_().s;
-    return s ? '💪 <b>Сегодня: ' + esc_(s.group) + '</b>\n\n' + planText_(s) : '💤 Сегодня день отдыха.';
-  }
-  if (cmd === '/week') return weekText_(true, false);
-  if (cmd === '/records') return recordsText_();
-  if (cmd === '/weight') return weightText_();
-  if (cmd === '/undo') return undo_();
-  if (cmd === '/month') {
-    const now = new Date();
-    sendMonth_(Number(Utilities.formatDate(now, tz_(), 'yyyy')), Number(Utilities.formatDate(now, tz_(), 'M')) - 1);
-    return '';
-  }
-  if (/^\d{2,3}([.,]\d{1,2})?$/.test(text)) {
-    const kg = addWeight_(text);
-    const list = weights_(2);
-    const prev = list.length > 1 ? list[0].kg : null;
-    return '⚖️ Записал: <b>' + fmtN_(kg) + ' кг</b>' +
-      (prev !== null ? ' (' + (kg - prev > 0 ? '+' : '') + fmtN_(kg - prev) + ' с прошлого раза)' : '');
-  }
-  const set = parseSet_(text);
-  if (set) return logSet_(set);
-  return 'Не понял 🤔\n\n' + helpText_();
-}
-
-/* ---------- запись подхода текстом: «жим 40 10», «жим 40х10 3» ---------- */
-
-function norm_(s) { return String(s).toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9 ]/g, ' ').replace(/\s+/g, ' ').trim(); }
-
-function parseSet_(text) {
-  const m = String(text).trim().match(/^(.*?[a-zа-яё][^\d]*?)\s+(\d+(?:[.,]\d+)?)\s*(?:кг)?\s*(?:[xх×*]|\s)\s*(\d+)(?:\s*(?:раз)?\s*(?:[xх×*]|\s)\s*(\d))?\s*$/i);
-  if (!m) return null;
-  return { q: m[1], kg: Number(m[2].replace(',', '.')), reps: Number(m[3]), times: m[4] ? Number(m[4]) : 1 };
-}
-
-function findExercise_(list, q) {
-  const words = norm_(q).split(' ').filter(String);
-  const score = e => {
-    const nw = norm_(e.name).split(' ');
-    if (!words.every(w => nw.some(x => x.indexOf(w) === 0))) return 0;
-    return norm_(e.name).indexOf(norm_(q)) === 0 ? 2 : 1;
-  };
-  const hits = list.map(e => ({ e: e, s: score(e) })).filter(x => x.s > 0);
-  if (!hits.length) return { none: true };
-  const top = Math.max.apply(null, hits.map(x => x.s));
-  const best = hits.filter(x => x.s === top);
-  if (best.length > 1) {
-    const exact = best.filter(x => norm_(x.e.name) === norm_(q));
-    if (exact.length === 1) return { e: exact[0].e };
-    // «жим» → самое короткое подходящее («Жим лежа»); остальные можно уточнить словом
-    best.sort((a, b) => a.e.name.length - b.e.name.length);
-    return { e: best[0].e, others: best.slice(1).map(x => x.e.name) };
-  }
-  return { e: best[0].e };
-}
-
-function logSet_(p) {
-  const t = sessionToday_();
-  if (!t.s) return '💤 Сегодня по плану отдых — записывать некуда. Если тренировка перенесена, перенеси её в приложении.';
-  if (!(p.times >= 1 && p.times <= 4)) throw new Error('Подходов можно от 1 до 4');
-  const list = t.s.exercises.filter(e => e.name);
-  const f = findExercise_(list, p.q);
-  if (f.none) return 'Не нашёл «' + esc_(p.q) + '» в сегодняшней тренировке.\nСегодня: ' + list.map(e => esc_(e.name)).join(', ');
-  const e = f.e;
-  const free = [];
-  e.sets.forEach((s, i) => { if (s[0] === null && s[1] === null) free.push(i); });
-  if (free.length < p.times) throw new Error('В «' + e.name + '» свободно подходов: ' + free.length + ' из 4');
-  const items = free.slice(0, p.times).map(i => ({ row: e.row, set: i, kg: p.kg, reps: p.reps }));
-  apiSaveMany_(items);
-  PropertiesService.getScriptProperties().setProperty('last_logged', JSON.stringify({ name: e.name, items: items }));
-  const nums = items.map(x => x.set + 1).join(', ');
-  return '✅ <b>' + esc_(e.name) + '</b>: ' + (p.times > 1 ? 'подходы ' : 'подход ') + nums + ' — ' + fmtN_(p.kg) + '×' + p.reps +
-    (f.others && f.others.length ? '\nНе то упражнение? /undo и напиши точнее: ' + f.others.map(esc_).join(', ') : '\nОшибся — /undo');
-}
-
-function undo_() {
-  const props = PropertiesService.getScriptProperties();
-  const last = JSON.parse(props.getProperty('last_logged') || 'null');
-  if (!last) return 'Нечего отменять.';
-  apiSaveMany_(last.items.map(x => ({ row: x.row, set: x.set, kg: '', reps: '' })));
-  props.deleteProperty('last_logged');
-  return '↩️ Отменил запись в «' + esc_(last.name) + '».';
-}
-
-/* ---------- итог месяца картинкой ---------- */
-
-function monthData_(year, month) {
-  const log = logRows_().filter(r => r[3] !== '');
-  const ym = d => Utilities.formatDate(d, tz_(), 'yyyy-MM');
-  const pad = n => ('0' + (n + 1)).slice(-2);
-  const cur = year + '-' + pad(month);
-  const prevTag = month === 0 ? (year - 1) + '-12' : year + '-' + pad(month - 1);
-  const days = {}, order = [];
-  let tonnage = 0, prs = 0, prevT = 0;
-  log.forEach(r => {
-    const tag = ym(r[0]);
-    if (tag === prevTag) prevT += Number(r[6]) || 0;
-    if (tag !== cur) return;
-    const iso = ymd_(r[0]);
-    if (!days[iso]) { days[iso] = { t: 0, names: [] }; order.push(iso); }
-    days[iso].t += Number(r[6]) || 0;
-    days[iso].names.push(r[2]);
-    tonnage += Number(r[6]) || 0;
-    if (String(r[8]).indexOf('PR') === 0) prs++;
-  });
-  return {
-    title: MONTHS[month] + ' ' + year,
-    workouts: order.length, tonnage: Math.round(tonnage), prs: prs,
-    delta: prevT ? Math.round((tonnage / prevT - 1) * 100) : null,
-    bars: order.map(iso => ({ label: iso.slice(8) + '.' + iso.slice(5, 7), t: Math.round(days[iso].t), pw: planDay_(days[iso].names, 0) }))
-  };
-}
-
-function monthChart_(d) {
-  const colors = { 1: '#C6FF3D', 3: '#FF8A3D', 5: '#3DD9FF', 0: '#8E95A6' };
-  const sub = d.workouts + ' трен.  ·  ' + fmtN_(Math.round(d.tonnage / 100) / 10) + ' т  ·  рекордов: ' + d.prs +
-    (d.delta !== null ? '  ·  ' + (d.delta > 0 ? '+' : '') + d.delta + '% к прошлому' : '');
-  return "{type:'bar',data:{labels:" + JSON.stringify(d.bars.map(b => b.label)) +
-    ",datasets:[{data:" + JSON.stringify(d.bars.map(b => b.t)) + ",backgroundColor:" + JSON.stringify(d.bars.map(b => colors[b.pw] || colors[0])) + ",borderWidth:0,maxBarThickness:64}]}," +
-    "options:{layout:{padding:{left:16,right:24,top:8,bottom:8}},legend:{display:false}," +
-    "title:{display:true,text:" + JSON.stringify([d.title.toUpperCase(), sub]) + ",fontColor:'#F2F4F8',fontSize:24,fontStyle:'bold',padding:24}," +
-    "scales:{xAxes:[{gridLines:{display:false},ticks:{fontColor:'#8E95A6',fontSize:13}}]," +
-    "yAxes:[{gridLines:{color:'#2E3340',zeroLineColor:'#2E3340'},ticks:{fontColor:'#8E95A6',beginAtZero:true,callback:(v)=>(v/1000)+' т'}}]}," +
-    "plugins:{datalabels:{anchor:'end',align:'top',color:'#D9DEE8',font:{weight:'bold',size:12},formatter:(v)=>(v/1000).toFixed(1).replace('.',',')}}}}";
-}
-
-function sendMonth_(year, month) {
-  const d = monthData_(year, month);
-  if (!d.workouts) { tg_('📅 <b>' + d.title + '</b>: тренировок пока нет.'); return; }
-  const caption = '📅 <b>Итог: ' + d.title + '</b>\n\nТренировок: <b>' + d.workouts + '</b>\nТоннаж: <b>' + fmtT_(d.tonnage) + ' кг</b>' +
-    (d.delta !== null ? ' (' + (d.delta > 0 ? '+' : '') + d.delta + '% к прошлому месяцу)' : '') +
-    '\nРекордов: <b>' + d.prs + '</b>' + (d.prs ? ' 🏆' : '');
-  const img = UrlFetchApp.fetch('https://quickchart.io/chart', {
-    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
-    payload: JSON.stringify({ version: '2', backgroundColor: '#121418', width: 800, height: 480, devicePixelRatio: 2, format: 'png', chart: monthChart_(d) })
-  });
-  if (img.getResponseCode() !== 200) { tg_(caption); return; }
-  const props = PropertiesService.getScriptProperties();
-  const res = UrlFetchApp.fetch('https://api.telegram.org/bot' + props.getProperty('BOT_TOKEN') + '/sendPhoto', {
-    method: 'post', muteHttpExceptions: true,
-    payload: { chat_id: props.getProperty('ALLOWED_USER_ID'), caption: caption, parse_mode: 'HTML', photo: img.getBlob().setName('month.png') }
-  });
-  if (res.getResponseCode() !== 200) tg_(caption);
+    'Если уже позанимался — отметь подходы. Не успеваешь — перенеси тренировку на завтра в приложении.';
 }
 
 /* ---------- Telegram ---------- */
@@ -919,11 +653,8 @@ function tg_(text, button) {
   tgTo_(chat, text, button);
 }
 
-// для проверки вручную: шлёт все сообщения прямо сейчас
+// для проверки вручную: шлёт оба напоминания прямо сейчас
 function testReminders() {
   tg_(morningText_() || '(сегодня нет тренировки — утреннего сообщения нет)', true);
-  tg_(eveningText_() || '(вечернего пинка нет: день отдыха или подходы уже записаны)', true);
-  tg_(weekText_(true, true));
-  const now = new Date();
-  sendMonth_(Number(Utilities.formatDate(now, tz_(), 'yyyy')), Number(Utilities.formatDate(now, tz_(), 'M')) - 1);
+  tg_(eveningText_() || '(вечернего напоминания нет: день отдыха или подходы уже записаны)', true);
 }
