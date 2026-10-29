@@ -37,6 +37,7 @@ function doPost(e) {
       case 'weight':   return out_({ ok: true, data: apiWeight_(req) });
       case 'progress': return out_({ ok: true, data: apiProgress_() });
       case 'history':  return out_({ ok: true, data: apiHistory_(req.name) });
+      case 'week':     return out_({ ok: true, data: apiWeek_(Number(req.week)) });
       default:         return out_({ ok: false, error: 'Неизвестное действие' });
     }
   } catch (err) {
@@ -445,7 +446,8 @@ function apiProgress_() {
   const p = sheet_(APP.PROG);
   const tiles = p.getRange('B5:L5').getDisplayValues()[0];
   const rows = p.getRange('B7:L27').getDisplayValues().filter(r => r[1]);
-  const s = stats_();
+  const log = logRows_();
+  const s = stats_(log);
   return {
     tiles: { workouts: tiles[0], tonnage: tiles[2], week: tiles[5], prs: tiles[8] },
     exercises: rows.map(r => ({
@@ -454,8 +456,26 @@ function apiProgress_() {
     })),
     streak: s.streak, bestStreak: s.bestStreak, thisWeek: s.thisWeek,
     achievements: achievements_(s),
-    weights: weights_(60)
+    weights: weights_(60),
+    spark: spark_(log),
+    weeks5: weeks5_(s),
+    start: ymd_(startDate_()),
+    nowWeek: weekNo_(new Date())
   };
+}
+
+// рабочий вес по последним тренировкам каждого упражнения (для мини-графиков)
+function spark_(log) {
+  const out = {};
+  log.filter(r => r[3] !== '').forEach(r => { (out[r[2]] = out[r[2]] || []).push(Number(r[3]) || 0); });
+  Object.keys(out).forEach(k => { out[k] = out[k].slice(-6); });
+  return out;
+}
+
+function weeks5_(s) {
+  const now = weekNo_(new Date()), list = [];
+  for (let w = Math.max(1, now - 4); w <= now; w++) list.push({ week: w, n: s.perWeek[w] || 0, current: w === now });
+  return list;
 }
 
 function apiHistory_(name) {
@@ -474,7 +494,69 @@ function apiHistory_(name) {
   const points = name ? log.filter(r => r[2] === name).map(r => ({
     date: ymd_(r[0]), weight: Number(r[3]) || 0, reps: Number(r[5]) || 0, tonnage: Number(r[6]) || 0
   })) : [];
-  return { weeks: weekList, names: names, points: points };
+  // две последние тренировки
+  const sess = {}, order = [];
+  log.forEach(r => {
+    const iso = ymd_(r[0]);
+    if (!sess[iso]) { sess[iso] = { date: iso, t: 0, sets: 0, prs: 0, names: [] }; order.push(iso); }
+    const x = sess[iso];
+    x.t += Number(r[6]) || 0; x.sets += Number(r[4]) || 0; x.names.push(r[2]);
+    if (String(r[8]).indexOf('PR') === 0) x.prs++;
+  });
+  const recent = order.slice(-2).reverse().map(iso => {
+    const x = sess[iso], pw = planDay_(x.names, 0);
+    return { date: iso, group: APP.GROUPS[pw] || '', pw: pw, tonnage: Math.round(x.t), sets: x.sets, prs: x.prs };
+  });
+  return { weeks: weekList, names: names, points: points, recent: recent, start: ymd_(startDate_()), nowWeek: nowWeek };
+}
+
+// подробности одной недели программы: дни, упражнения, подходы, рекорды
+function apiWeek_(n) {
+  if (!(n >= 1)) throw new Error('Неверная неделя');
+  const sh = sheet_(APP.TODAY);
+  const ix = index_(sh);
+  const k0 = ix.key(startDate_()) + (n - 1) * 7, k1 = k0 + 6;
+  let s = -1, e = -1;
+  ix.keys.forEach((k, i) => { if (k >= k0 && k <= k1) { if (s < 0) s = i; e = i; } });
+  const res = { week: n, from: isoFromKey_(k0), to: isoFromKey_(k1), tonnage: 0, done: 0, total: 0, sets: 0, prs: 0, delta: null, days: [] };
+  if (s < 0) return res;
+  // Журнал с начала и до конца недели: тоннаж, рекорды, прошлые тренировки той же группы
+  const jr = sheet_(APP.LOG).getRange(2, 1, APP.FIRST + e - 3 - 1, 9).getValues();
+  const rows = sh.getRange(APP.FIRST + s, 1, e - s + 1, 13).getValues();
+  const blocks = [];
+  for (let i = 0; i <= e; i++) {
+    if (i === 0 || ix.keys[i] !== ix.keys[i - 1]) blocks.push({ k: ix.keys[i], s: i, e: i });
+    else blocks[blocks.length - 1].e = i;
+  }
+  const tOf = b => { let t = 0; for (let i = b.s; i <= b.e; i++) t += Number(jr[i][6]) || 0; return t; };
+  const pwOf = b => { const nm = []; for (let i = b.s; i <= b.e; i++) if (jr[i][2]) nm.push(jr[i][2]); return planDay_(nm, wdFromKey_(b.k)); };
+  const hasOf = b => { for (let i = b.s; i <= b.e; i++) if (jr[i][3] !== '') return true; return false; };
+  let prevWeekT = 0;
+  blocks.forEach((b, bi) => {
+    if (b.k >= k0 - 7 && b.k < k0) prevWeekT += tOf(b);
+    if (b.k < k0) return;
+    const pw = pwOf(b), has = hasOf(b);
+    let prevT = null;
+    for (let j = bi - 1; j >= 0; j--) if (pwOf(blocks[j]) === pw && hasOf(blocks[j])) { prevT = Math.round(tOf(blocks[j])); break; }
+    const day = { date: isoFromKey_(b.k), weekday: wdFromKey_(b.k), pw: pw, group: APP.GROUPS[pw] || '', done: has,
+      tonnage: Math.round(tOf(b)), prevT: prevT, sets: 0, prs: [], exercises: [] };
+    for (let i = b.s; i <= b.e; i++) {
+      const r = rows[i - s], j = jr[i];
+      if (!r[1]) continue;
+      const sets = [];
+      for (let q = 0; q < 4; q++) { const kg = num_(r[4 + 2 * q]), rp = num_(r[5 + 2 * q]); if (kg !== null || rp !== null) sets.push([kg, rp]); }
+      const pr = String(j[8]).indexOf('PR') === 0;
+      if (pr) day.prs.push({ name: r[1], kg: Number(j[3]) || 0 });
+      day.sets += sets.length;
+      if (sets.length) day.exercises.push({ name: r[1], sets: sets, tonnage: Math.round(Number(r[12]) || 0), pr: pr });
+    }
+    res.days.push(day);
+    res.total++;
+    if (has) res.done++;
+    res.tonnage += day.tonnage; res.sets += day.sets; res.prs += day.prs.length;
+  });
+  if (prevWeekT > 0) res.delta = Math.round((res.tonnage / prevWeekT - 1) * 100);
+  return res;
 }
 
 /* =====================================================================
