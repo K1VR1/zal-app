@@ -448,13 +448,16 @@ function hintFor(e) {
     const down = Math.max(step, Math.round(top * 0.9 / step) * step);
     return { kg: down, warn: 'Застой: 3 тренировки подряд на ' + fmtNum(top) + ' кг. Сбрось до ' + fmtNum(down) + ' кг, сделай все повторы и разгонись заново' };
   }
+  // прибавка через тренировку (≈ раз в 2 недели): если в прошлый раз уже подняли вес — сначала закрепляем его
+  const justUp = rec.length >= 2 && rec[0].kg > rec[1].kg;
+  if (hit && justUp) return { kg: top, up: false, hold: true };
   return hit ? { kg: top + step, up: true } : { kg: top, up: false };
 }
 function targetText(e) {
   const h = hintFor(e);
   if (!h || h.kg == null) return '';
   if (BODYWEIGHT.indexOf(e.name) >= 0) return h.text ? 'цель <b>' + h.text + ' ↑</b>' : '';
-  return 'цель <b>' + fmtNum(h.kg) + ' кг' + (h.up ? ' ↑' : h.warn ? ' ↓' : '') + '</b>';
+  return 'цель <b>' + fmtNum(h.kg) + ' кг' + (h.up ? ' ↑' : h.warn ? ' ↓' : '') + '</b>' + (h.hold ? ' · закрепляем, ↑ в след. раз' : '');
 }
 function lastTonnage(e) {
   if (!e.last || /^старт/.test(e.last)) return 0;
