@@ -301,6 +301,74 @@
   @keyframes sh { to { background-position: -200% 0; } }
   .spin { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,.2); border-top-color: currentColor; border-radius: 50%; animation: rot .7s linear infinite; display: inline-block; }
   @keyframes rot { to { transform: rotate(360deg); } }
+  /* шапка с настройками */
+  .topr { display: flex; align-items: center; gap: 8px; }
+  .top .iconbtn { width: 30px; height: 30px; background: var(--g1); }
+  body.nonav nav, body.nonav #rest { display: none !important; }
+  body.nonav { padding-bottom: calc(30px + env(safe-area-inset-bottom)); }
+
+  /* первый запуск */
+  .hero { min-height: 78vh; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 20px 8px; }
+  .hero .logo { width: 84px; height: 84px; border-radius: 26px; margin: 0 auto 18px; display: grid; place-items: center; color: var(--accT);
+    background: linear-gradient(160deg, #FFB547, var(--acc)); box-shadow: 0 16px 50px -10px var(--glow), inset 0 1px 0 rgba(255,255,255,.5); }
+  .hero .logo svg { width: 44px; height: 44px; stroke-width: 2.2; }
+  .hero h1 { font-size: 34px; }
+  .hero p { color: var(--soft); font-size: 15px; line-height: 1.45; margin: 4px 6px 26px; }
+  .spin.big { width: 34px; height: 34px; border-width: 3px; }
+  .lead { color: var(--mut); font-size: 13.5px; line-height: 1.4; margin: -4px 0 12px; }
+  .tpl { display: block; width: 100%; text-align: left; background: var(--g1); border-radius: 20px; padding: 14px 16px; margin-bottom: 8px; border: 1px solid transparent; }
+  .tpl:active { border-color: var(--acc); }
+  .tpl b { display: block; font-size: 16.5px; font-weight: 700; }
+  .tpl small { display: block; font-size: 12.5px; color: var(--mut); margin-top: 2px; }
+  .tpl span { display: block; font-size: 12px; color: var(--acc); margin-top: 8px; font-weight: 600; line-height: 1.4; }
+
+  /* редактор программы */
+  .pday { padding: 12px 14px; }
+  .pdh { display: flex; gap: 8px; align-items: center; }
+  .ttl { flex: 1; min-width: 0; background: none; border: 0; border-bottom: 1px solid var(--g3); outline: none; font-size: 17px; font-weight: 700; padding: 6px 0; color: #fff; }
+  .ttl:focus { border-color: var(--acc); }
+  .ttl::placeholder { color: #636366; font-weight: 600; }
+  .wds { display: flex; gap: 5px; margin: 10px 0 6px; }
+  .wds button { flex: 1; height: 32px; border-radius: 10px; background: var(--g2); color: var(--mut); font-size: 12px; font-weight: 700; }
+  .wds button.busy { opacity: .35; }
+  .wds button.on { background: var(--acc); color: var(--accT); opacity: 1; }
+  .pex { display: flex; align-items: center; gap: 4px; border-top: .5px solid var(--g2); }
+  .pnm { flex: 1; min-width: 0; text-align: left; padding: 9px 0; }
+  .pnm b { display: block; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pnm small { font-size: 12px; color: var(--mut); }
+  .mv { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; color: var(--soft); }
+  .mv:disabled { opacity: .2; }
+  .mv svg { width: 18px; height: 18px; }
+  .addex { display: flex; align-items: center; gap: 6px; color: var(--acc); font-size: 14px; font-weight: 700; padding: 10px 0 4px; border-top: .5px solid var(--g2); width: 100%; }
+  .addex svg { width: 16px; height: 16px; }
+  .btn svg { width: 18px; height: 18px; }
+  .catl .sec { margin: 14px 0 6px; }
+  .catl button { display: flex; justify-content: space-between; width: 100%; text-align: left; padding: 11px 12px; border-radius: 12px; background: rgba(255,255,255,.06); margin-bottom: 5px; font-size: 14.5px; font-weight: 600; }
+  .catl button.used { color: var(--mut); }
+  .catl button span { font-size: 11px; color: var(--mut); font-weight: 600; }
+  .catl .own { background: rgba(255,159,10,.14); color: var(--acc); justify-content: flex-start; gap: 6px; margin-top: 8px; }
+  .catl .own svg { width: 16px; height: 16px; }
+  .frow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 0; border-top: .5px solid rgba(255,255,255,.1); }
+  .frow > span { font-size: 15px; font-weight: 600; }
+  .frow > span small { display: block; font-size: 11.5px; color: var(--mut); font-weight: 500; margin-top: 1px; }
+  .step { display: flex; align-items: center; gap: 10px; }
+  .step button { width: 36px; height: 36px; border-radius: 12px; background: rgba(255,255,255,.1); display: grid; place-items: center; }
+  .step button svg { width: 16px; height: 16px; }
+  .step b { min-width: 44px; text-align: center; font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .tgl { width: 51px; height: 31px; border-radius: 16px; background: rgba(255,255,255,.16); position: relative; flex: none; transition: background .2s; }
+  .tgl i { position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.3); transition: transform .25s cubic-bezier(.3,1.3,.5,1); }
+  .tgl.on { background: var(--done); }
+  .tgl.on i { transform: translateX(20px); }
+  .kgin { display: flex; align-items: baseline; gap: 4px; background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.12); border-radius: 12px; padding: 6px 10px; }
+  .kgin input { width: 70px; background: none; border: 0; outline: none; text-align: right; font-size: 17px; font-weight: 700; }
+  .kgin small { color: var(--mut); font-size: 12px; }
+  .srow { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 12px 0; margin-top: 8px; }
+  .srow > span { width: 38px; height: 38px; border-radius: 12px; background: var(--acc); color: var(--accT); display: grid; place-items: center; flex: none; }
+  .srow > div { flex: 1; min-width: 0; } .srow b { display: block; font-size: 15px; } .srow small { font-size: 12px; color: var(--mut); }
+  .srow > svg { color: var(--mut); width: 18px; height: 18px; }
+  .sgroup { margin-top: 6px; }
+  .seg.sm { margin: 0 0 6px; }
+  .note2 { font-size: 11.5px; color: var(--mut); text-align: center; margin: 14px 4px 4px; line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -322,19 +390,22 @@
 <div id="cele"></div>
 
 <script>
-// Ссылка на веб-приложение Apps Script (заканчивается на /exec)
+// Ссылка на веб-приложение Apps Script (заканчивается на /exec) — нужна только для напоминаний и переноса старых данных
 const API_URL = 'https://script.google.com/macros/s/AKfycbzPzSPMQoertiaY6AplYMGCW8FC7x9Bfb8VU9i-uWZUqq7NdC92fbGPYPIO2CGYpdgM/exec';
+const OWNER_ID = 947241771; // владелец: только ему при первом запуске переносятся тренировки из старой таблицы
 
 const tg = window.Telegram && window.Telegram.WebApp;
 const INIT = tg ? tg.initData : '';
+const USER = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
 const DEMO = !INIT;
+const UID = USER ? USER.id : 'demo';
 const DAYS = ['', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
 const DSH = ['', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
+const WD_SHORT = ['', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 const MON = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
 const MON3 = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
-const BODYWEIGHT = ['Подтягивания', 'Пресс на брусьях'];
-const state = { tab: 'today', today: null, progress: null, history: null, pick: null, cur: null, sel: null, selRow: null, ed: null,
-  listOpen: false, pseg: 'ex', pday: null, weeks: {}, pend: {} };
+const state = { tab: 'today', view: null, today: null, progress: null, history: null, pick: null, cur: null, sel: null, selRow: null, ed: null,
+  listOpen: false, pseg: 'ex', pday: null, pend: {}, draft: null, firstRun: false };
 const $view = document.getElementById('view');
 
 if (tg) {
@@ -352,14 +423,18 @@ const ICONS = {
   x: '<path d="M6 6l12 12M18 6L6 18"/>',
   note: '<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>',
   moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
-  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>'
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  up: '<path d="M6 15l6-6 6 6"/>',
+  down: '<path d="M6 9l6 6 6-6"/>'
 };
 const ic = (n, cls) => '<svg class="i' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24">' + ICONS[n] + '</svg>';
 const FLAME = '<svg viewBox="0 0 24 24"><path d="M12 2c1 3.5 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5.3.2 1.8 1 2.8 2 3.3-.6-3.5.2-6.5.5-9z"/></svg>';
 
 /* ---------- запросы ---------- */
 async function api(action, payload) {
-  if (DEMO) return demoApi(action, payload || {});
+  if (DEMO) throw new Error('В демо-режиме нет связи с ботом');
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -378,6 +453,370 @@ function toast(msg, err) {
 const note = msg => toast(msg, false);
 function haptic(kind) { try { tg && tg.HapticFeedback.notificationOccurred(kind); } catch (e) {} }
 function tap() { try { tg && tg.HapticFeedback.selectionChanged(); } catch (e) {} }
+
+/* ---------- хранилище: облако Telegram + копия на телефоне ---------- */
+// Данные каждого пользователя лежат в его аккаунте Telegram (CloudStorage бота).
+// Ключи: prog — программа и настройки, ov — переносы тренировок, bw — вес тела, w_ГГГГММДД — тренировка за день.
+const CS = (!DEMO && tg && tg.CloudStorage && (!tg.isVersionAtLeast || tg.isVersionAtLeast('6.9'))) ? tg.CloudStorage : null;
+const LP = 'mg3_' + UID + '_';
+const local = {
+  get: k => { try { return localStorage.getItem(LP + k); } catch (e) { return null; } },
+  set: (k, v) => { try { if (v == null) localStorage.removeItem(LP + k); else localStorage.setItem(LP + k, v); } catch (e) {} },
+  keys: () => { const out = []; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.indexOf(LP) === 0) out.push(k.slice(LP.length)); } } catch (e) {} return out; }
+};
+const cs = {
+  call: (m, args) => new Promise((res, rej) => {
+    try { CS[m].apply(CS, args.concat([(err, v) => err ? rej(new Error(String(err))) : res(v)])); } catch (e) { rej(e); }
+  }),
+  keys() { return this.call('getKeys', []); },
+  async getMany(keys) { const out = {}; for (let i = 0; i < keys.length; i += 40) Object.assign(out, await this.call('getItems', [keys.slice(i, i + 40)])); return out; },
+  set(k, v) { return this.call('setItem', [k, v]); },
+  remove(keys) { return keys.length ? this.call('removeItems', [keys]) : Promise.resolve(true); }
+};
+const CHUNK = 3900; // в одном ключе облака помещается до 4096 символов — длинное режем на части
+function pack(k, str) {
+  if (str.length <= CHUNK) return [[k, str]];
+  const parts = [];
+  for (let i = 0; i < str.length; i += CHUNK) parts.push(str.slice(i, i + CHUNK));
+  return [[k, '#parts:' + parts.length]].concat(parts.map((p, i) => [k + '__' + (i + 1), p]));
+}
+function unpack(k, all) {
+  const v = all[k];
+  if (v == null || v === '') return null;
+  const m = /^#parts:(\d+)$/.exec(v);
+  if (!m) return v;
+  let s = '';
+  for (let i = 1; i <= Number(m[1]); i++) s += all[k + '__' + i] || '';
+  return s;
+}
+const parseJ = s => { try { return s ? JSON.parse(s) : null; } catch (e) { return null; } };
+
+const DB = { prog: null, w: {}, ov: {}, bw: [] };
+const dirty = new Set(parseJ(local.get('dirty')) || []);
+const keyOf = d => 'w_' + d.replace(/-/g, '');
+let IDX = null;
+
+function loadLocal() {
+  DB.prog = parseJ(local.get('prog'));
+  DB.ov = parseJ(local.get('ov')) || {};
+  DB.bw = parseJ(local.get('bw')) || [];
+  DB.w = {};
+  local.keys().forEach(k => { if (/^w_\d{8}$/.test(k)) { const r = parseJ(local.get(k)); if (r && r.d) DB.w[r.d] = r; } });
+  IDX = null;
+}
+function snapshot() { return JSON.stringify([DB.prog, DB.ov, DB.bw, Object.keys(DB.w).sort().map(d => DB.w[d])]); }
+
+async function loadCloud() {
+  if (!CS) return false;
+  const before = snapshot();
+  const keys = await cs.keys();
+  const all = keys.length ? await cs.getMany(keys) : {};
+  const val = k => dirty.has(k) ? local.get(k) : unpack(k, all);
+  const w = {};
+  keys.filter(k => /^w_\d{8}$/.test(k)).forEach(k => { const r = parseJ(val(k)); if (r && r.d) w[r.d] = r; });
+  dirty.forEach(k => { if (/^w_\d{8}$/.test(k)) { const r = parseJ(local.get(k)); const d = k.slice(2, 6) + '-' + k.slice(6, 8) + '-' + k.slice(8); if (r && r.d) w[r.d] = r; else delete w[d]; } });
+  const prog = parseJ(val('prog'));
+  if (!prog && !keys.length && DB.prog && dirty.size) return false; // облако пустое, а на телефоне есть несохранённое — не затираем
+  DB.prog = prog; DB.ov = parseJ(val('ov')) || {}; DB.bw = parseJ(val('bw')) || []; DB.w = w;
+  IDX = null;
+  // копия на телефоне
+  local.keys().forEach(k => { if (/^w_\d{8}$/.test(k) && !w[k.slice(2, 6) + '-' + k.slice(6, 8) + '-' + k.slice(8)]) local.set(k, null); });
+  Object.keys(w).forEach(d => local.set(keyOf(d), JSON.stringify(w[d])));
+  local.set('prog', DB.prog ? JSON.stringify(DB.prog) : null); local.set('ov', JSON.stringify(DB.ov)); local.set('bw', JSON.stringify(DB.bw));
+  return snapshot() !== before;
+}
+
+function put(key, obj) {
+  local.set(key, obj == null ? null : JSON.stringify(obj));
+  dirty.add(key); local.set('dirty', JSON.stringify(Array.from(dirty)));
+  IDX = null;
+  clearTimeout(put.t); put.t = setTimeout(flush, 500);
+  guardClose();
+}
+let flushing = false, flushFails = 0;
+async function flush() {
+  if (!CS) { dirty.clear(); local.set('dirty', '[]'); return; }
+  if (flushing || !dirty.size) return;
+  flushing = true; guardClose();
+  try {
+    for (const key of Array.from(dirty)) {
+      const v = local.get(key);
+      if (v == null) await cs.remove([key, key + '__1', key + '__2', key + '__3']);
+      else {
+        const pairs = pack(key, v);
+        for (const p of pairs) await cs.set(p[0], p[1]);
+        if (pairs.length === 1) await cs.remove([key + '__1', key + '__2', key + '__3']).catch(() => {});
+      }
+      if (local.get(key) === v) dirty.delete(key);
+      local.set('dirty', JSON.stringify(Array.from(dirty)));
+    }
+    flushFails = 0;
+  } catch (err) {
+    flushFails++;
+    if (flushFails === 3) toast('Не получается сохранить в облако Telegram — данные пока на телефоне, попробую ещё');
+    setTimeout(flush, Math.min(30000, 2000 * flushFails));
+  }
+  flushing = false; guardClose();
+  if (dirty.size && !flushFails) flush();
+}
+function pending() { return flushing || dirty.size > 0; }
+function guardClose() { try { if (tg && CS) pending() ? tg.enableClosingConfirmation() : tg.disableClosingConfirmation(); } catch (e) {} }
+
+/* ---------- даты ---------- */
+const isoOf = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const dateOf = iso => new Date(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)) - 1, Number(iso.slice(8, 10)), 12);
+const addDays = (iso, n) => { const d = dateOf(iso); d.setDate(d.getDate() + n); return isoOf(d); };
+const wdOf = iso => { const w = dateOf(iso).getDay(); return w === 0 ? 7 : w; };
+const mondayOf = iso => addDays(iso, 1 - wdOf(iso));
+const daysBetween = (a, b) => Math.round((dateOf(b) - dateOf(a)) / 86400000);
+
+/* ---------- программа ---------- */
+const BW_NAMES = ['Подтягивания', 'Пресс на брусьях', 'Отжимания на брусьях', 'Отжимания', 'Отжимания узким хватом', 'Подъём ног в висе', 'Скручивания', 'Гиперэкстензия', 'Планка'];
+function dayById(id) { return DB.prog && DB.prog.days.find(d => d.id === id) || null; }
+function progEx(name) {
+  if (!DB.prog) return null;
+  for (const d of DB.prog.days) { const x = d.x.find(x => x.n === name); if (x) return x; }
+  return null;
+}
+function isBW(name) { const x = progEx(name); if (x) return !!x.bw; return BW_NAMES.indexOf(name) >= 0; }
+function target() { return Math.max(1, DB.prog ? DB.prog.days.length : 3); }
+function planFor(d) {
+  if (!DB.prog) return null;
+  const o = DB.ov[d];
+  if (o === '-') return null;
+  if (o) return dayById(o);
+  const r = DB.w[d];
+  if (r && r.p && dayById(r.p)) return dayById(r.p);
+  return DB.prog.days.find(x => x.wd === wdOf(d)) || null;
+}
+const recHas = r => !!r && r.x.some(e => (e[1] || []).some(s => s && (s[0] != null || s[1] != null)));
+
+/* ---------- расчёты по всем тренировкам ---------- */
+function idx() {
+  if (IDX) return IDX;
+  const dates = Object.keys(DB.w).filter(d => recHas(DB.w[d])).sort();
+  const byEx = {}, sessions = [], prs = [], best = {};
+  dates.forEach(d => {
+    const r = DB.w[d];
+    let ton = 0, sets = 0;
+    const dayPrs = [];
+    r.x.forEach(e => {
+      const n = e[0], f = (e[1] || []).filter(s => s && (s[0] != null || s[1] != null));
+      if (!f.length) return;
+      const top = Math.max.apply(null, f.map(s => s[0] || 0));
+      const t = f.reduce((a, s) => a + (s[0] || 0) * (s[1] || 0), 0);
+      const reps = Math.max.apply(null, f.map(s => s[1] || 0));
+      (byEx[n] = byEx[n] || []).push({ d: d, sets: f, top: top, ton: t, reps: reps });
+      ton += t; sets += f.length;
+      if (!isBW(n) && top > 0) {
+        if (best[n] != null && top > best[n]) { prs.push({ d: d, name: n, kg: top }); dayPrs.push({ name: n, kg: top }); }
+        best[n] = Math.max(best[n] || 0, top);
+      }
+    });
+    sessions.push({ d: d, p: r.p, t: r.t, ton: ton, sets: sets, prs: dayPrs });
+  });
+  IDX = { dates: dates, byEx: byEx, sessions: sessions, prs: prs, best: best };
+  return IDX;
+}
+function weekNo(d) { return Math.floor(daysBetween(DB.prog.start, d) / 7) + 1; }
+function weekLive(day) {
+  const m = mondayOf(day), e = addDays(m, 6), I = idx();
+  const ss = I.sessions.filter(s => s.d >= m && s.d <= e);
+  return { done: ss.length, ton: ss.reduce((a, s) => a + s.ton, 0), target: target() };
+}
+function stats() {
+  const I = idx(), t = isoToday(), perWeek = {};
+  I.dates.forEach(d => { const w = weekNo(d); perWeek[w] = (perWeek[w] || 0) + 1; });
+  const now = weekNo(t), tg3 = target();
+  let streak = 0, w = (perWeek[now] || 0) >= tg3 ? now : now - 1;
+  while (w >= 1 && (perWeek[w] || 0) >= tg3) { streak++; w--; }
+  let best = 0, run = 0;
+  for (let i = 1; i <= now; i++) { run = (perWeek[i] || 0) >= tg3 ? run + 1 : 0; best = Math.max(best, run); }
+  let maxLift = 0;
+  Object.keys(I.byEx).forEach(n => { if (!isBW(n)) I.byEx[n].forEach(x => { maxLift = Math.max(maxLift, x.top); }); });
+  const from7 = addDays(t, -6);
+  return {
+    workouts: I.dates.length, tonnage: Math.round(I.sessions.reduce((a, s) => a + s.ton, 0)),
+    t7: Math.round(I.sessions.filter(s => s.d >= from7).reduce((a, s) => a + s.ton, 0)),
+    prs: I.prs.length, perWeek: perWeek, streak: streak, bestStreak: best, thisWeek: perWeek[now] || 0, now: now, maxLift: maxLift, target: tg3
+  };
+}
+function lastString(name, before, start) {
+  const list = (idx().byEx[name] || []).filter(x => x.d < before);
+  const l = list[list.length - 1];
+  if (l) return l.sets.map(s => (s[0] == null ? '' : fmtNum(s[0])) + '×' + (s[1] == null ? '' : s[1])).join('   ');
+  return start != null && start !== '' ? 'старт: ' + fmtNum(start) + ' кг' : '—';
+}
+const planStr = (s, r) => (s || 3) + '×' + (r == null ? 'макс' : r);
+const empty4 = () => [[null, null], [null, null], [null, null], [null, null]];
+const norm4 = ss => { const out = empty4(); (ss || []).slice(0, 4).forEach((s, i) => { if (s) out[i] = [s[0], s[1]]; }); return out; };
+const tonOf = sets => sets.reduce((a, s) => a + (s[0] || 0) * (s[1] || 0), 0);
+
+/* ---------- сборка экранов из данных ---------- */
+function lastBW() { return DB.bw.length ? DB.bw[DB.bw.length - 1][1] : null; }
+function allOptions() {
+  const names = [];
+  (DB.prog ? DB.prog.days : []).forEach(d => d.x.forEach(x => { if (names.indexOf(x.n) < 0) names.push(x.n); }));
+  Object.keys(idx().byEx).forEach(n => { if (names.indexOf(n) < 0) names.push(n); });
+  return names;
+}
+function moveOptions(t) {
+  const plan = planFor(t), has = recHas(DB.w[t]);
+  if (plan && !has) {
+    const tm = addDays(t, 1);
+    return !planFor(tm) && !recHas(DB.w[tm]) ? { kind: 'tomorrow', from: t, to: tm, id: plan.id } : null;
+  }
+  if (!plan && !has) {
+    for (let i = 1; i <= 3; i++) {
+      const d = addDays(t, -i), p = planFor(d);
+      if (!p) continue;
+      if (recHas(DB.w[d]) || d < DB.prog.start) return null;
+      return { kind: 'today', from: d, to: t, id: p.id, group: p.t, weekday: wdOf(d) };
+    }
+  }
+  return null;
+}
+function applyMove(m) {
+  DB.ov[m.from] = '-'; DB.ov[m.to] = m.id;
+  const old = addDays(isoToday(), -60);
+  Object.keys(DB.ov).forEach(d => { if (d < old) delete DB.ov[d]; });
+  put('ov', DB.ov);
+}
+function nextPlanned(t) {
+  for (let i = 1; i <= 14; i++) {
+    const d = addDays(t, i), p = planFor(d);
+    if (p) return { date: d, weekday: wdOf(d), group: p.t, exercises: p.x.map(x => ({ name: x.n, plan: planStr(x.s, x.r), last: lastString(x.n, d, x.k) })) };
+  }
+  return null;
+}
+function mkEx(name, s, r, start) { return { name: name, plan: planStr(s, r), sets: empty4(), start: start, tonnage: 0 }; }
+function buildToday() {
+  const t = isoToday(), rec = DB.w[t], plan = planFor(t);
+  const res = { date: t, weekday: wdOf(t), today: null, next: null, notes: DB.prog.notes || {}, bodyweight: lastBW(), options: allOptions(), move: moveOptions(t), recent: {} };
+  if (!plan && !(rec && rec.x.length)) { res.next = nextPlanned(t); return res; }
+  const list = (plan ? plan.x : []).map(x => mkEx(x.n, x.s, x.r, x.k));
+  (rec ? rec.x : []).forEach(e => {
+    let it = list.find(x => x.name === e[0]);
+    if (!it) { const px = progEx(e[0]); it = mkEx(e[0], px ? px.s : 3, px ? px.r : 10, px ? px.k : null); it.extra = true; list.push(it); }
+    it.sets = norm4(e[1]);
+  });
+  const I = idx();
+  list.forEach((e, i) => {
+    e.row = i; e.tonnage = tonOf(e.sets); e.last = lastString(e.name, t, e.start);
+    res.recent[e.name] = (I.byEx[e.name] || []).filter(x => x.d < t).slice(-3).reverse().map(x => ({ kg: x.top }));
+  });
+  list.push({ row: list.length, name: '', plan: '', last: '', sets: empty4(), tonnage: 0, extra: true });
+  res.today = { date: t, weekday: wdOf(t), pw: plan ? plan.id : (rec && rec.p) || null, group: (plan && plan.t) || (rec && rec.t) || 'Тренировка', exercises: list };
+  return res;
+}
+function saveToday() {
+  const T = state.today, t = T.date, day = T.today;
+  const x = day.exercises.filter(e => e.name && (e.extra || e.sets.some(filled)))
+    .map(e => { const ss = e.sets.map(s => filled(s) ? [s[0], s[1]] : null); while (ss.length && !ss[ss.length - 1]) ss.pop(); return e.extra ? [e.name, ss, 1] : [e.name, ss]; });
+  const rec = x.length ? { d: t, p: day.pw, t: day.group, x: x } : null;
+  if (rec) DB.w[t] = rec; else delete DB.w[t];
+  put(keyOf(t), rec);
+  syncReminders();
+}
+
+function buildProgress() {
+  const s = stats(), I = idx(), P = DB.prog;
+  const exercises = [];
+  const seen = {};
+  const exStat = (name, day, start) => {
+    const list = I.byEx[name] || [];
+    seen[name] = 1;
+    const st = start != null && start !== '' ? start : (list[0] ? list[0].top : null);
+    const best = list.length ? Math.max.apply(null, list.map(x => x.top)) : null;
+    const g = st && best != null ? Math.round((best / st - 1) * 100) : null;
+    exercises.push({ day: day, name: name, start: st != null ? fmtNum(st) : '', best: best ? fmtNum(best) : '', gainPct: g == null || isBW(name) && !best ? '' : (g > 0 ? '+' : '') + g + '%',
+      count: String(list.length), maxReps: list.length ? String(Math.max.apply(null, list.map(x => x.reps))) : '' });
+  };
+  P.days.forEach(d => d.x.forEach(x => exStat(x.n, d.id, x.k)));
+  Object.keys(I.byEx).forEach(n => { if (!seen[n]) exStat(n, 'other', null); });
+  const spark = {};
+  Object.keys(I.byEx).forEach(n => { spark[n] = I.byEx[n].map(x => x.top).slice(-6); });
+  const ach = achievements(s);
+  const weeks5 = [];
+  for (let w = Math.max(1, s.now - 4); w <= s.now; w++) weeks5.push({ week: w, n: s.perWeek[w] || 0, current: w === s.now });
+  return {
+    tiles: { workouts: s.workouts, tonnage: s.tonnage, week: s.t7, prs: s.prs }, exercises: exercises, spark: spark,
+    streak: s.streak, bestStreak: s.bestStreak, thisWeek: s.thisWeek, achievements: ach, target: s.target,
+    weights: DB.bw.slice(-60).map(x => ({ date: x[0], kg: x[1] })), weeks5: weeks5, start: P.start, nowWeek: s.now
+  };
+}
+function achievements(s) {
+  const list = [
+    ['w1', '🎯', 'Первый шаг', 'Первая тренировка', s.workouts, 1],
+    ['w10', '💪', 'Десятка', '10 тренировок', s.workouts, 10],
+    ['w25', '🏋️', 'Втянулся', '25 тренировок', s.workouts, 25],
+    ['w50', '🦾', 'Полсотни', '50 тренировок', s.workouts, 50],
+    ['w100', '👑', 'Сотня', '100 тренировок', s.workouts, 100],
+    ['s1', '📅', 'Полная неделя', 'Все тренировки недели', s.bestStreak, 1],
+    ['s4', '🔥', 'Месяц без пропусков', '4 полные недели подряд', s.bestStreak, 4],
+    ['s8', '☄️', 'Машина', '8 полных недель подряд', s.bestStreak, 8],
+    ['t10', '🧱', '10 тонн', 'Тоннаж всего 10 т', s.tonnage, 10000],
+    ['t50', '🚚', '50 тонн', 'Тоннаж всего 50 т', s.tonnage, 50000],
+    ['t100', '🚂', '100 тонн', 'Тоннаж всего 100 т', s.tonnage, 100000],
+    ['t250', '🚀', '250 тонн', 'Тоннаж всего 250 т', s.tonnage, 250000],
+    ['p5', '🏆', 'Рекордсмен', '5 личных рекордов', s.prs, 5],
+    ['p25', '🥇', 'Без потолка', '25 личных рекордов', s.prs, 25],
+    ['k50', '🪨', 'Полтинник', 'Рабочий вес 50 кг', s.maxLift, 50],
+    ['k100', '🗿', 'Сотка', 'Рабочий вес 100 кг', s.maxLift, 100]
+  ];
+  return list.map(a => ({ id: a[0], icon: a[1], title: a[2], desc: a[3], got: a[4] >= a[5], have: Math.min(a[4], a[5]), need: a[5] }));
+}
+function buildHistory(pick) {
+  const I = idx(), s = stats(), weeks = {};
+  I.sessions.forEach(x => { const w = weekNo(x.d); weeks[w] = (weeks[w] || 0) + x.ton; });
+  const list = [];
+  for (let w = 1; w <= Math.max(1, s.now); w++) list.push({ week: w, tonnage: Math.round(weeks[w] || 0) });
+  const names = Object.keys(I.byEx).sort((a, b) => I.byEx[a][0].d < I.byEx[b][0].d ? -1 : I.byEx[a][0].d > I.byEx[b][0].d ? 1 : 0);
+  const points = pick && I.byEx[pick] ? I.byEx[pick].map(x => ({ date: x.d, weight: x.top, reps: x.reps, tonnage: x.ton })) : [];
+  const recent = I.sessions.slice(-2).reverse().map(x => ({ date: x.d, group: x.t, tonnage: Math.round(x.ton), sets: x.sets, prs: x.prs.length }));
+  return { weeks: list, names: names, points: points, recent: recent, start: DB.prog.start };
+}
+function buildWeek(n) {
+  const I = idx(), k0 = addDays(DB.prog.start, (n - 1) * 7), k1 = addDays(k0, 6);
+  const res = { week: n, from: k0, to: k1, tonnage: 0, done: 0, total: 0, sets: 0, prs: 0, delta: null, days: [] };
+  for (let i = 0; i < 7; i++) {
+    const d = addDays(k0, i), rec = DB.w[d], has = recHas(rec), plan = planFor(d);
+    if (!has && !plan) continue;
+    const ses = I.sessions.find(x => x.d === d);
+    const pid = (rec && rec.p) || (plan && plan.id);
+    let prevT = null;
+    for (let j = I.sessions.length - 1; j >= 0; j--) { const x = I.sessions[j]; if (x.d < d && x.p === pid) { prevT = Math.round(x.ton); break; } }
+    const day = { date: d, weekday: wdOf(d), group: (rec && rec.t) || (plan && plan.t) || 'Тренировка', done: has, tonnage: ses ? Math.round(ses.ton) : 0,
+      prevT: prevT, sets: ses ? ses.sets : 0, prs: ses ? ses.prs : [], exercises: [] };
+    if (has) rec.x.forEach(e => {
+      const f = (e[1] || []).filter(s => s && (s[0] != null || s[1] != null));
+      if (f.length) day.exercises.push({ name: e[0], sets: f, pr: day.prs.some(p => p.name === e[0]) });
+    });
+    res.days.push(day);
+    res.total++;
+    if (has) res.done++;
+    res.tonnage += day.tonnage; res.sets += day.sets; res.prs += day.prs.length;
+  }
+  const pk0 = addDays(k0, -7);
+  const prevT = I.sessions.filter(x => x.d >= pk0 && x.d < k0).reduce((a, x) => a + x.ton, 0);
+  if (prevT > 0) res.delta = Math.round((res.tonnage / prevT - 1) * 100);
+  return res;
+}
+
+/* ---------- напоминания: расписание на 2 недели вперёд уходит на сервер бота ---------- */
+let syncT = null;
+function syncReminders(force) {
+  if (DEMO || !DB.prog) return;
+  const r = DB.prog.rem || { on: false, m: 9, e: 20 };
+  const t = isoToday(), plan = {};
+  for (let i = 0; i < 14; i++) { const d = addDays(t, i), p = planFor(d); if (p) plan[d] = { t: p.t, x: p.x.map(x => x.n) }; }
+  const done = idx().dates.filter(d => d >= addDays(t, -2));
+  const payload = { on: !!r.on, tz: -new Date().getTimezoneOffset(), m: r.m, e: r.e, plan: plan, done: done };
+  const sig = JSON.stringify(payload);
+  if (!force && local.get('syncSig') === sig) return;
+  clearTimeout(syncT);
+  syncT = setTimeout(() => api('sync', payload).then(() => local.set('syncSig', sig)).catch(err => { if (force) toast('Напоминания: ' + err.message); }), force ? 0 : 1500);
+}
 
 /* ---------- помощники ---------- */
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -421,26 +860,26 @@ function rings(vals) {
   return s + '</g></svg>';
 }
 function streakChip() {
-  const p = state.progress || cache.progress;
-  if (!p || !p.streak) return '';
-  return '<span class="streak">' + FLAME + p.streak + ' ' + plural(p.streak, 'неделя', 'недели', 'недель') + ' подряд</span>';
+  const st = stats();
+  if (!st.streak) return '';
+  return '<span class="streak">' + FLAME + st.streak + ' ' + plural(st.streak, 'неделя', 'недели', 'недель') + ' подряд</span>';
 }
 
 /* ---------- подсказки веса ---------- */
 function hintFor(e) {
   const plan = parsePlan(e.plan);
-  const bw = e.name === 'Подтягивания' && state.today && state.today.bodyweight ? state.today.bodyweight : null;
+  const bw = isBW(e.name) && state.today && state.today.bodyweight ? state.today.bodyweight : null;
   if (!e.last || /^(старт|—)/.test(e.last) || plan.reps == null) {
     const s = String(e.last || '').match(/старт:\s*([\d.,]+)/);
-    return bw ? { kg: bw } : s ? { kg: parseNum(s[1]) } : null;
+    return s ? { kg: parseNum(s[1]) } : null;
   }
   const last = parseLast(e.last, plan).slice(0, plan.sets);
   if (!last.length) return null;
   const hit = last.length >= plan.sets && last.every(x => (x[1] || 0) >= plan.reps);
   const top = Math.max.apply(null, last.map(x => x[0] || 0));
-  if (BODYWEIGHT.indexOf(e.name) >= 0 || !top) {
+  if (isBW(e.name) || !top) {
     const best = Math.max.apply(null, last.map(x => x[1] || 0));
-    return { kg: bw != null ? bw : top, reps: hit ? best + 1 : plan.reps, up: hit, text: hit ? 'по ' + (best + 1) + ' повт.' : '' };
+    return { kg: bw != null && top > 0 ? bw : top, reps: hit ? best + 1 : plan.reps, up: hit, text: hit ? 'по ' + (best + 1) + ' повт.' : '' };
   }
   const step = top >= 20 ? 2.5 : 1;
   const rec = ((state.today && state.today.recent) || {})[e.name] || [];
@@ -456,7 +895,7 @@ function hintFor(e) {
 function targetText(e) {
   const h = hintFor(e);
   if (!h || h.kg == null) return '';
-  if (BODYWEIGHT.indexOf(e.name) >= 0) return h.text ? 'цель <b>' + h.text + ' ↑</b>' : '';
+  if (isBW(e.name)) return h.text ? 'цель <b>' + h.text + ' ↑</b>' : '';
   return 'цель <b>' + fmtNum(h.kg) + ' кг' + (h.up ? ' ↑' : h.warn ? ' ↓' : '') + '</b>' + (h.hold ? ' · закрепляем, ↑ в след. раз' : '');
 }
 function lastTonnage(e) {
@@ -473,41 +912,42 @@ function curEx() {
   return list.find(e => !isDone(e)) || null;
 }
 function metrics() {
-  const d = state.today, ex = named(), base = d._base || { ton: 0, had: false };
+  const ex = named();
   const planned = ex.reduce((s, e) => s + Math.max(parsePlan(e.plan).sets, doneSets(e)), 0);
   const done = ex.reduce((s, e) => s + doneSets(e), 0);
   const ton = ex.reduce((s, e) => s + (e.tonnage || 0), 0);
   const prev = ex.reduce((s, e) => s + lastTonnage(e), 0);
-  const weekDone = Math.min(3, d.week.done + (!base.had && done > 0 ? 1 : 0));
-  return { planned: planned, done: done, ton: ton, prev: prev, weekDone: weekDone,
-    weekT: d.week.tonnage + ton - base.ton, prs: d.week.prs + session().prs.length };
+  const wk = weekLive(state.today.date), I = idx();
+  return { planned: planned, done: done, ton: ton, prev: prev, weekDone: wk.done, weekT: wk.ton, target: wk.target,
+    prs: I.prs.length, prsToday: I.prs.filter(p => p.d === state.today.date).length };
 }
 
 function renderToday() {
   const d = state.today;
   if (!d) return skeleton();
   let h = demoBanner();
-  h += '<div class="top"><span class="date">' + DAYS[d.weekday] + ', ' + dlong(d.date) + '</span>' + streakChip() + '</div>';
+  h += '<div class="top"><span class="date">' + DAYS[d.weekday] + ', ' + dlong(d.date) + '</span><span class="topr">' + streakChip() + '<button class="iconbtn" data-act="settings" aria-label="Настройки">' + ic('gear') + '</button></span></div>';
   if (d.today) {
     h += '<h1>' + esc(d.today.group) + '</h1>';
-    const m = metrics(), np = session().prs.length;
-    h += '<div class="rings">' + rings([m.planned ? m.done / m.planned : 0, m.prev ? m.ton / m.prev : 0, m.weekDone / 3]) +
+    const m = metrics(), np = m.prsToday;
+    h += '<div class="rings">' + rings([m.planned ? m.done / m.planned : 0, m.prev ? m.ton / m.prev : 0, m.weekDone / m.target]) +
       '<div class="leg">' +
       '<div><i style="background:var(--red)"></i>Подходы<b style="color:var(--red)">' + m.done + '<small>/ ' + m.planned + '</small></b></div>' +
       '<div><i style="background:var(--lime)"></i>Тоннаж<b style="color:var(--lime)">' + fmtT(m.ton) + '<small>кг</small></b></div>' +
-      '<div><i style="background:var(--cyn)"></i>Неделя<b style="color:var(--cyn)">' + m.weekDone + '<small>/ 3 · ' + fmtT(m.weekT) + ' кг</small></b></div>' +
+      '<div><i style="background:var(--cyn)"></i>Неделя<b style="color:var(--cyn)">' + m.weekDone + '<small>/ ' + m.target + ' · ' + fmtT(m.weekT) + ' кг</small></b></div>' +
       '<div><i style="background:var(--org)"></i>Рекорды<b style="color:var(--org)">' + m.prs + (np ? '<small style="color:var(--org)">+' + np + '</small>' : '') + '</b></div>' +
       '</div></div>';
     const e = curEx();
     h += e ? currentCard(e) : allDoneCard();
     h += exerciseList(e);
   } else {
+    const wk = weekLive(d.date);
     h += '<h1>День <span class="acc">отдыха</span></h1>';
-    h += '<div class="rings">' + rings([0, 0, d.week.done / 3]) +
+    h += '<div class="rings">' + rings([0, 0, wk.done / wk.target]) +
       '<div class="leg">' +
-      '<div><i style="background:var(--cyn)"></i>Неделя<b style="color:var(--cyn)">' + d.week.done + '<small>/ 3</small></b></div>' +
-      '<div><i style="background:var(--lime)"></i>Тоннаж недели<b style="color:var(--lime)">' + fmtT(d.week.tonnage) + '<small>кг</small></b></div>' +
-      '<div><i style="background:var(--org)"></i>Рекорды<b style="color:var(--org)">' + d.week.prs + '</b></div>' +
+      '<div><i style="background:var(--cyn)"></i>Неделя<b style="color:var(--cyn)">' + wk.done + '<small>/ ' + wk.target + '</small></b></div>' +
+      '<div><i style="background:var(--lime)"></i>Тоннаж недели<b style="color:var(--lime)">' + fmtT(wk.ton) + '<small>кг</small></b></div>' +
+      '<div><i style="background:var(--org)"></i>Рекорды<b style="color:var(--org)">' + idx().prs.length + '</b></div>' +
       '<div><i style="background:var(--red)"></i>Вес тела<b style="color:var(--red)">' + (d.bodyweight ? fmtNum(d.bodyweight) + '<small>кг</small>' : '—') + '</b></div>' +
       '</div></div>';
     if (d.move && d.move.kind === 'today') {
@@ -541,7 +981,7 @@ function selectSet(e, i) {
   const l = last[i] || last[last.length - 1] || [null, null];
   const kg = prev ? prev[0] : h && h.kg != null ? h.kg : l[0];
   let reps = plan.reps != null ? plan.reps : (prev && prev[1]) || l[1];
-  if (h && h.reps && BODYWEIGHT.indexOf(e.name) >= 0) reps = h.reps;
+  if (h && h.reps && isBW(e.name)) reps = h.reps;
   state.ed = { kg: kg == null ? 0 : kg, reps: reps == null ? 10 : reps };
 }
 
@@ -552,7 +992,7 @@ function currentCard(e) {
   const sel = state.sel, ed = state.ed;
   const h = hintFor(e);
   const nt = (state.today.notes || {})[e.name] || '';
-  const canNote = (state.today.options || []).indexOf(e.name) >= 0;
+  const canNote = true;
   const sub = [esc(e.plan || ''), targetText(e), nt ? '<span class="note">' + esc(nt) + '</span>' : ''].filter(Boolean).join(' · ');
   let s = '<div class="card" data-row="' + e.row + '">';
   s += '<div class="ch"><div class="ic">' + ic('dumb') + '</div><div class="nm"><h3>' + esc(e.name) + '</h3><p>' + sub + '</p></div>' +
@@ -626,6 +1066,7 @@ function bindToday() {
   $view.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => {
     const a = b.dataset.act;
     if (a === 'finish') showSummary();
+    else if (a === 'settings') openSettings();
     else if (a === 'move') moveWorkout(b);
     else if (a === 'extra') pickExtra();
     else if (a === 'more' || a === 'less') { state.listOpen = a === 'more'; tap(); renderToday(); }
@@ -679,6 +1120,7 @@ function saveCurrent() {
   if (next >= 0) selectSet(e, next);
   else { state.cur = null; state.sel = null; }
   renderToday();
+  setTimeout(() => checkBadges(buildProgress()), 600);
 }
 function deleteCurrent() {
   const e = curEx(); if (!e || !hasSet(e, state.sel)) return;
@@ -687,58 +1129,17 @@ function deleteCurrent() {
 }
 function commitSet(e, i, kg, reps) {
   e.sets[i] = [kg, reps];
-  e.tonnage = e.sets.reduce((s, x) => s + (x[0] || 0) * (x[1] || 0), 0);
+  e.tonnage = tonOf(e.sets);
   const ss = session();
-  if (!ss.start && reps != null) ss.start = Date.now();
+  if (!ss.start && reps != null) { ss.start = Date.now(); saveCache(); }
   if (kg != null && reps) checkRecord(e, kg);
-  storeToday();
-  enqueue({ row: e.row, set: i, kg: kg, reps: reps });
+  saveToday();
 }
 
-/* ---------- кэш и фоновое сохранение ---------- */
-const CACHE_KEY = 'zal_cache_v2';
-const cache = (() => { try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch (e) { return {}; } })();
-function saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch (e) {} }
-function storeToday() { cache.today = state.today; cache.todayAt = isoToday(); saveCache(); }
-function withBase(d) {
-  if (d && d.today) {
-    const ex = d.today.exercises.filter(e => e.name);
-    d._base = { ton: ex.reduce((s, e) => s + (e.tonnage || 0), 0), had: ex.some(e => e.sets.some(filled)) };
-  }
-  return d;
-}
-
-const queue = [];
-let busy = false;
-function pending() { return busy || queue.length > 0; }
-function guardClose() { try { if (tg) pending() ? tg.enableClosingConfirmation() : tg.disableClosingConfirmation(); } catch (e) {} }
-function enqueue(job) {
-  const k = queue.findIndex(j => j.row === job.row && j.set === job.set);
-  if (k >= 0) queue[k] = job; else queue.push(job);
-  markSet(job, 'wait'); guardClose();
-  clearTimeout(enqueue.t); enqueue.t = setTimeout(pump, 400);
-}
-async function pump() {
-  if (busy || !queue.length) return;
-  busy = true;
-  const jobs = queue.splice(0, queue.length);
-  try {
-    await api('saveMany', { items: jobs.map(j => ({ row: j.row, set: j.set, kg: j.kg, reps: j.reps })) });
-    jobs.forEach(j => { if (!queue.some(q => q.row === j.row && q.set === j.set)) markSet(j, null); });
-  } catch (err) {
-    const tries = (jobs[0].tries || 0) + 1;
-    jobs.forEach(j => { j.tries = tries; if (!queue.some(q => q.row === j.row && q.set === j.set)) queue.unshift(j); });
-    if (tries < 3) await new Promise(r => setTimeout(r, 1500));
-    else { queue.splice(0, queue.length).forEach(j => markSet(j, 'err')); toast('Не сохранилось: ' + err.message); haptic('error'); }
-  }
-  busy = false; guardClose(); pump();
-}
-function markSet(job, kind) {
-  const k = job.row + ':' + job.set;
-  if (kind) state.pend[k] = kind; else delete state.pend[k];
-  const el = document.querySelector('.card[data-row="' + job.row + '"] .pill.ok[data-set="' + job.set + '"]');
-  if (el) { el.classList.toggle('wait', kind === 'wait'); el.classList.toggle('err', kind === 'err'); }
-}
+/* ---------- состояние интерфейса на телефоне (таймер, рекорды за сессию, награды) ---------- */
+const cache = parseJ(local.get('ui')) || {};
+function saveCache() { local.set('ui', JSON.stringify(cache)); }
+function markSet() {}
 
 /* ---------- листы, доп. упражнение, заметки, перенос ---------- */
 function openSheet(html, opts) {
@@ -845,19 +1246,17 @@ function openSheet(html, opts) {
 const closeBtn = '<button class="close" data-close aria-label="Закрыть">' + ic('x') + '</button>';
 
 function pickExtra() {
-  const e = state.today.today.exercises.find(x => x.extra && !x.name);
-  if (!e) return;
-  const list = (state.today.options || []).filter(o => !named().some(x => x.name === o));
-  const s = openSheet('<div class="sh"><div><small>Добавить в тренировку</small><h2>Доп. упражнение</h2></div>' + closeBtn + '</div>' +
-    '<div class="opts">' + list.map(o => '<button data-o="' + esc(o) + '">' + esc(o) + '</button>').join('') + '</div>' +
-    '<input class="field" id="ownEx" maxlength="60" placeholder="Или своё: шраги с гантелями"><button class="btn" style="margin-top:8px" id="ownOk">Добавить</button>');
-  const go = async name => {
-    s.close();
-    try { state.today = withBase(await api('exercise', { row: e.row, name: name })); state.cur = e.row; state.sel = null; storeToday(); haptic('success'); renderToday(); }
-    catch (err) { toast(err.message); }
-  };
-  s.el.querySelectorAll('[data-o]').forEach(b => b.addEventListener('click', () => go(b.dataset.o)));
-  s.el.querySelector('#ownOk').addEventListener('click', () => { const v = s.el.querySelector('#ownEx').value.trim(); if (v) go(v); });
+  const slot = state.today.today.exercises.find(x => x.extra && !x.name);
+  if (!slot) return;
+  pickExercise(name => {
+    const px = progEx(name);
+    Object.assign(slot, mkEx(name, px ? px.s : 3, px ? px.r : (isBW(name) ? null : 10), px ? px.k : null), { row: slot.row, extra: true });
+    slot.last = lastString(name, state.today.date, slot.start);
+    state.today.recent[name] = (idx().byEx[name] || []).filter(x => x.d < state.today.date).slice(-3).reverse().map(x => ({ kg: x.top }));
+    state.today.today.exercises.push({ row: slot.row + 1, name: '', plan: '', last: '', sets: empty4(), tonnage: 0, extra: true });
+    saveToday();
+    state.cur = slot.row; state.sel = null; haptic('success'); renderToday();
+  }, named().map(e => e.name));
 }
 
 function editNote(e) {
@@ -871,8 +1270,8 @@ function editNote(e) {
     const text = inp.value.trim();
     state.today.notes = state.today.notes || {};
     if (text) state.today.notes[e.name] = text; else delete state.today.notes[e.name];
-    storeToday(); s.close(); renderToday(); haptic('success');
-    api('note', { name: e.name, text: text }).catch(err => toast('Заметка не сохранилась: ' + err.message));
+    DB.prog.notes = state.today.notes; put('prog', DB.prog);
+    s.close(); renderToday(); haptic('success');
   };
   s.el.querySelector('#noteOk').addEventListener('click', save);
   inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') save(); });
@@ -880,14 +1279,11 @@ function editNote(e) {
 
 function moveWorkout(btn) {
   const m = state.today.move;
-  const go = async ok => {
+  const go = ok => {
     if (!ok) return;
-    btn.disabled = true; btn.innerHTML = '<span class="spin"></span>';
-    try {
-      state.today = withBase(await api('move', { from: m.from, to: m.to }));
-      state.cur = null; state.sel = null; storeToday(); haptic('success'); renderToday();
-      if (m.kind === 'tomorrow') note('Перенёс на завтра 👌');
-    } catch (err) { toast(err.message); renderToday(); }
+    applyMove(m);
+    state.cur = null; state.sel = null; haptic('success'); show('today'); syncReminders();
+    note(m.kind === 'tomorrow' ? 'Перенёс на завтра 👌' : 'Тренировка перенесена на сегодня 💪');
   };
   const q = m.kind === 'tomorrow' ? 'Перенести сегодняшнюю тренировку на завтра?' : 'Сделать пропущенную тренировку сегодня?';
   if (tg && tg.showConfirm && !DEMO) tg.showConfirm(q, go); else go(true);
@@ -896,7 +1292,7 @@ function moveWorkout(btn) {
 /* ---------- таймер отдыха ---------- */
 const REST = { end: 0, total: 0, t: null, steps: [60, 90, 120, 180] };
 const $rest = document.getElementById('rest');
-function restLen() { return cache.restSec || 90; }
+function restLen() { return (DB.prog && DB.prog.rest) || 90; }
 function startRest(sec) {
   REST.total = sec || restLen(); REST.end = Date.now() + REST.total * 1000;
   $rest.hidden = false; $rest.classList.remove('go'); document.body.classList.add('timer');
@@ -929,9 +1325,9 @@ $rest.addEventListener('click', ev => {
   if ($rest.classList.contains('go')) return r === 'cycle' ? startRest() : stopRest();
   if (r === 'cycle') {
     const i = REST.steps.indexOf(restLen());
-    cache.restSec = REST.steps[(i + 1) % REST.steps.length]; saveCache();
-    startRest(cache.restSec);
-    note('Отдых теперь ' + (cache.restSec % 60 ? cache.restSec + ' сек' : cache.restSec / 60 + ' мин'));
+    DB.prog.rest = REST.steps[(i + 1) % REST.steps.length]; put('prog', DB.prog);
+    startRest(DB.prog.rest);
+    note('Отдых теперь ' + (DB.prog.rest % 60 ? DB.prog.rest + ' сек' : DB.prog.rest / 60 + ' мин'));
     return;
   }
   REST.end += Number(r) * 1000; REST.total = Math.max(REST.total + Number(r), 15); tap();
@@ -946,10 +1342,9 @@ function session() {
   return cache.session;
 }
 function bestMap() {
-  const m = {};
-  const p = state.progress || cache.progress;
-  if (p) p.exercises.forEach(x => { const v = parseNum(x.best); if (v != null && !isNaN(v)) m[x.name] = v; });
-  if (cache.bests && cache.bestsAt === isoToday()) Object.keys(cache.bests).forEach(k => { m[k] = Math.max(m[k] || 0, cache.bests[k]); });
+  const m = {}, I = idx(), t = isoToday();
+  Object.keys(I.byEx).forEach(n => I.byEx[n].forEach(x => { if (x.d < t) m[n] = Math.max(m[n] || 0, x.top); }));
+  if (cache.bests && cache.bestsAt === t) Object.keys(cache.bests).forEach(k => { m[k] = Math.max(m[k] || 0, cache.bests[k]); });
   return m;
 }
 function popup(t1, t2, t3) {
@@ -959,11 +1354,11 @@ function popup(t1, t2, t3) {
   clearTimeout(popup.t); popup.t = setTimeout(() => c.classList.remove('on'), 3000);
 }
 function checkRecord(e, kg) {
-  if (BODYWEIGHT.indexOf(e.name) >= 0) return;
+  if (isBW(e.name)) return;
   const prev = bestMap()[e.name];
   if (prev == null || kg <= prev) return;
   if (!cache.bests || cache.bestsAt !== isoToday()) { cache.bests = {}; cache.bestsAt = isoToday(); }
-  cache.bests[e.name] = kg;
+  cache.bests[e.name] = kg; saveCache();
   const ss = session(), old = ss.prs.find(p => p.name === e.name);
   ss.prs = ss.prs.filter(p => p.name !== e.name).concat([{ name: e.name, kg: kg, prev: old ? old.prev : prev }]);
   popup('🏆 Новый рекорд', esc(e.name), fmtNum(kg) + ' кг · было ' + fmtNum(old ? old.prev : prev));
@@ -992,9 +1387,9 @@ function showSummary() {
       '<div class="v">' + fmtT(now) + ' кг<small style="color:' + (d == null ? 'var(--mut)' : d > 0 ? 'var(--done)' : d < 0 ? 'var(--red)' : 'var(--mut)') + '">' + (d == null ? 'новое' : sign(d) + '%') + '</small></div></div>';
   });
   if (!done.length) h += '<div class="empty">Пока ни одного подхода</div>';
-  if (pending()) h += '<div class="hintfull" style="display:block">Пара подходов ещё отправляется в таблицу — не закрывай приложение секунду-другую</div>';
+  if (pending()) h += '<div class="hintfull" style="display:block">Сохраняю в облако Telegram — не закрывай приложение секунду-другую</div>';
   h += '<button class="btn" data-close>Готово</button>';
-  openSheet(h, { expandable: true });
+  openSheet(h);
   haptic('success');
 }
 
@@ -1012,7 +1407,7 @@ function renderProgress() {
     '<div><i style="background:var(--org)"></i>Рекорды<b style="color:var(--org)">' + esc(p.tiles.prs) + '</b></div></div>';
   if (p.weeks5) {
     h += '<div class="strk">' + FLAME.replace('<svg', '<svg class="f' + (p.streak ? '' : ' off') + '"') + '<b>' + (p.streak ? p.streak + ' ' + plural(p.streak, 'неделя', 'недели', 'недель') + ' подряд' : 'Серия пока не началась') + '</b>' +
-      '<div class="weeks">' + p.weeks5.map(w => '<i class="' + (w.n >= 3 ? 'f' : '') + '" style="' + (w.n > 0 && w.n < 3 ? 'background:linear-gradient(0deg,var(--org) ' + Math.round(w.n / 3 * 100) + '%,var(--g3) 0)' : '') + '" title="Неделя ' + w.week + ': ' + w.n + '/3"></i>').join('') + '</div></div>';
+      '<div class="weeks">' + p.weeks5.map(w => '<i class="' + (w.n >= p.target ? 'f' : '') + '" style="' + (w.n > 0 && w.n < p.target ? 'background:linear-gradient(0deg,var(--org) ' + Math.round(w.n / p.target * 100) + '%,var(--g3) 0)' : '') + '" title="Неделя ' + w.week + ': ' + w.n + '/' + p.target + '"></i>').join('') + '</div></div>';
   }
   h += '<div class="seg">' + [['ex', 'Упражнения'], ['w', 'Вес тела'], ['b', 'Награды']].map(s => '<button data-seg="' + s[0] + '" class="' + (state.pseg === s[0] ? 'on' : '') + '">' + s[1] + '</button>').join('') + '</div>';
   if (state.pseg === 'ex') h += exList(p);
@@ -1024,20 +1419,25 @@ function renderProgress() {
   bindWeight();
 }
 function exList(p) {
-  if (!state.pday) { const t = state.today && (state.today.today || state.today.next); state.pday = { 1: 'Пн', 3: 'Ср', 5: 'Пт' }[t && t.pw] || 'Пн'; }
-  const names = { 'Пн': 'Пн · грудь и бицепс', 'Ср': 'Ср · ноги и трицепс', 'Пт': 'Пт · спина' };
-  let h = '<div class="days">' + ['Пн', 'Ср', 'Пт'].map(d => '<button data-day="' + d + '" class="' + (state.pday === d ? 'on' : '') + '">' + (state.pday === d ? names[d] : d) + '</button>').join('') + '</div>';
+  const days = DB.prog.days.slice();
+  if (p.exercises.some(e => e.day === 'other')) days.push({ id: 'other', wd: 0, t: 'Доп. упражнения' });
+  if (!state.pday || !days.some(d => d.id === state.pday)) { const t = state.today && state.today.today; state.pday = (t && t.pw && days.some(d => d.id === t.pw)) ? t.pw : days[0].id; }
+  let h = '<div class="days">' + days.map(d => {
+    const lab = d.wd ? WD_SHORT[d.wd] : 'Доп.';
+    return '<button data-day="' + d.id + '" class="' + (state.pday === d.id ? 'on' : '') + '">' + (state.pday === d.id ? lab + (d.wd ? ' · ' + esc(d.t.toLowerCase()) : '') : lab) + '</button>';
+  }).join('') + '</div>';
   const list = p.exercises.filter(e => e.day === state.pday);
   if (!list.length) return h + '<div class="list"><div class="empty">Нет упражнений</div></div>';
   h += '<div class="list">';
   list.forEach(e => {
     const sp = (p.spark || {})[e.name] || [];
-    const stuck = sp.length >= 3 && sp.slice(-3).every(v => v === sp[sp.length - 1]) && BODYWEIGHT.indexOf(e.name) < 0;
+    const stuck = sp.length >= 3 && sp.slice(-3).every(v => v === sp[sp.length - 1]) && !isBW(e.name);
     const g = e.gainPct || '', cls = g.indexOf('+') === 0 ? '' : g.indexOf('-') === 0 ? 'dn' : 'z';
-    const best = e.best ? esc(e.best) : (e.maxReps ? esc(e.maxReps) + '<span style="font-size:11px;color:var(--mut)"> раз</span>' : '—');
+    const best = e.best && !isBW(e.name) ? esc(e.best) : (e.maxReps ? esc(e.maxReps) + '<span style="font-size:11px;color:var(--mut)"> раз</span>' : '—');
     const color = stuck ? '#8E8E93' : cls === 'dn' ? '#FF375F' : cls === 'z' ? '#8E8E93' : '#30D158';
-    h += '<div class="it"><div class="nm"><b>' + esc(e.name) + '</b><small>' + (e.start ? 'старт ' + esc(e.start) : 'без веса') + ' · ' + (stuck ? '<span style="color:#FFB340">застой</span>' : esc(e.count || 0) + ' трен.') + '</small></div>' +
-      spark(sp, color) + '<div class="v"><b>' + best + '</b><small class="' + cls + '">' + esc(g) + '</small></div></div>';
+    const sub = Number(e.count) ? (e.start && !isBW(e.name) ? 'старт ' + esc(e.start) + ' · ' : '') + (stuck ? '<span style="color:#FFB340">застой</span>' : esc(e.count) + ' трен.') : 'ещё не делал';
+    h += '<div class="it"><div class="nm"><b>' + esc(e.name) + '</b><small>' + sub + '</small></div>' +
+      spark(sp, color) + '<div class="v"><b>' + best + '</b><small class="' + cls + '">' + esc(isBW(e.name) ? '' : g) + '</small></div></div>';
   });
   return h + '</div>';
 }
@@ -1065,16 +1465,13 @@ function bindWeight() {
   const wb = $view.querySelector('[data-act=weight]');
   if (!wb) return;
   const inp = $view.querySelector('#wInput');
-  const go = async () => {
+  const go = () => {
     const kg = parseNum(inp.value);
     if (!(kg >= 30 && kg <= 250)) { toast('Введи вес, например 71,5'); return; }
-    wb.disabled = true; wb.innerHTML = '<span class="spin"></span>';
-    try {
-      const r = await api('weight', { kg: kg });
-      state.progress.weights = r.list; cache.progress = state.progress; saveCache();
-      if (state.today) { state.today.bodyweight = r.kg; storeToday(); }
-      haptic('success'); renderProgress();
-    } catch (err) { toast(err.message); wb.disabled = false; wb.textContent = 'Записать'; }
+    const t = isoToday(), v = Math.round(kg * 10) / 10;
+    DB.bw = DB.bw.filter(x => x[0] !== t).concat([[t, v]]).sort((a, b) => a[0] < b[0] ? -1 : 1);
+    put('bw', DB.bw);
+    haptic('success'); state.progress = buildProgress(); renderProgress();
   };
   wb.addEventListener('click', go);
   inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') go(); });
@@ -1110,7 +1507,7 @@ function renderHistory() {
     s += '<div class="chips">' + h.names.map(n => '<button class="' + (n === state.pick ? 'on' : '') + '" data-n="' + esc(n) + '">' + esc(n) + '</button>').join('') + '</div>';
     const pts = h.points || [];
     if (pts.length) {
-      const bwx = BODYWEIGHT.indexOf(state.pick) >= 0;
+      const bwx = isBW(state.pick);
       const first = pts[0], last = pts[pts.length - 1], g = pct(last.weight, first.weight);
       const vals = pts.map(p => ({ date: p.date, v: bwx ? p.reps : p.weight }));
       s += '<div class="card" style="margin-top:0"><div class="bigs"><div>Сейчас<b>' + (bwx ? last.reps + ' раз' : fmtNum(last.weight) + ' кг') + '</b></div><div>Старт<b>' + (bwx ? first.reps + ' раз' : fmtNum(first.weight) + ' кг') + '</b></div>' +
@@ -1125,10 +1522,8 @@ function renderHistory() {
   $view.querySelectorAll('.chips button').forEach(b => b.addEventListener('click', async () => {
     state.pick = b.dataset.n; tap();
     $view.querySelectorAll('.chips button').forEach(x => x.classList.toggle('on', x === b));
-    try {
-      state.history = await api('history', { name: state.pick }); cache.history = state.history; cache.pick = state.pick; saveCache();
-      const sx = document.querySelector('.chips').scrollLeft; renderHistory(); document.querySelector('.chips').scrollLeft = sx;
-    } catch (err) { toast(err.message); }
+    state.history = buildHistory(state.pick);
+    const sx = document.querySelector('.chips').scrollLeft; renderHistory(); document.querySelector('.chips').scrollLeft = sx;
   }));
   bindBars();
 }
@@ -1178,7 +1573,7 @@ function areaChart(pts, color) {
 }
 
 let weekSheet = null;
-async function openWeek(n) {
+function openWeek(n) {
   tap();
   if (weekSheet) weekSheet.close();
   bindBars(n);
@@ -1186,13 +1581,8 @@ async function openWeek(n) {
     expandable: true, anchor: '#barsCard', onClose: () => { if (weekSheet === sh) weekSheet = null; if (state.tab === 'history') bindBars(); }
   });
   weekSheet = sh;
-  try {
-    const w = state.weeks[n] || await api('week', { week: n });
-    state.weeks[n] = w;
-    if (!document.body.contains(sh.el)) return;
-    sh.el.querySelector('#wk').outerHTML = weekHtml(w);
-    sh.bindClose(); sh.refresh();
-  } catch (err) { sh.close(); toast(String(err.message).indexOf('Неизвестное') >= 0 ? 'Обнови код API в Apps Script, чтобы смотреть недели' : err.message); }
+  sh.el.querySelector('#wk').outerHTML = weekHtml(buildWeek(n));
+  sh.bindClose(); sh.refresh();
 }
 function weekHtml(w) {
   const f = w.from, t = w.to;
@@ -1221,56 +1611,326 @@ function weekHtml(w) {
   return h;
 }
 
+/* ---------- справочник упражнений и шаблоны программ ---------- */
+const CATALOG = [
+  ['Грудь', ['Жим лежа', 'Жим на наклонной', 'Жим гантелей лежа', 'Жим гантелей на наклонной', 'Бабочка', 'Разводка гантелей', 'Кроссовер', 'Отжимания на брусьях', 'Отжимания']],
+  ['Спина', ['Подтягивания', 'Тяга верхнего блока', 'Тяга сверху вниз', 'Тяга к груди', 'Тяга среднего блока', 'Тяга штанги в наклоне', 'Тяга гантели в наклоне', 'Становая тяга', 'Гиперэкстензия']],
+  ['Ноги', ['Приседания со штангой', 'Жим ногами', 'Разгибание голени', 'Сгибание голени', 'Выпады', 'Румынская тяга', 'Ягодичный мост', 'Икры']],
+  ['Плечи', ['Жим штанги стоя', 'Жим гантелей сидя', 'Махи руками с гантелями', 'Махи в наклоне', 'Тяга к подбородку', 'Шраги с гантелями']],
+  ['Руки', ['Бицепс со штангой', 'Подъём гантелей на бицепс', 'Молотки', 'Сгибание на бицепс в тренажёре', 'Французский жим', 'Разгибание на блоке', 'Отжимания узким хватом', 'Предплечья']],
+  ['Пресс', ['Скручивания', 'Пресс на брусьях', 'Подъём ног в висе', 'Планка']]
+];
+const X = (n, s, r, bw) => ({ n: n, s: s, r: r === undefined ? 10 : r, k: null, bw: bw || BW_NAMES.indexOf(n) >= 0 ? 1 : 0 });
+const TEMPLATES = [
+  { id: 'split3', t: 'Сплит на 3 дня', d: 'Пн · Ср · Пт — каждая группа мышц раз в неделю', days: [
+    { wd: 1, t: 'Грудь и бицепс', x: [X('Жим лежа', 3, 10), X('Жим гантелей на наклонной', 3, 12), X('Бабочка', 3, 12), X('Бицепс со штангой', 3, 10), X('Молотки', 3, 12)] },
+    { wd: 3, t: 'Ноги и плечи', x: [X('Приседания со штангой', 3, 10), X('Жим ногами', 3, 12), X('Сгибание голени', 3, 12), X('Жим гантелей сидя', 3, 10), X('Махи руками с гантелями', 3, 15)] },
+    { wd: 5, t: 'Спина и трицепс', x: [X('Подтягивания', 3, null), X('Тяга верхнего блока', 3, 12), X('Тяга штанги в наклоне', 3, 10), X('Французский жим', 3, 12), X('Разгибание на блоке', 3, 15)] }] },
+  { id: 'full3', t: 'Всё тело, 3 дня', d: 'Пн · Ср · Пт — лучший старт для новичка', days: [
+    { wd: 1, t: 'Всё тело А', x: [X('Приседания со штангой', 3, 8), X('Жим лежа', 3, 8), X('Тяга штанги в наклоне', 3, 10), X('Жим гантелей сидя', 3, 10), X('Скручивания', 3, 15)] },
+    { wd: 3, t: 'Всё тело Б', x: [X('Румынская тяга', 3, 10), X('Жим гантелей на наклонной', 3, 10), X('Тяга верхнего блока', 3, 12), X('Выпады', 3, 10), X('Подъём ног в висе', 3, 12)] },
+    { wd: 5, t: 'Всё тело А', x: [X('Приседания со штангой', 3, 8), X('Жим лежа', 3, 8), X('Тяга штанги в наклоне', 3, 10), X('Жим гантелей сидя', 3, 10), X('Скручивания', 3, 15)] }] },
+  { id: 'ul4', t: 'Верх / низ, 4 дня', d: 'Пн · Вт · Чт · Пт — для тех, кто уже втянулся', days: [
+    { wd: 1, t: 'Верх', x: [X('Жим лежа', 4, 8), X('Тяга штанги в наклоне', 4, 8), X('Жим гантелей сидя', 3, 10), X('Бицепс со штангой', 3, 10), X('Разгибание на блоке', 3, 12)] },
+    { wd: 2, t: 'Низ', x: [X('Приседания со штангой', 4, 8), X('Румынская тяга', 3, 10), X('Жим ногами', 3, 12), X('Икры', 4, 15)] },
+    { wd: 4, t: 'Верх 2', x: [X('Жим гантелей на наклонной', 4, 10), X('Подтягивания', 4, null), X('Махи руками с гантелями', 3, 15), X('Молотки', 3, 12), X('Отжимания на брусьях', 3, null)] },
+    { wd: 5, t: 'Низ 2', x: [X('Становая тяга', 3, 6), X('Выпады', 3, 10), X('Разгибание голени', 3, 15), X('Сгибание голени', 3, 12), X('Скручивания', 3, 20)] }] },
+  { id: 'empty', t: 'Соберу сам', d: 'Пустая программа — дни и упражнения выберешь сам', days: [{ wd: 1, t: '', x: [] }] }
+];
+const uid = () => 'd' + Math.random().toString(36).slice(2, 7);
+const copy = o => JSON.parse(JSON.stringify(o));
+
+/* ---------- первый запуск ---------- */
+function renderWelcome() {
+  document.body.classList.add('nonav');
+  $view.innerHTML = demoBanner() + '<div class="hero"><div class="logo">' + ic('dumb') + '</div><h1>MY GYM</h1>' +
+    '<p>Журнал тренировок прямо в Telegram: подсказки по весу, рекорды, прогресс и напоминания. Все данные хранятся в твоём аккаунте.</p>' +
+    '<button class="btn" data-go="tpl">Собрать программу</button></div>';
+  $view.querySelector('[data-go]').addEventListener('click', () => { state.view = 'tpl'; render(); });
+}
+function renderTemplates() {
+  document.body.classList.add('nonav');
+  let h = demoBanner() + '<div class="top"><button class="link" data-back>‹ Назад</button></div><h1>С чего начнём?</h1><p class="lead">Выбери шаблон — потом его можно поменять как угодно.</p>';
+  TEMPLATES.forEach(t => {
+    h += '<button class="tpl" data-t="' + t.id + '"><b>' + esc(t.t) + '</b><small>' + esc(t.d) + '</small>' +
+      (t.days[0].x.length ? '<span>' + t.days.map(d => WD_SHORT[d.wd] + ' — ' + esc(d.t)).join(' · ') + '</span>' : '') + '</button>';
+  });
+  $view.innerHTML = h;
+  $view.querySelector('[data-back]').addEventListener('click', () => { state.view = 'welcome'; render(); });
+  $view.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => {
+    const t = TEMPLATES.find(x => x.id === b.dataset.t);
+    state.draft = { days: copy(t.days).map(d => Object.assign({ id: uid() }, d)) };
+    state.view = 'prog'; state.firstRun = true; tap(); render();
+  }));
+}
+
+/* ---------- редактор программы ---------- */
+function openProgramEditor() {
+  state.draft = { days: copy(DB.prog.days) };
+  state.firstRun = false; state.view = 'prog'; render();
+}
+function renderProgEditor() {
+  document.body.classList.add('nonav');
+  const D = state.draft;
+  let h = demoBanner() + '<div class="top"><button class="link" data-pe="back">‹ ' + (state.firstRun ? 'Шаблоны' : 'Назад') + '</button></div>' +
+    '<h1>Программа</h1><p class="lead">Дни недели и упражнения. Веса подтянутся из истории, а для новых упражнений — со старта.</p>';
+  D.days.forEach((d, di) => {
+    h += '<div class="card pday"><div class="pdh"><input class="ttl" data-title="' + di + '" maxlength="40" value="' + esc(d.t) + '" placeholder="Название дня, например «Грудь и бицепс»">' +
+      (D.days.length > 1 ? '<button class="iconbtn" data-pe="delday" data-d="' + di + '" aria-label="Удалить день">' + ic('trash') + '</button>' : '') + '</div>';
+    h += '<div class="wds">' + [1, 2, 3, 4, 5, 6, 7].map(k => {
+      const busy = D.days.some((o, oi) => oi !== di && o.wd === k);
+      return '<button data-pe="wd" data-d="' + di + '" data-k="' + k + '" class="' + (d.wd === k ? 'on' : '') + (busy ? ' busy' : '') + '">' + WD_SHORT[k] + '</button>';
+    }).join('') + '</div>';
+    d.x.forEach((x, i) => {
+      h += '<div class="pex"><button class="pnm" data-pe="edit" data-d="' + di + '" data-i="' + i + '"><b>' + esc(x.n) + '</b><small>' + planStr(x.s, x.r) +
+        (x.bw ? ' · свой вес' : x.k != null && x.k !== '' ? ' · старт ' + fmtNum(x.k) + ' кг' : '') + '</small></button>' +
+        '<button class="mv" data-pe="up" data-d="' + di + '" data-i="' + i + '"' + (i ? '' : ' disabled') + '>' + ic('up') + '</button>' +
+        '<button class="mv" data-pe="down" data-d="' + di + '" data-i="' + i + '"' + (i < d.x.length - 1 ? '' : ' disabled') + '>' + ic('down') + '</button></div>';
+    });
+    h += '<button class="addex" data-pe="add" data-d="' + di + '">' + ic('plus') + 'Упражнение</button></div>';
+  });
+  if (D.days.length < 7) h += '<button class="btn gray" data-pe="addday" style="margin-top:10px">' + ic('plus') + 'День тренировки</button>';
+  h += '<button class="btn" data-pe="save" style="margin-top:10px">' + (state.firstRun ? 'Начать тренироваться' : 'Сохранить программу') + '</button>';
+  $view.innerHTML = h;
+  $view.querySelectorAll('[data-title]').forEach(inp => inp.addEventListener('input', () => { D.days[Number(inp.dataset.title)].t = inp.value; }));
+  $view.querySelectorAll('[data-pe]').forEach(b => b.addEventListener('click', () => {
+    const a = b.dataset.pe, di = Number(b.dataset.d), i = Number(b.dataset.i), day = D.days[di];
+    if (a === 'back') { if (state.firstRun) state.view = 'tpl'; else { state.view = null; } render(); return; }
+    if (a === 'wd') {
+      const k = Number(b.dataset.k), other = D.days.find((o, oi) => oi !== di && o.wd === k);
+      if (other) other.wd = day.wd; // меняем дни местами
+      day.wd = k; tap();
+    }
+    if (a === 'up' && i > 0) { const t = day.x[i - 1]; day.x[i - 1] = day.x[i]; day.x[i] = t; tap(); }
+    if (a === 'down' && i < day.x.length - 1) { const t = day.x[i + 1]; day.x[i + 1] = day.x[i]; day.x[i] = t; tap(); }
+    if (a === 'delday') { if (!confirmish('Удалить «' + (day.t || 'день') + '»?')) return; D.days.splice(di, 1); }
+    if (a === 'addday') {
+      const free = [1, 3, 5, 2, 4, 6, 7].find(k => !D.days.some(o => o.wd === k)) || 1;
+      D.days.push({ id: uid(), wd: free, t: '', x: [] });
+    }
+    if (a === 'add') return pickExercise(name => { day.x.push({ n: name, s: 3, r: isBWname(name) ? null : 10, k: null, bw: isBWname(name) ? 1 : 0 }); renderProgEditor(); }, day.x.map(x => x.n));
+    if (a === 'edit') return editExercise(day, i);
+    if (a === 'save') return saveProgram();
+    const y = window.scrollY; renderProgEditor(); window.scrollTo(0, y);
+  }));
+}
+const isBWname = n => BW_NAMES.indexOf(n) >= 0;
+function confirmish(q) { return true; }
+
+function pickExercise(done, exclude) {
+  exclude = exclude || [];
+  const s = openSheet('<div class="sh"><div><small>Добавить в день</small><h2>Упражнение</h2></div>' + closeBtn + '</div>' +
+    '<input class="field" id="exq" placeholder="Поиск или своё название" autocomplete="off"><div id="exl" class="catl"></div>');
+  const q = s.el.querySelector('#exq'), box = s.el.querySelector('#exl');
+  const draw = () => {
+    const v = q.value.trim().toLowerCase();
+    let h = '';
+    if (v && !CATALOG.some(g => g[1].some(n => n.toLowerCase() === v))) h += '<button class="own" data-n="' + esc(q.value.trim()) + '">' + ic('plus') + 'Добавить «' + esc(q.value.trim()) + '»</button>';
+    const mine = allOptions().filter(n => !CATALOG.some(g => g[1].indexOf(n) >= 0));
+    const groups = (mine.length ? [['Мои', mine]] : []).concat(CATALOG);
+    groups.forEach(g => {
+      const list = g[1].filter(n => !v || n.toLowerCase().indexOf(v) >= 0);
+      if (!list.length) return;
+      h += '<div class="sec">' + g[0] + '</div>' + list.map(n => '<button data-n="' + esc(n) + '"' + (exclude.indexOf(n) >= 0 ? ' class="used"' : '') + '>' + esc(n) + (exclude.indexOf(n) >= 0 ? '<span>уже есть</span>' : '') + '</button>').join('');
+    });
+    box.innerHTML = h || '<div class="empty">Ничего не нашлось</div>';
+    box.querySelectorAll('[data-n]').forEach(b => b.addEventListener('click', () => { s.close(); tap(); done(b.dataset.n); }));
+  };
+  q.addEventListener('input', draw);
+  draw();
+}
+
+function editExercise(day, i) {
+  const x = day.x[i], tmp = copy(x);
+  const body = () => '<div class="sh"><div><small>' + esc(day.t || 'Упражнение') + '</small><h2>' + esc(tmp.n) + '</h2></div>' + closeBtn + '</div>' +
+    '<div class="frow"><span>Подходов</span><div class="step"><button data-st="s-">' + ic('minus') + '</button><b>' + tmp.s + '</b><button data-st="s+">' + ic('plus') + '</button></div></div>' +
+    '<div class="frow"><span>Повторов</span><div class="step"><button data-st="r-">' + ic('minus') + '</button><b>' + (tmp.r == null ? 'макс' : tmp.r) + '</b><button data-st="r+">' + ic('plus') + '</button></div></div>' +
+    '<div class="frow"><span>До отказа (макс)</span><button class="tgl' + (tmp.r == null ? ' on' : '') + '" data-st="max"><i></i></button></div>' +
+    '<div class="frow"><span>Свой вес<small>подтягивания, отжимания, пресс</small></span><button class="tgl' + (tmp.bw ? ' on' : '') + '" data-st="bw"><i></i></button></div>' +
+    (tmp.bw ? '' : '<div class="frow"><span>Стартовый вес<small>для первой тренировки</small></span><div class="kgin"><input id="kgIn" inputmode="decimal" placeholder="—" value="' + fmtNum(tmp.k) + '"><small>кг</small></div></div>') +
+    '<button class="btn" data-st="ok" style="margin-top:14px">Готово</button>' +
+    '<button class="link red" data-st="del" style="display:block;margin:10px auto 0">Убрать из программы</button>';
+  const s = openSheet('<div id="exed">' + body() + '</div>');
+  const bind = () => {
+    s.el.querySelectorAll('[data-st]').forEach(b => b.addEventListener('click', () => {
+      const a = b.dataset.st;
+      const kin = s.el.querySelector('#kgIn');
+      if (kin) { const v = parseNum(kin.value); tmp.k = v == null || isNaN(v) ? null : v; }
+      if (a === 's+') tmp.s = Math.min(6, tmp.s + 1);
+      if (a === 's-') tmp.s = Math.max(1, tmp.s - 1);
+      if (a === 'r+') tmp.r = tmp.r == null ? 10 : Math.min(100, tmp.r + 1);
+      if (a === 'r-') tmp.r = tmp.r == null ? 10 : Math.max(1, tmp.r - 1);
+      if (a === 'max') tmp.r = tmp.r == null ? 10 : null;
+      if (a === 'bw') tmp.bw = tmp.bw ? 0 : 1;
+      if (a === 'ok') { day.x[i] = tmp; s.close(); renderProgEditor(); return; }
+      if (a === 'del') { day.x.splice(i, 1); s.close(); renderProgEditor(); return; }
+      tap();
+      s.el.querySelector('#exed').innerHTML = body(); s.bindClose(); bind();
+    }));
+  };
+  bind();
+}
+
+function saveProgram() {
+  const D = state.draft;
+  for (const d of D.days) {
+    if (!d.x.length) { toast('В дне «' + (d.t || WD_SHORT[d.wd]) + '» нет упражнений'); return; }
+    if (!d.t.trim()) d.t = DAYS[d.wd];
+    d.t = d.t.trim();
+  }
+  D.days.sort((a, b) => a.wd - b.wd);
+  if (!DB.prog) {
+    DB.prog = { v: 3, start: mondayOf(isoToday()), days: D.days, notes: {}, rest: 90, rem: { on: false, m: 9, e: 20 } };
+  } else DB.prog.days = D.days;
+  put('prog', DB.prog);
+  haptic('success');
+  const first = state.firstRun;
+  state.view = null; state.draft = null; state.firstRun = false;
+  show('today');
+  syncReminders();
+  if (first) setTimeout(() => askReminders(), 500);
+  else note('Программа сохранена');
+}
+
+/* ---------- настройки ---------- */
+function openSettings() {
+  const P = DB.prog, r = P.rem || (P.rem = { on: false, m: 9, e: 20 });
+  const body = () => '<div class="sh"><div><small>MY GYM</small><h2>Настройки</h2></div>' + closeBtn + '</div>' +
+    '<button class="srow" data-s="prog"><span>' + ic('dumb') + '</span><div><b>Программа тренировок</b><small>' + P.days.map(d => WD_SHORT[d.wd]).join(' · ') + ' · ' + P.days.reduce((a, d) => a + d.x.length, 0) + ' упражнений</small></div>' + ic('arrow') + '</button>' +
+    '<div class="sgroup"><div class="frow"><span>Напоминания в боте<small>утром план, вечером — если день пропущен</small></span><button class="tgl' + (r.on ? ' on' : '') + '" data-s="rem"><i></i></button></div>' +
+    (r.on ? '<div class="frow"><span>Утром в</span><div class="step"><button data-s="m-">' + ic('minus') + '</button><b>' + r.m + ':00</b><button data-s="m+">' + ic('plus') + '</button></div></div>' +
+      '<div class="frow"><span>Вечером в</span><div class="step"><button data-s="e-">' + ic('minus') + '</button><b>' + r.e + ':00</b><button data-s="e+">' + ic('plus') + '</button></div></div>' : '') + '</div>' +
+    '<div class="sgroup"><div class="frow"><span>Таймер отдыха</span></div><div class="seg sm">' + [60, 90, 120, 180].map(v => '<button data-s="rest" data-v="' + v + '" class="' + (restLen() === v ? 'on' : '') + '">' + Math.floor(v / 60) + ':' + String(v % 60).padStart(2, '0') + '</button>').join('') + '</div></div>' +
+    '<div class="note2">Сохранено тренировок: ' + idx().dates.length + '. Все данные хранятся в твоём аккаунте Telegram' + (pending() ? ' · синхронизация…' : '') + '.</div>';
+  const s = openSheet('<div id="setb">' + body() + '</div>');
+  const bind = () => s.el.querySelectorAll('[data-s]').forEach(b => b.addEventListener('click', () => {
+    const a = b.dataset.s;
+    if (a === 'prog') { s.close(); openProgramEditor(); return; }
+    if (a === 'rem') { if (!r.on) return enableReminders(() => { s.el.querySelector('#setb').innerHTML = body(); s.bindClose(); bind(); }); r.on = false; }
+    if (a === 'm+') r.m = Math.min(13, r.m + 1);
+    if (a === 'm-') r.m = Math.max(5, r.m - 1);
+    if (a === 'e+') r.e = Math.min(23, r.e + 1);
+    if (a === 'e-') r.e = Math.max(15, r.e - 1);
+    if (a === 'rest') P.rest = Number(b.dataset.v);
+    tap(); put('prog', P); syncReminders();
+    s.el.querySelector('#setb').innerHTML = body(); s.bindClose(); bind();
+  }));
+  bind();
+}
+function enableReminders(after) {
+  const on = () => { DB.prog.rem = Object.assign({ m: 9, e: 20 }, DB.prog.rem || {}, { on: true }); put('prog', DB.prog); syncReminders(true); haptic('success'); if (after) after(); };
+  try {
+    if (tg && tg.requestWriteAccess && !DEMO) tg.requestWriteAccess(ok => { if (ok) on(); else toast('Без разрешения бот не сможет писать тебе'); });
+    else on();
+  } catch (e) { on(); }
+}
+function askReminders() {
+  const s = openSheet('<div class="sh"><div><small>Последний шаг</small><h2>Напоминать о тренировках?</h2></div>' + closeBtn + '</div>' +
+    '<p class="lead" style="margin:6px 0 0">Бот утром пришлёт план на день, а вечером напомнит, если тренировка пропущена. Время можно поменять в настройках.</p>' +
+    '<button class="btn" data-a="yes" style="margin-top:14px">Да, напоминай</button><button class="btn gray" data-a="no" style="margin-top:8px">Не сейчас</button>');
+  s.el.querySelector('[data-a=yes]').addEventListener('click', () => { s.close(); enableReminders(() => note('Напоминания включены')); });
+  s.el.querySelector('[data-a=no]').addEventListener('click', s.close);
+}
+
+/* ---------- перенос из Google Таблицы (только для владельца) ---------- */
+function renderMigrate(err) {
+  document.body.classList.add('nonav');
+  $view.innerHTML = '<div class="hero"><div class="logo">' + (err ? ic('x') : '<span class="spin big"></span>') + '</div>' +
+    (err ? '<h1>Не получилось</h1><p>' + esc(err) + '</p><button class="btn" data-m="retry">Попробовать ещё раз</button><button class="btn gray" data-m="new" style="margin-top:8px">Начать с чистого листа</button>'
+      : '<h1>Переезжаем</h1><p>Переношу твои тренировки из таблицы в Telegram. Это один раз и займёт несколько секунд.</p>') + '</div>';
+  $view.querySelectorAll('[data-m]').forEach(b => b.addEventListener('click', () => { if (b.dataset.m === 'retry') migrate(); else { state.view = 'welcome'; render(); } }));
+}
+async function migrate() {
+  state.view = 'migrate'; renderMigrate();
+  try {
+    const data = await api('export');
+    const P = convertExport(data);
+    DB.prog = P.prog; put('prog', DB.prog);
+    P.recs.forEach(r => { DB.w[r.d] = r; put(keyOf(r.d), r); });
+    DB.bw = P.bw; put('bw', DB.bw);
+    try { const old = JSON.parse(localStorage.getItem('zal_cache_v2') || '{}'); if (old.restSec) { DB.prog.rest = old.restSec; put('prog', DB.prog); } } catch (e) {}
+    await flush();
+    state.view = null;
+    show('today');
+    syncReminders(true);
+    note('Готово! Перенёс тренировок: ' + P.recs.length);
+    haptic('success');
+  } catch (err) {
+    const m = String(err.message || err);
+    renderMigrate(m.indexOf('Неизвестное') >= 0 ? 'Сначала обнови код скрипта в Apps Script (новый api.gs) и сделай новую версию развёртывания.' : m);
+  }
+}
+function convertExport(data) {
+  const WD = { 'Пн': 1, 'Вт': 2, 'Ср': 3, 'Чт': 4, 'Пт': 5, 'Сб': 6, 'Вс': 7 };
+  const TITLES = { 1: 'Грудь и бицепс', 3: 'Ноги и трицепс', 5: 'Спина и предплечья' };
+  const days = [], notes = {};
+  data.program.forEach(r => {
+    const wd = WD[r.day] || 1;
+    let d = days.find(x => x.wd === wd);
+    if (!d) { d = { id: 'd' + wd, wd: wd, t: TITLES[wd] || DAYS[wd], x: [] }; days.push(d); }
+    d.x.push({ n: r.name, s: r.sets || 3, r: r.reps == null ? null : r.reps, k: r.start, bw: BW_NAMES.indexOf(r.name) >= 0 ? 1 : 0 });
+    if (r.note) notes[r.name] = r.note;
+  });
+  days.sort((a, b) => a.wd - b.wd);
+  const recs = data.sessions.map(s => {
+    const day = days.find(d => s.ex.length && d.x.some(x => x.n === s.ex[0].name));
+    return { d: s.date, p: day ? day.id : null, t: day ? day.t : 'Тренировка',
+      x: s.ex.map(e => { const ss = e.sets.slice(); while (ss.length && !ss[ss.length - 1]) ss.pop(); return day && day.x.some(x => x.n === e.name) ? [e.name, ss] : [e.name, ss, 1]; }) };
+  });
+  const first = recs.length ? recs.map(r => r.d).sort()[0] : isoToday();
+  return { prog: { v: 3, start: mondayOf(first), days: days, notes: notes, rest: 90, rem: { on: true, m: 9, e: 20 } }, recs: recs, bw: data.weights || [] };
+}
+
 /* ---------- общее ---------- */
 function skeleton() { $view.innerHTML = demoBanner() + '<div class="skeleton" style="height:56px;margin-top:4px"></div><div class="skeleton"></div><div class="skeleton" style="height:300px"></div>'; }
-function demoBanner() { return DEMO ? '<div class="demo">Демо-режим: открой через Telegram, чтобы работать с таблицей</div>' : ''; }
+function demoBanner() { return DEMO ? '<div class="demo">Демо-режим с примером тренировок: открой через Telegram, чтобы вести свой журнал</div>' : ''; }
 
-async function show(tab) {
+function show(tab) {
   state.tab = tab;
   if (weekSheet) weekSheet.close();
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
   if (typeof placeLens === 'function' && !navDrag) placeLens(TABS.indexOf(tab));
   window.scrollTo(0, 0);
-  const render = { today: renderToday, progress: renderProgress, history: renderHistory }[tab];
-  if (!DEMO) {
-    if (tab === 'today' && !state.today && cache.today && cache.todayAt === isoToday()) state.today = cache.today;
-    if (tab === 'progress' && !state.progress && cache.progress) state.progress = cache.progress;
-    if (tab === 'history' && !state.history && cache.history) { state.history = cache.history; state.pick = cache.pick || null; }
-  }
   render();
-  try {
-    if (tab === 'today') {
-      const fresh = withBase(await api('today'));
-      const typing = document.activeElement && document.activeElement.tagName === 'INPUT';
-      if (!pending() && !typing) {
-        const changed = JSON.stringify(fresh) !== JSON.stringify(state.today);
-        state.today = fresh; storeToday();
-        if (changed && state.tab === 'today') renderToday();
-      }
-      api('progress').then(p => {
-        const hadStreak = !!(state.progress || cache.progress || {}).streak;
-        state.progress = p; cache.progress = p; saveCache(); checkBadges(p);
-        if (state.tab === 'today' && !hadStreak && p.streak && !(document.activeElement && document.activeElement.tagName === 'INPUT')) renderToday();
-      }).catch(() => {});
-      return;
-    }
-    if (tab === 'progress') {
-      const fresh = await api('progress');
-      const changed = JSON.stringify(fresh) !== JSON.stringify(state.progress);
-      state.progress = fresh; cache.progress = fresh; saveCache();
-      if (changed && state.tab === tab) render();
-      checkBadges(fresh);
-      return;
-    }
-    if (tab === 'history') {
-      let h = await api('history', { name: state.pick });
-      if (!state.pick && h.names.length) { state.pick = h.names[0]; h = await api('history', { name: state.pick }); }
-      const changed = JSON.stringify(h) !== JSON.stringify(state.history);
-      state.history = h; cache.history = h; cache.pick = state.pick; saveCache();
-      if (changed && state.tab === tab && !weekSheet) render();
-    }
-  } catch (err) { toast(err.message); }
 }
+function render() {
+  document.body.classList.toggle('nonav', !!state.view || !DB.prog);
+  if (state.view === 'welcome') return renderWelcome();
+  if (state.view === 'tpl') return renderTemplates();
+  if (state.view === 'prog') return renderProgEditor();
+  if (state.view === 'migrate') return renderMigrate();
+  if (!DB.prog) return skeleton();
+  if (state.tab === 'today') { state.today = buildToday(); return renderToday(); }
+  if (state.tab === 'progress') { state.progress = buildProgress(); renderProgress(); return checkBadges(state.progress); }
+  if (state.tab === 'history') {
+    const names = Object.keys(idx().byEx);
+    if (!state.pick || names.indexOf(state.pick) < 0) state.pick = buildHistory(null).names[0] || null;
+    state.history = buildHistory(state.pick); return renderHistory();
+  }
+}
+function busyUI() {
+  const a = document.activeElement;
+  return (a && a.tagName === 'INPUT') || document.querySelector('.sheet') || state.view;
+}
+async function boot() {
+  loadLocal();
+  if (DB.prog) render(); else skeleton();
+  if (CS) {
+    try {
+      flush();
+      const changed = await loadCloud();
+      if (changed && DB.prog && !busyUI()) render();
+    } catch (err) { if (!DB.prog) toast('Не удалось открыть облако Telegram: ' + err.message); }
+  }
+  if (!DB.prog) {
+    if (DEMO) { seedDemo(); return render(); }
+    if (USER && USER.id === OWNER_ID) return migrate();
+    state.view = 'welcome'; return render();
+  }
+  if (!state.view && state.tab === 'today' && !busyUI()) render();
+  syncReminders();
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && DB.prog && !busyUI() && state.today && state.today.date !== isoToday()) render(); });
 /* нижнее меню: стеклянная линза, которую можно водить пальцем */
 const $nav = document.querySelector('nav');
 const navBtns = Array.from($nav.querySelectorAll('button'));
@@ -1325,89 +1985,27 @@ $nav.addEventListener('pointercancel', navUp);
 window.addEventListener('resize', () => placeLens(TABS.indexOf(state.tab)));
 requestAnimationFrame(() => { lens.style.transition = 'none'; placeLens(TABS.indexOf(state.tab)); requestAnimationFrame(() => lens.style.transition = ''); });
 
-/* ---------- демо-данные (когда открыто не из Telegram) ---------- */
-const DEMO_DB = (() => {
-  const mk = (row, name, plan, last, sets, extra) => ({ row, name, plan, last, sets: sets || [[null, null], [null, null], [null, null], [null, null]], tonnage: 0, extra: !!extra });
-  const t = {
-    date: '2026-11-02', weekday: 1,
-    today: { date: '2026-11-02', weekday: 1, pw: 1, group: 'Грудь и бицепс', exercises: [
-      mk(29, 'Жим лежа', '3×10', '35×10   35×10   35×10', [[37.5, 10], [37.5, 9], [null, null], [null, null]]),
-      mk(30, 'Бабочка', '3×12', '41,25×12   41,25×12   41,25×12'),
-      mk(31, 'Бицепс со штангой', '4×10', '20×10   20×10   20×10   20×10'),
-      mk(32, 'Жим на наклонной', '3×10', '30×10   30×9   30×8'),
-      mk(33, 'Молотки', '3×12', '10×12   10×12   10×12'),
-      mk(34, 'Жим гантелей на наклонной', '3×12', '8×12   8×12   8×12'),
-      mk(35, 'Махи руками с гантелями', '3×15', '7×15   7×15   7×15'),
-      mk(36, '', '', '', null, true)
-    ] },
-    next: null,
-    week: { done: 1, total: 3, tonnage: 713, prs: 5 },
-    notes: { 'Жим лежа': 'скамья на 3' },
-    recent: { 'Жим на наклонной': [{ kg: 30 }, { kg: 30 }, { kg: 30 }] },
-    bodyweight: 70.5,
-    move: null,
-    options: ['Жим лежа', 'Бабочка', 'Бицепс со штангой', 'Жим на наклонной', 'Молотки', 'Жим гантелей на наклонной', 'Махи руками с гантелями', 'Шраги с гантелями', 'Подтягивания']
-  };
-  t.today.exercises[0].tonnage = 37.5 * 19;
-  const ex = (day, name, start, best, g, count, sp) => ({ day, name, start, best, gainPct: g, count, maxReps: '', sp });
-  const exs = [ex('Пн', 'Жим лежа', '30', '35', '+17%', '3', [30, 35, 35]), ex('Пн', 'Бабочка', '37,5', '41,25', '+10%', '3', [37.5, 41.25, 41.25]),
-    ex('Пн', 'Бицепс со штангой', '15', '20', '+33%', '3', [15, 20, 20]), ex('Пн', 'Жим на наклонной', '30', '30', '0%', '3', [30, 30, 30]),
-    ex('Пн', 'Молотки', '8', '10', '+25%', '3', [8, 10, 10]), ex('Пн', 'Махи руками с гантелями', '6', '7', '+17%', '3', [6, 7, 7]),
-    ex('Ср', 'Жим ногами сидя', '33,75', '37,5', '+11%', '2', [33.75, 37.5]), ex('Пт', 'Тяга к груди', '20', '30', '+50%', '1', [20, 30])];
-  const sp = {}; exs.forEach(e => sp[e.name] = e.sp);
-  const A = (id, icon, title, desc, got, have, need) => ({ id, icon, title, desc, got, have, need });
-  return {
-    today: t,
-    progress: {
-      tiles: { workouts: '6', tonnage: '44 700', week: '12 600', prs: '5' }, exercises: exs, spark: sp,
-      streak: 2, bestStreak: 2, thisWeek: 0, start: '2026-10-12', nowWeek: 4,
-      weeks5: [{ week: 1, n: 3 }, { week: 2, n: 0 }, { week: 3, n: 3 }, { week: 4, n: 1, current: true }],
-      weights: [{ date: '2026-10-12', kg: 71.8 }, { date: '2026-10-19', kg: 71.2 }, { date: '2026-10-26', kg: 70.9 }, { date: '2026-11-02', kg: 70.5 }],
-      achievements: [A('w1', '🎯', 'Первый шаг', 'Первая тренировка', true, 1, 1), A('w10', '💪', 'Десятка', '10 тренировок', false, 6, 10),
-        A('s1', '📅', 'Полная неделя', '3 тренировки за неделю', true, 1, 1), A('s4', '🔥', 'Месяц без пропусков', '4 полные недели подряд', false, 2, 4),
-        A('t10', '🧱', '10 тонн', 'Тоннаж всего 10 т', true, 10000, 10000), A('t50', '🚚', '50 тонн', 'Тоннаж всего 50 т', false, 44700, 50000),
-        A('p5', '🏆', 'Рекордсмен', '5 личных рекордов', true, 5, 5), A('k50', '🪨', 'Полтинник', 'Рабочий вес 50 кг', false, 41.25, 50)]
-    },
-    history: {
-      start: '2026-10-12', weeks: [{ week: 1, tonnage: 12100 }, { week: 2, tonnage: 0 }, { week: 3, tonnage: 12600 }, { week: 4, tonnage: 5210 }],
-      names: ['Жим лежа', 'Бабочка', 'Жим ногами сидя', 'Тяга к груди'],
-      points: { 'Жим лежа': [{ date: '2026-10-12', weight: 30 }, { date: '2026-10-14', weight: 35 }, { date: '2026-10-26', weight: 35 }, { date: '2026-11-02', weight: 37.5 }],
-        'Бабочка': [{ date: '2026-10-12', weight: 37.5 }, { date: '2026-10-26', weight: 41.25 }] },
-      recent: [{ date: '2026-11-02', group: 'Грудь и бицепс', tonnage: 5210, sets: 23, prs: 2 }, { date: '2026-10-30', group: 'Спина и предплечья', tonnage: 4870, sets: 21, prs: 0 }]
-    }
-  };
-})();
-function demoWeek(n) {
-  const base = { 1: '2026-10-12', 2: '2026-10-19', 3: '2026-10-26', 4: '2026-11-02' }[n] || '2026-10-26';
-  const add = k => { const d = new Date(base + 'T12:00:00'); d.setDate(d.getDate() + k); return d.toISOString().slice(0, 10); };
-  const mkd = (k, wd, pw, group, t, prev, prs, done) => ({ date: add(k), weekday: wd, pw, group, done, tonnage: t, prevT: prev, sets: done ? 22 : 0, prs,
-    exercises: done ? [{ name: 'Жим лежа', sets: [[35, 10], [35, 10], [35, 10]], pr: !!prs.length }, { name: 'Бабочка', sets: [[41.25, 12], [41.25, 12], [41.25, 12]] }, { name: 'Бицепс со штангой', sets: [[20, 10], [20, 10], [20, 10], [20, 10]] }] : [] });
-  if (n === 2) return { week: 2, from: add(0), to: add(6), tonnage: 0, done: 0, total: 3, sets: 0, prs: 0, delta: null, days: [mkd(0, 1, 1, 'Грудь и бицепс', 0, null, [], false), mkd(2, 3, 3, 'Ноги и трицепс', 0, null, [], false), mkd(4, 5, 5, 'Спина и предплечья', 0, null, [], false)] };
-  return { week: n, from: add(0), to: add(6), tonnage: 12600, done: 3, total: 3, sets: 66, prs: 3, delta: 4, days: [
-    mkd(0, 1, 1, 'Грудь и бицепс', 4210, 4090, [{ name: 'Жим лежа', kg: 35 }], true),
-    mkd(2, 3, 3, 'Ноги и трицепс', 4980, 4700, [{ name: 'Разгибание голени', kg: 37.5 }], true),
-    mkd(4, 5, 5, 'Спина и предплечья', 3410, 3340, [{ name: 'Тяга сверху вниз', kg: 42.5 }], true)] };
-}
-function demoApi(action, p) {
-  const db = DEMO_DB;
-  return new Promise(res => setTimeout(() => {
-    if (action === 'today') return res(JSON.parse(JSON.stringify(db.today)));
-    if (action === 'progress') return res(db.progress);
-    if (action === 'history') return res(Object.assign({}, db.history, { points: db.history.points[p.name] || [] }));
-    if (action === 'week') return res(demoWeek(p.week));
-    if (action === 'saveMany') {
-      (p.items || []).forEach(it => { const e = db.today.today.exercises.find(x => x.row === it.row); e.sets[it.set] = [it.kg, it.reps]; e.tonnage = e.sets.reduce((s, x) => s + (x[0] || 0) * (x[1] || 0), 0); });
-      return res({ saved: (p.items || []).length });
-    }
-    if (action === 'note') return res({ name: p.name, text: p.text });
-    if (action === 'weight') { db.progress.weights.push({ date: '2026-11-09', kg: p.kg }); return res({ kg: p.kg, list: db.progress.weights }); }
-    if (action === 'exercise') { const e = db.today.today.exercises.find(x => x.row === p.row); e.name = p.name; e.plan = '3×12'; e.last = '—'; return res(JSON.parse(JSON.stringify(db.today))); }
-    if (action === 'move') { const t = JSON.parse(JSON.stringify(db.today)); t.today = null; t.move = null; return res(t); }
-    res(null);
-  }, 150));
+/* ---------- демо-режим (открыто не из Telegram): пример с выдуманными тренировками ---------- */
+function seedDemo() {
+  const t = isoToday(), mon = mondayOf(t);
+  const P = { v: 3, start: addDays(mon, -14), rest: 90, rem: { on: false, m: 9, e: 20 }, notes: { 'Жим лежа': 'скамья на 3' }, days: copy(TEMPLATES[0].days).map((d, i) => Object.assign({ id: 'd' + d.wd }, d)) };
+  P.days[0].x.forEach((x, i) => { x.k = [30, 12, 30, 15, 8][i]; });
+  P.days[1].x.forEach((x, i) => { x.k = [40, 60, 25, 10, 5][i]; });
+  P.days[2].x.forEach((x, i) => { x.k = [70, 35, 30, 15, 12.5][i]; });
+  DB.prog = P; local.set('prog', JSON.stringify(P));
+  const kg = (k, add) => k == null ? null : Math.round((k + add) * 4) / 4;
+  [-14, -7, 0].forEach((wk, wi) => P.days.forEach(d => {
+    const day = addDays(mon, wk + d.wd - 1);
+    if (day >= t) return;
+    const r = { d: day, p: d.id, t: d.t, x: d.x.map(x => [x.n, [0, 1, 2].map(() => [x.bw ? 70 : kg(x.k, wi * 2.5), x.r || 12])]) };
+    DB.w[day] = r; local.set(keyOf(day), JSON.stringify(r));
+  }));
+  DB.bw = [[addDays(t, -14), 71.4], [addDays(t, -7), 70.9], [t, 70.5]]; local.set('bw', JSON.stringify(DB.bw));
+  IDX = null;
 }
 
-show('today');
+boot();
+
 </script>
 </body>
 </html>
