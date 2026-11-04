@@ -390,8 +390,8 @@
 <div id="cele"></div>
 
 <script>
-// Ссылка на веб-приложение Apps Script (заканчивается на /exec) — нужна только для напоминаний и переноса старых данных
-const API_URL = 'https://script.google.com/macros/s/AKfycbzPzSPMQoertiaY6AplYMGCW8FC7x9Bfb8VU9i-uWZUqq7NdC92fbGPYPIO2CGYpdgM/exec';
+// Адрес сервера бота на Cloudflare Workers — нужен только для напоминаний и одноразового переноса старых данных
+const API_URL = '';
 const OWNER_ID = 947241771; // владелец: только ему при первом запуске переносятся тренировки из старой таблицы
 
 const tg = window.Telegram && window.Telegram.WebApp;
@@ -435,6 +435,7 @@ const FLAME = '<svg viewBox="0 0 24 24"><path d="M12 2c1 3.5 5 5.5 5 11a5 5 0 0 
 /* ---------- запросы ---------- */
 async function api(action, payload) {
   if (DEMO) throw new Error('В демо-режиме нет связи с ботом');
+  if (!API_URL) throw new Error('Сервер бота ещё не подключён');
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -806,7 +807,7 @@ function buildWeek(n) {
 /* ---------- напоминания: расписание на 2 недели вперёд уходит на сервер бота ---------- */
 let syncT = null;
 function syncReminders(force) {
-  if (DEMO || !DB.prog) return;
+  if (DEMO || !DB.prog || !API_URL) return;
   const r = DB.prog.rem || { on: false, m: 9, e: 20 };
   const t = isoToday(), plan = {};
   for (let i = 0; i < 14; i++) { const d = addDays(t, i), p = planFor(d); if (p) plan[d] = { t: p.t, x: p.x.map(x => x.n) }; }
@@ -1799,13 +1800,21 @@ function openSettings() {
     '<button class="srow" data-s="prog"><span>' + ic('dumb') + '</span><div><b>Программа тренировок</b><small>' + P.days.map(d => WD_SHORT[d.wd]).join(' · ') + ' · ' + P.days.reduce((a, d) => a + d.x.length, 0) + ' упражнений</small></div>' + ic('arrow') + '</button>' +
     '<div class="sgroup"><div class="frow"><span>Напоминания в боте<small>утром план, вечером — если день пропущен</small></span><button class="tgl' + (r.on ? ' on' : '') + '" data-s="rem"><i></i></button></div>' +
     (r.on ? '<div class="frow"><span>Утром в</span><div class="step"><button data-s="m-">' + ic('minus') + '</button><b>' + r.m + ':00</b><button data-s="m+">' + ic('plus') + '</button></div></div>' +
-      '<div class="frow"><span>Вечером в</span><div class="step"><button data-s="e-">' + ic('minus') + '</button><b>' + r.e + ':00</b><button data-s="e+">' + ic('plus') + '</button></div></div>' : '') + '</div>' +
+      '<div class="frow"><span>Вечером в</span><div class="step"><button data-s="e-">' + ic('minus') + '</button><b>' + r.e + ':00</b><button data-s="e+">' + ic('plus') + '</button></div></div>' +
+      '<button class="link acc" data-s="test" style="display:block;margin:6px 0 2px">Прислать пробное напоминание</button>' : '') + '</div>' +
     '<div class="sgroup"><div class="frow"><span>Таймер отдыха</span></div><div class="seg sm">' + [60, 90, 120, 180].map(v => '<button data-s="rest" data-v="' + v + '" class="' + (restLen() === v ? 'on' : '') + '">' + Math.floor(v / 60) + ':' + String(v % 60).padStart(2, '0') + '</button>').join('') + '</div></div>' +
     '<div class="note2">Сохранено тренировок: ' + idx().dates.length + '. Все данные хранятся в твоём аккаунте Telegram' + (pending() ? ' · синхронизация…' : '') + '.</div>';
   const s = openSheet('<div id="setb">' + body() + '</div>');
   const bind = () => s.el.querySelectorAll('[data-s]').forEach(b => b.addEventListener('click', () => {
     const a = b.dataset.s;
     if (a === 'prog') { s.close(); openProgramEditor(); return; }
+    if (a === 'test') {
+      b.textContent = 'Отправляю…';
+      syncReminders(true);
+      setTimeout(() => api('test', {}).then(() => { b.textContent = 'Отправил — загляни в чат с ботом'; haptic('success'); })
+        .catch(err => { b.textContent = 'Прислать пробное напоминание'; toast(err.message); }), 1200);
+      return;
+    }
     if (a === 'rem') { if (!r.on) return enableReminders(() => { s.el.querySelector('#setb').innerHTML = body(); s.bindClose(); bind(); }); r.on = false; }
     if (a === 'm+') r.m = Math.min(13, r.m + 1);
     if (a === 'm-') r.m = Math.max(5, r.m - 1);
@@ -1865,7 +1874,7 @@ async function migrate() {
     haptic('success');
   } catch (err) {
     const m = String(err.message || err);
-    renderMigrate(m.indexOf('Неизвестное') >= 0 ? 'Сначала обнови код скрипта в Apps Script (новый api.gs) и сделай новую версию развёртывания.' : m);
+    renderMigrate(m.indexOf('не подключён') >= 0 || m.indexOf('Неизвестное') >= 0 || m.indexOf('Failed to fetch') >= 0 ? 'Сервер бота ещё не готов — закончи настройку Cloudflare и нажми «Попробовать ещё раз».' : m);
   }
 }
 function convertExport(data) {
