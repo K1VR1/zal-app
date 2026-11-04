@@ -1840,9 +1840,17 @@ function renderMigrate(err) {
       : '<h1>Переезжаем</h1><p>Переношу твои тренировки из таблицы в Telegram. Это один раз и займёт несколько секунд.</p>') + '</div>';
   $view.querySelectorAll('[data-m]').forEach(b => b.addEventListener('click', () => { if (b.dataset.m === 'retry') migrate(); else { state.view = 'welcome'; render(); } }));
 }
+function renderOffline() {
+  document.body.classList.add('nonav');
+  $view.innerHTML = '<div class="hero"><div class="logo">' + ic('x') + '</div><h1>Нет связи</h1><p>Не получилось загрузить твои данные из Telegram. Проверь интернет и попробуй ещё раз.</p>' +
+    '<button class="btn" data-r>Попробовать ещё раз</button></div>';
+  $view.querySelector('[data-r]').addEventListener('click', () => { skeleton(); boot(); });
+}
 async function migrate() {
   state.view = 'migrate'; renderMigrate();
   try {
+    // ещё раз убеждаемся, что в облаке пусто — переносим только один раз
+    if (CS) { const keys = await cs.keys(); if (keys.indexOf('prog') >= 0) { await loadCloud(); state.view = null; return render(); } }
     const data = await api('export');
     const P = convertExport(data);
     DB.prog = P.prog; put('prog', DB.prog);
@@ -1915,15 +1923,21 @@ function busyUI() {
 async function boot() {
   loadLocal();
   if (DB.prog) render(); else skeleton();
+  let cloudOk = !CS;
   if (CS) {
-    try {
-      flush();
-      const changed = await loadCloud();
-      if (changed && DB.prog && !busyUI()) render();
-    } catch (err) { if (!DB.prog) toast('Не удалось открыть облако Telegram: ' + err.message); }
+    for (let i = 0; i < 3 && !cloudOk; i++) {
+      try {
+        await flush();
+        const changed = await loadCloud();
+        cloudOk = true;
+        if (changed && DB.prog && !busyUI()) render();
+      } catch (err) { await new Promise(r => setTimeout(r, 800)); }
+    }
   }
   if (!DB.prog) {
     if (DEMO) { seedDemo(); return render(); }
+    // перенос и знакомство — только когда облако точно ответило и в нём пусто, иначе можно затереть данные
+    if (!cloudOk) return renderOffline();
     if (USER && USER.id === OWNER_ID) return migrate();
     state.view = 'welcome'; return render();
   }
