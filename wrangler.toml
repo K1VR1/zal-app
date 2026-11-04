@@ -1,0 +1,18 @@
+# Настройки выкладки сервера бота на Cloudflare Workers (npx wrangler deploy)
+name = "mygym"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+
+# Хранилище расписаний. id появится после: npx wrangler kv namespace create mygym
+[[kv_namespaces]]
+binding = "KV"
+id = "ВСТАВЬ_ID_ИЗ_wrangler_kv_namespace_create"
+
+[vars]
+OWNER_ID = "947241771"
+
+# Напоминания: раз в час ровно в :00
+[triggers]
+crons = ["0 * * * *"]
+
+# Токен бота задаётся отдельно и в файл не пишется: npx wrangler secret put BOT_TOKEN
