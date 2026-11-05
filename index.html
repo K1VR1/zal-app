@@ -368,6 +368,11 @@
   .srow > svg { color: var(--mut); width: 18px; height: 18px; }
   .sgroup { margin-top: 6px; }
   .seg.sm { margin: 0 0 6px; }
+  /* переключатель с жидкой стеклянной линзой: положение и упругость считает liquidSeg() */
+  .seg.liquid { position: relative; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .seg.liquid button { position: relative; z-index: 2; pointer-events: none; transition: color .2s; }
+  .seg.liquid button.on { background: none; box-shadow: none; }
+  .seg.liquid .lens, .seg.liquid .lens.drag { top: 3px; height: 32px; border-radius: 16px; transition: background .2s, box-shadow .2s; }
   .note2 { font-size: 11.5px; color: var(--mut); text-align: center; margin: 14px 4px 4px; line-height: 1.4; }
 </style>
 </head>
@@ -1196,7 +1201,7 @@ function openSheet(html, opts) {
   let drag = null;
   const pointY = ev => (ev.touches ? ev.touches[0] : ev.changedTouches ? ev.changedTouches[0] : ev).clientY;
   const down = ev => {
-    if (closed || ev.target.closest('button,input,select,a')) return;
+    if (closed || ev.target.closest('button,input,select,a,.liquid')) return;
     drag = { y0: pointY(ev), from: y, mode: null, last: pointY(ev), t: Date.now(), v: 0, onGrab: !!ev.target.closest('.grabzone,.sh') };
   };
   const move = ev => {
@@ -1793,19 +1798,73 @@ function saveProgram() {
   else note('Программа сохранена');
 }
 
+/* ---------- переключатель с жидкой линзой: едет за пальцем, тянется на скорости и пружинит на месте ---------- */
+function liquidSeg(seg, start, onPick) {
+  const btns = Array.from(seg.querySelectorAll('button')), lens = seg.querySelector('.lens');
+  let cur = start, over = start, x = 0, v = 0, target = 0, press = 1, raf = 0, last = 0, drag = null;
+  const left = i => btns[i].offsetLeft;
+  const mark = i => btns.forEach((b, k) => b.classList.toggle('on', k === i));
+  const draw = () => {
+    const s = Math.min(Math.abs(v) / 1800, .28);
+    lens.style.transform = 'translateX(' + x + 'px) scale(' + press * (1 + s) + ',' + press * (1 - s * .6) + ')';
+  };
+  const step = now => {
+    const dt = Math.min((now - last) / 1000, .032), want = drag ? 1.1 : 1;
+    last = now;
+    v += (180 * (target - x) - 20 * v) * dt;
+    x += v * dt;
+    press += (want - press) * .25;
+    if (Math.abs(target - x) < .3 && Math.abs(v) < 8 && Math.abs(want - press) < .002) { x = target; v = 0; press = want; draw(); raf = 0; return; }
+    draw();
+    raf = requestAnimationFrame(step);
+  };
+  const go = t => { target = t; if (!raf) { last = performance.now(); raf = requestAnimationFrame(step); } };
+  const place = () => { lens.style.width = btns[cur].offsetWidth + 'px'; if (!drag) { x = target = left(cur); v = 0; draw(); } };
+  const follow = ev => {
+    const w = btns[0].offsetWidth, lx = Math.max(left(0) - 4, Math.min(left(btns.length - 1) + 4, ev.clientX - drag.left - w / 2)), cx = lx + w / 2;
+    let i = 0, bd = 1e9;
+    btns.forEach((b, k) => { const d = Math.abs(left(k) + w / 2 - cx); if (d < bd) { bd = d; i = k; } });
+    if (i !== over) { over = i; tap(); mark(i); }
+    go(lx);
+  };
+  const finish = i => {
+    drag = null; over = i;
+    lens.classList.remove('drag');
+    mark(i); go(left(i));
+    if (i !== cur) { cur = i; onPick(i); }
+  };
+  seg.addEventListener('pointerdown', ev => {
+    drag = { id: ev.pointerId, left: seg.getBoundingClientRect().left };
+    try { seg.setPointerCapture(ev.pointerId); } catch (e) {}
+    lens.classList.add('drag');
+    follow(ev);
+  });
+  seg.addEventListener('pointermove', ev => { if (drag && ev.pointerId === drag.id) follow(ev); });
+  seg.addEventListener('pointerup', ev => { if (drag && ev.pointerId === drag.id) finish(over); });
+  seg.addEventListener('pointercancel', ev => { if (drag && ev.pointerId === drag.id) finish(cur); });
+  mark(cur); place();
+  new ResizeObserver(place).observe(seg);
+}
+
 /* ---------- настройки ---------- */
 function openSettings() {
   const P = DB.prog, r = P.rem || (P.rem = { on: false, m: 9, e: 20 });
+  const REST_OPTS = [60, 90, 120, 180];
   const body = () => '<div class="sh"><div><small>MY GYM</small><h2>Настройки</h2></div>' + closeBtn + '</div>' +
     '<button class="srow" data-s="prog"><span>' + ic('dumb') + '</span><div><b>Программа тренировок</b><small>' + P.days.map(d => WD_SHORT[d.wd]).join(' · ') + ' · ' + P.days.reduce((a, d) => a + d.x.length, 0) + ' упражнений</small></div>' + ic('arrow') + '</button>' +
     '<div class="sgroup"><div class="frow"><span>Напоминания в боте<small>утром план, вечером — если день пропущен</small></span><button class="tgl' + (r.on ? ' on' : '') + '" data-s="rem"><i></i></button></div>' +
     (r.on ? '<div class="frow"><span>Утром в</span><div class="step"><button data-s="m-">' + ic('minus') + '</button><b>' + r.m + ':00</b><button data-s="m+">' + ic('plus') + '</button></div></div>' +
       '<div class="frow"><span>Вечером в</span><div class="step"><button data-s="e-">' + ic('minus') + '</button><b>' + r.e + ':00</b><button data-s="e+">' + ic('plus') + '</button></div></div>' +
       '<button class="link acc" data-s="test" style="display:block;margin:6px 0 2px">Прислать пробное напоминание</button>' : '') + '</div>' +
-    '<div class="sgroup"><div class="frow"><span>Таймер отдыха</span></div><div class="seg sm">' + [60, 90, 120, 180].map(v => '<button data-s="rest" data-v="' + v + '" class="' + (restLen() === v ? 'on' : '') + '">' + Math.floor(v / 60) + ':' + String(v % 60).padStart(2, '0') + '</button>').join('') + '</div></div>' +
+    '<div class="sgroup"><div class="frow"><span>Таймер отдыха</span></div><div class="seg sm liquid" id="restSeg"><div class="lens"></div>' + REST_OPTS.map(v => '<button>' + Math.floor(v / 60) + ':' + String(v % 60).padStart(2, '0') + '</button>').join('') + '</div></div>' +
     '<div class="note2">Сохранено тренировок: ' + idx().dates.length + '. Все данные хранятся в твоём аккаунте Telegram' + (pending() ? ' · синхронизация…' : '') + '.</div>';
   const s = openSheet('<div id="setb">' + body() + '</div>');
-  const bind = () => s.el.querySelectorAll('[data-s]').forEach(b => b.addEventListener('click', () => {
+  const bindRest = () => {
+    // значение не из списка (перенесено из старой версии) — линза встаёт на ближайшее
+    const closest = REST_OPTS.reduce((m, v, i) => Math.abs(v - restLen()) < Math.abs(REST_OPTS[m] - restLen()) ? i : m, 0);
+    liquidSeg(s.el.querySelector('#restSeg'), closest, i => { P.rest = REST_OPTS[i]; put('prog', P); });
+  };
+  const bind = () => { bindRest(); s.el.querySelectorAll('[data-s]').forEach(b => b.addEventListener('click', () => {
     const a = b.dataset.s;
     if (a === 'prog') { s.close(); openProgramEditor(); return; }
     if (a === 'test') {
@@ -1820,10 +1879,9 @@ function openSettings() {
     if (a === 'm-') r.m = Math.max(5, r.m - 1);
     if (a === 'e+') r.e = Math.min(23, r.e + 1);
     if (a === 'e-') r.e = Math.max(15, r.e - 1);
-    if (a === 'rest') P.rest = Number(b.dataset.v);
     tap(); put('prog', P); syncReminders();
     s.el.querySelector('#setb').innerHTML = body(); s.bindClose(); bind();
-  }));
+  })); };
   bind();
 }
 function enableReminders(after) {
