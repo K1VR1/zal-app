@@ -2,11 +2,18 @@
 name = "mygym"
 main = "worker.js"
 compatibility_date = "2026-10-01"
+preview_urls = false # адрес только один, без отдельных адресов для версий
 
 # Хранилище расписаний
 [[kv_namespaces]]
 binding = "KV"
 id = "00cbc152a7ec4d75a3d640284e8d4501"
+
+# Лимит запросов на одного пользователя
+[[ratelimits]]
+name = "LIMIT"
+namespace_id = "1001"
+simple = { limit = 30, period = 60 }
 
 [vars]
 OWNER_ID = "947241771"

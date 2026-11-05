@@ -21,7 +21,8 @@ import Anthropic from '@anthropic-ai/sdk';
 const OWNER_EXPORT = null;
 
 const APP_URL = 'https://k1vr1.github.io/zal-app/';
-const MAX_AGE = 7 * 24 * 3600; // сколько секунд живёт подпись Telegram
+const MAX_AGE = 24 * 3600; // сколько секунд живёт подпись Telegram
+const SYNC_PER_DAY = 40; // сколько раз в сутки один человек может менять расписание в KV
 const AI_TIMEOUT = 25000; // воркеру дают около 30 секунд, если приложение уже закрыли
 const AI_MAX_FACTS = 8000; // больше символов данных об одной тренировке не бывает
 
@@ -35,6 +36,8 @@ export default {
     try {
       const body = JSON.parse(await req.text() || '{}');
       const user = await auth(body.initData, env);
+      const { success } = await env.LIMIT.limit({ key: String(user.id) });
+      if (!success) throw new Error('Слишком много запросов, подожди минуту');
       if (body.action === 'sync') return json({ ok: true, data: await sync(user, body, env) });
       if (body.action === 'test') return json({ ok: true, data: await test(user, env) });
       if (body.action === 'report') {
@@ -65,7 +68,13 @@ async function hmac(key, msg) {
   const k = await crypto.subtle.importKey('raw', typeof key === 'string' ? enc.encode(key) : key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   return new Uint8Array(await crypto.subtle.sign('HMAC', k, enc.encode(msg)));
 }
-const hex = b => Array.from(b).map(x => x.toString(16).padStart(2, '0')).join('');
+// crypto.subtle.verify сравнивает подпись за постоянное время
+async function signatureOk(secret, msg, hash) {
+  if (!/^[0-9a-f]{64}$/.test(hash || '')) return false;
+  const key = await crypto.subtle.importKey('raw', secret, { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
+  const sig = Uint8Array.from(hash.match(/../g), h => parseInt(h, 16));
+  return crypto.subtle.verify('HMAC', key, sig, enc.encode(msg));
+}
 async function auth(initData, env) {
   if (!env.BOT_TOKEN) throw new Error('На сервере не задан BOT_TOKEN');
   if (!initData) throw new Error('Открой приложение через Telegram');
@@ -74,7 +83,7 @@ async function auth(initData, env) {
   params.delete('hash');
   const check = Array.from(params.keys()).sort().map(k => k + '=' + params.get(k)).join('\n');
   const secret = await hmac('WebAppData', env.BOT_TOKEN);
-  if (hex(await hmac(secret, check)) !== hash) throw new Error('Подпись Telegram не прошла проверку');
+  if (!(await signatureOk(secret, check, hash))) throw new Error('Подпись Telegram не прошла проверку');
   if (Date.now() / 1000 - Number(params.get('auth_date') || 0) > MAX_AGE) throw new Error('Сессия устарела, перезапусти приложение');
   const user = JSON.parse(params.get('user') || '{}');
   if (!user.id) throw new Error('Нет пользователя');
@@ -85,19 +94,25 @@ async function auth(initData, env) {
 const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(d);
 async function sync(user, req, env) {
   const key = 'u:' + user.id;
-  if (!req.on) { await env.KV.delete(key); return { on: false }; }
+  // счётчик записей хранится в самой записи: так лимит не тратит лишние записи в KV
+  const old = JSON.parse((await env.KV.get(key)) || 'null');
+  const today = new Date().toISOString().slice(0, 10);
+  const count = old && old.wd === today ? old.wn || 0 : 0;
+  if (count >= SYNC_PER_DAY) throw new Error('Слишком много изменений за сегодня, попробуй завтра');
   const hour = (h, def) => Math.max(0, Math.min(23, Math.round(Number(h == null ? def : h) || 0)));
   const plan = {};
-  Object.keys(req.plan || {}).filter(isDate).slice(0, 21).forEach(d => {
+  // выключенные напоминания — это пустой план: рассылка таких пропускает, а счётчик остаётся
+  if (req.on) Object.keys(req.plan || {}).filter(isDate).slice(0, 21).forEach(d => {
     const p = req.plan[d] || {};
     plan[d] = { t: String(p.t || 'Тренировка').slice(0, 40), x: (p.x || []).slice(0, 12).map(s => String(s).slice(0, 40)) };
   });
   const rec = {
     id: user.id, tz: Math.max(-720, Math.min(840, Math.round(Number(req.tz) || 0))),
-    m: hour(req.m, 9), e: hour(req.e, 20), plan: plan, done: (req.done || []).filter(isDate).slice(-5)
+    m: hour(req.m, 9), e: hour(req.e, 20), plan: plan, done: (req.done || []).filter(isDate).slice(-5),
+    wd: today, wn: count + 1
   };
   await env.KV.put(key, JSON.stringify(rec));
-  return { on: true };
+  return { on: !!req.on };
 }
 
 /* ---------- рассылка ---------- */
@@ -114,16 +129,20 @@ async function remind(env) {
   do {
     const page = await env.KV.list({ prefix: 'u:', cursor: cursor });
     for (const k of page.keys) {
-      const u = JSON.parse((await env.KV.get(k.name)) || 'null');
-      if (!u) continue;
-      const now = localNow(u.tz || 0), p = u.plan && u.plan[now.date];
-      if (!p) continue;
-      let text = null;
-      if (now.hour === u.m) text = morningText(p);
-      else if (now.hour === u.e && (u.done || []).indexOf(now.date) < 0) text = eveningText(p);
-      if (!text) continue;
-      const r = await send(env, u.id, text);
-      if (r.status === 403) await env.KV.delete(k.name); // бот заблокирован — убираем из рассылки
+      try { // сбой на одном человеке не должен оставить остальных без напоминаний
+        const u = JSON.parse((await env.KV.get(k.name)) || 'null');
+        if (!u) continue;
+        const now = localNow(u.tz || 0), p = u.plan && u.plan[now.date];
+        if (!p) continue;
+        let text = null;
+        if (now.hour === u.m) text = morningText(p);
+        else if (now.hour === u.e && (u.done || []).indexOf(now.date) < 0) text = eveningText(p);
+        if (!text) continue;
+        const r = await send(env, u.id, text);
+        if (r.status === 403) await env.KV.delete(k.name); // бот заблокирован — убираем из рассылки
+      } catch (err) {
+        console.error('Напоминание не отправлено', k.name, String((err && err.message) || err));
+      }
     }
     cursor = page.list_complete ? null : page.cursor;
   } while (cursor);
