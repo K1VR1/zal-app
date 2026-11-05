@@ -873,13 +873,17 @@ function streakChip() {
 
 /* ---------- подсказки веса ---------- */
 function hintFor(e) {
+  return hintFrom(e, e.last, ((state.today && state.today.recent) || {})[e.name] || []);
+}
+// подсказка на следующий раз: lastStr — последняя тренировка строкой, rec — лучшие веса прошлых раз, начиная со свежего
+function hintFrom(e, lastStr, rec) {
   const plan = parsePlan(e.plan);
   const bw = isBW(e.name) && state.today && state.today.bodyweight ? state.today.bodyweight : null;
-  if (!e.last || /^(старт|—)/.test(e.last) || plan.reps == null) {
-    const s = String(e.last || '').match(/старт:\s*([\d.,]+)/);
+  if (!lastStr || /^(старт|—)/.test(lastStr) || plan.reps == null) {
+    const s = String(lastStr || '').match(/старт:\s*([\d.,]+)/);
     return s ? { kg: parseNum(s[1]) } : null;
   }
-  const last = parseLast(e.last, plan).slice(0, plan.sets);
+  const last = parseLast(lastStr, plan).slice(0, plan.sets);
   if (!last.length) return null;
   const hit = last.length >= plan.sets && last.every(x => (x[1] || 0) >= plan.reps);
   const top = Math.max.apply(null, last.map(x => x[0] || 0));
@@ -888,7 +892,6 @@ function hintFor(e) {
     return { kg: bw != null && top > 0 ? bw : top, reps: hit ? best + 1 : plan.reps, up: hit, text: hit ? 'по ' + (best + 1) + ' повт.' : '' };
   }
   const step = top >= 20 ? 2.5 : 1;
-  const rec = ((state.today && state.today.recent) || {})[e.name] || [];
   if (!hit && rec.length >= 3 && rec.slice(0, 3).every(r => r.kg === top)) {
     const down = Math.max(step, Math.round(top * 0.9 / step) * step);
     return { kg: down, warn: 'Застой: 3 тренировки подряд на ' + fmtNum(top) + ' кг. Сбрось до ' + fmtNum(down) + ' кг, сделай все повторы и разгонись заново' };
@@ -1397,6 +1400,66 @@ function showSummary() {
   h += '<button class="btn" data-close>Готово</button>';
   openSheet(h);
   haptic('success');
+  sendReport();
+}
+
+/* ---------- отчёт о тренировке в бота ---------- */
+const listNames = a => a.slice(0, 4).join(', ') + (a.length > 4 ? ' и ещё ' + (a.length - 4) : '');
+function buildReport() {
+  const t = state.today.today, ex = named(), done = ex.filter(e => doneSets(e));
+  const m = metrics(), ss = session();
+  const mins = ss.start ? Math.max(1, Math.round((Date.now() - ss.start) / 60000)) : null;
+  const delta = pct(m.ton, done.reduce((s, e) => s + lastTonnage(e), 0));
+  const skipped = ex.filter(e => !doneSets(e) && !e.extra).map(e => e.name);
+  const planned = ex.filter(e => !e.extra).length;
+  const good = [], bad = [], next = [], clean = [], facts = [];
+
+  ss.prs.forEach(p => good.push(p.name + ': рекорд, ' + fmtNum(p.kg) + ' кг (было ' + fmtNum(p.prev) + ')'));
+  if (delta != null && delta > 0) good.push('Тоннаж ' + sign(delta) + '% к прошлому разу');
+  if (delta != null && delta < 0) bad.push('Тоннаж ' + sign(delta) + '% к прошлому разу');
+  if (skipped.length) bad.push('Пропущено: ' + listNames(skipped));
+
+  done.forEach(e => {
+    const plan = parsePlan(e.plan), sets = e.sets.filter(filled), bw = isBW(e.name);
+    const recent = (state.today.recent || {})[e.name] || [];
+    const top = Math.max.apply(null, sets.map(s => s[0] || 0));
+    const lastStr = sets.map(s => (s[0] == null ? '' : fmtNum(s[0])) + '×' + (s[1] == null ? '' : s[1])).join('   ');
+    const h = hintFrom(e, lastStr, [{ kg: top }].concat(recent));
+    const was = recent[0] && recent[0].kg;
+    const missed = [];
+    if (sets.length < plan.sets) missed.push(sets.length + ' из ' + plan.sets + ' подходов');
+    if (plan.reps != null) {
+      const low = Math.min.apply(null, sets.map(s => s[1] || 0));
+      if (low < plan.reps) missed.push(low + ' повт. вместо ' + plan.reps);
+    }
+    if (missed.length) bad.push(e.name + ': ' + missed.join(', '));
+    else if (plan.reps != null) clean.push(e.name);
+    if (!bw && was && top && top < was) bad.push(e.name + ': вес снижен, ' + fmtNum(was) + ' → ' + fmtNum(top) + ' кг');
+
+    if (h && h.warn) next.push(e.name + ': застой, сбрось до ' + fmtNum(h.kg) + ' кг и разгонись заново');
+    else if (h && h.up && bw && h.text) next.push(e.name + ': ' + h.text);
+    else if (h && h.up && h.kg != null) next.push(e.name + ': ' + fmtNum(h.kg) + ' кг ↑');
+    else if (h && missed.length && !bw && h.kg != null) next.push(e.name + ': снова ' + fmtNum(h.kg) + ' кг, добери повторы');
+
+    facts.push({ name: e.name, plan: e.plan, sets: sets.map(s => ({ kg: s[0], reps: s[1] })), last: e.last, recent: recent.map(r => r.kg), bodyweight: bw, extra: !!e.extra });
+  });
+  if (clean.length) good.push('Все повторы по плану: ' + listNames(clean));
+
+  const head = 'Упражнения: ' + done.length + ' из ' + Math.max(planned, done.length) + ' · подходов: ' + m.done + ' · тоннаж: ' + fmtT(m.ton) + ' кг' + (mins ? ' · ' + mins + ' мин' : '');
+  return {
+    report: { t: t.group + ' · ' + dm(t.date), head: head, good: good.slice(0, 8), bad: bad.slice(0, 8), next: next.slice(0, 6) },
+    facts: { date: t.date, title: t.group, minutes: mins, tonnage: m.ton, tonnageChangePct: delta, skipped: skipped, records: ss.prs, exercises: facts }
+  };
+}
+function sendReport() {
+  if (DEMO || !API_URL || !named().some(doneSets)) return;
+  const b = buildReport(), ai = !!(DB.prog.aiReport && USER && USER.id === OWNER_ID);
+  const sig = JSON.stringify([ai, b.report.t, b.report.head.replace(/ · \d+ мин$/, ''), b.report.good, b.report.bad]);
+  if (local.get('reportSig') === sig) return; // та же тренировка: второй раз не присылаем
+  local.set('reportSig', sig);
+  api('report', Object.assign({ ai: ai }, ai ? b : { report: b.report }))
+    .then(d => toast(d.aiError ? 'ИИ не ответил, отчёт по правилам в чате с ботом' : 'Отчёт в чате с ботом'))
+    .catch(err => { local.set('reportSig', null); toast('Отчёт: ' + err.message, true); });
 }
 
 /* ---------- «Прогресс» ---------- */
@@ -1856,6 +1919,7 @@ function openSettings() {
     (r.on ? '<div class="frow"><span>Утром в</span><div class="step"><button data-s="m-">' + ic('minus') + '</button><b>' + r.m + ':00</b><button data-s="m+">' + ic('plus') + '</button></div></div>' +
       '<div class="frow"><span>Вечером в</span><div class="step"><button data-s="e-">' + ic('minus') + '</button><b>' + r.e + ':00</b><button data-s="e+">' + ic('plus') + '</button></div></div>' +
       '<button class="link acc" data-s="test" style="display:block;margin:6px 0 2px">Прислать пробное напоминание</button>' : '') + '</div>' +
+    (USER && USER.id === OWNER_ID ? '<div class="sgroup"><div class="frow"><span>ИИ-отчёт<small>разбор тренировки от Claude вместо обычного</small></span><button class="tgl' + (P.aiReport ? ' on' : '') + '" data-s="ai"><i></i></button></div></div>' : '') +
     '<div class="sgroup"><div class="frow"><span>Таймер отдыха</span></div><div class="seg sm liquid" id="restSeg"><div class="lens"></div>' + REST_OPTS.map(v => '<button>' + Math.floor(v / 60) + ':' + String(v % 60).padStart(2, '0') + '</button>').join('') + '</div></div>' +
     '<div class="note2">Сохранено тренировок: ' + idx().dates.length + '. Все данные хранятся в твоём аккаунте Telegram' + (pending() ? ' · синхронизация…' : '') + '.</div>';
   const s = openSheet('<div id="setb">' + body() + '</div>');
@@ -1875,6 +1939,7 @@ function openSettings() {
       return;
     }
     if (a === 'rem') { if (!r.on) return enableReminders(() => { s.el.querySelector('#setb').innerHTML = body(); s.bindClose(); bind(); }); r.on = false; }
+    if (a === 'ai') P.aiReport = !P.aiReport;
     if (a === 'm+') r.m = Math.min(13, r.m + 1);
     if (a === 'm-') r.m = Math.max(5, r.m - 1);
     if (a === 'e+') r.e = Math.min(23, r.e + 1);

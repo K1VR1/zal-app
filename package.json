@@ -1,0 +1,16 @@
+{
+  "name": "mygym-worker",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/K1VR1/zal-app.git"
+  },
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/K1VR1/zal-app/issues"
+  },
+  "homepage": "https://github.com/K1VR1/zal-app#readme",
+  "private": true,
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.5.0"
+  }
+}

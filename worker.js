@@ -4,28 +4,32 @@
  * Что делает:
  *   POST /  { action: 'sync' }   — приложение присылает расписание пользователя на 2 недели вперёд;
  *   POST /  { action: 'test' }   — прислать пользователю пробное напоминание;
- *   POST /  { action: 'export' } — один раз отдать владельцу его старые тренировки (константа OWNER_EXPORT ниже);
+ *   POST /  { action: 'export' } — один раз отдать владельцу его старые тренировки (ключ export в KV);
+ *   POST /  { action: 'report' } — прислать отчёт о тренировке: у всех по правилам, у владельца по желанию от ИИ;
  *   по расписанию (cron «0 * * * *», раз в час) — рассылает напоминания каждому по его часовому поясу.
  *
  * Настройки воркера (Settings):
  *   Secret   BOT_TOKEN — токен бота от @BotFather
+ *   Secret   ANTHROPIC_API_KEY — ключ Claude API для ИИ-отчёта (без него приходит отчёт по правилам)
  *   Text     OWNER_ID  — Telegram id владельца
  *   KV       KV        — хранилище расписаний (binding с именем KV)
  *   Cron     0 * * * *
  */
+import Anthropic from '@anthropic-ai/sdk';
 
-// Старые тренировки владельца для одноразового переноса из Google Таблицы.
-// В общем репозитории здесь пусто; рабочая копия с данными — только в твоём аккаунте Cloudflare.
+// Старые тренировки владельца для одноразового переноса из Google Таблицы лежат в KV (ключ export), не в репозитории.
 const OWNER_EXPORT = null;
 
 const APP_URL = 'https://k1vr1.github.io/zal-app/';
 const MAX_AGE = 7 * 24 * 3600; // сколько секунд живёт подпись Telegram
+const AI_TIMEOUT = 25000; // воркеру дают около 30 секунд, если приложение уже закрыли
+const AI_MAX_FACTS = 8000; // больше символов данных об одной тренировке не бывает
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' };
 const json = obj => new Response(JSON.stringify(obj), { headers: Object.assign({ 'Content-Type': 'application/json; charset=utf-8' }, CORS) });
 
 export default {
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
     if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
     if (req.method !== 'POST') return json({ ok: true, app: 'mygym', v: 4 });
     try {
@@ -33,6 +37,11 @@ export default {
       const user = await auth(body.initData, env);
       if (body.action === 'sync') return json({ ok: true, data: await sync(user, body, env) });
       if (body.action === 'test') return json({ ok: true, data: await test(user, env) });
+      if (body.action === 'report') {
+        const job = report(user, body, env);
+        ctx.waitUntil(job.catch(() => {})); // отчёт дойдёт, даже если приложение закроют раньше
+        return json({ ok: true, data: await job });
+      }
       if (body.action === 'export') {
         if (String(user.id) !== String(env.OWNER_ID)) throw new Error('Нет доступа');
         const data = OWNER_EXPORT || JSON.parse((await env.KV.get('export')) || 'null');
@@ -127,6 +136,56 @@ async function test(user, env) {
   const r = await send(env, user.id, p ? morningText(p) : '🔔 Так будут выглядеть напоминания. Сегодня по расписанию отдых' + (days ? ', тренировок впереди: ' + days + '.' : '.'));
   if (r.status !== 200) throw new Error(r.status === 403 ? 'Бот не может тебе написать — нажми «Старт» в чате с ботом' : 'Telegram: ' + r.status);
   return { sent: true };
+}
+
+/* ---------- отчёт о тренировке ---------- */
+const lines = v => (Array.isArray(v) ? v : []).slice(0, 12).map(s => '• ' + esc(String(s).slice(0, 160))).join('\n');
+function rulesText(r) {
+  const part = (title, list) => (list ? '\n\n<b>' + title + '</b>\n' + list : '');
+  return '📊 <b>' + esc(String(r.t || 'Тренировка').slice(0, 60)) + '</b>' + (r.head ? '\n' + esc(String(r.head).slice(0, 160)) : '') +
+    part('✅ Хорошо', lines(r.good)) + part('⚠️ Плохо', lines(r.bad)) + part('👉 В следующий раз', lines(r.next));
+}
+
+const AI_SYSTEM = 'Ты тренер в журнале тренировок MY GYM. По данным одной силовой тренировки напиши короткий разбор на русском, обращаясь на «ты». ' +
+  'Формат: три блока с заголовками «✅ Хорошо», «⚠️ Плохо», «👉 В следующий раз», в каждом 1–4 коротких пункта, начинающихся с «• ». Всего не больше 120 слов. ' +
+  'Обычный текст без разметки и без вступления. Опирайся только на присланные цифры и ничего не выдумывай. Если сказать в блоке нечего, напиши об этом одной фразой. ' +
+  'Рекомендации по весу бери из поля next, когда оно есть. Поле good, bad и next — выводы приложения, можно их уточнять, но не противоречить цифрам. Медицинских советов не давай. ' +
+  'В данных kg — вес, reps — повторы, last — прошлая тренировка, recent — лучший вес за прошлые разы, начиная с самого свежего.';
+
+async function aiText(facts, rules, env) {
+  const data = JSON.stringify({ тренировка: facts, выводы: rules });
+  if (data.length > AI_MAX_FACTS) throw new Error('Слишком большая тренировка');
+  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, maxRetries: 0, timeout: AI_TIMEOUT });
+  const res = await client.messages.create({
+    model: 'claude-haiku-5-5',
+    max_tokens: 16000,
+    output_config: { effort: 'low' },
+    system: AI_SYSTEM,
+    messages: [{ role: 'user', content: data }]
+  });
+  if (res.stop_reason !== 'end_turn') throw new Error('Ответ ИИ не завершён: ' + res.stop_reason);
+  const text = res.content.filter(b => b.type === 'text').map(b => b.text).join('').trim();
+  if (!text) throw new Error('Пустой ответ ИИ');
+  return text;
+}
+
+async function report(user, req, env) {
+  const r = req.report || {};
+  let text = rulesText(r), ai = false, aiError = null;
+  // ИИ-отчёт только владельцу: решает сервер, а не приложение
+  if (req.ai && String(user.id) === String(env.OWNER_ID)) {
+    try {
+      if (!env.ANTHROPIC_API_KEY) throw new Error('На сервере не задан ANTHROPIC_API_KEY');
+      const body = await aiText(req.facts || {}, { good: r.good, bad: r.bad, next: r.next }, env);
+      text = '🤖 <b>' + esc(String(r.t || 'Тренировка').slice(0, 60)) + '</b>' + (r.head ? '\n' + esc(String(r.head).slice(0, 160)) : '') + '\n\n' + esc(body.slice(0, 3400));
+      ai = true;
+    } catch (err) {
+      aiError = String((err && err.message) || err).slice(0, 200); // ИИ не ответил — уйдёт отчёт по правилам
+    }
+  }
+  const s = await send(env, user.id, text);
+  if (s.status !== 200) throw new Error(s.status === 403 ? 'Бот не может тебе написать — нажми «Старт» в чате с ботом' : 'Telegram: ' + s.status);
+  return { sent: true, ai: ai, aiError: aiError };
 }
 
 function send(env, chat, text) {

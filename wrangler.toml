@@ -3,10 +3,10 @@ name = "mygym"
 main = "worker.js"
 compatibility_date = "2026-10-01"
 
-# Хранилище расписаний. id появится после: npx wrangler kv namespace create mygym
+# Хранилище расписаний
 [[kv_namespaces]]
 binding = "KV"
-id = "ВСТАВЬ_ID_ИЗ_wrangler_kv_namespace_create"
+id = "00cbc152a7ec4d75a3d640284e8d4501"
 
 [vars]
 OWNER_ID = "947241771"
@@ -15,4 +15,4 @@ OWNER_ID = "947241771"
 [triggers]
 crons = ["0 * * * *"]
 
-# Токен бота задаётся отдельно и в файл не пишется: npx wrangler secret put BOT_TOKEN
+# Секреты задаются отдельно и в файл не пишутся: npx wrangler secret put BOT_TOKEN и ANTHROPIC_API_KEY
