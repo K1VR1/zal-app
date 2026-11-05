@@ -6,11 +6,15 @@
  *   POST /  { action: 'test' }   — прислать пользователю пробное напоминание;
  *   POST /  { action: 'export' } — один раз отдать владельцу его старые тренировки (ключ export в KV);
  *   POST /  { action: 'report' } — прислать отчёт о тренировке: у всех по правилам, у владельца по желанию от ИИ;
- *   по расписанию (cron «0 * * * *», раз в час) — рассылает напоминания каждому по его часовому поясу.
+ *   POST /  { action: 'backup' } — прислать пользователю файлы с его тренировками (на сервере не хранятся);
+ *   POST /  с заголовком секрета — сообщения боту от Telegram: отвечает на /start и /help;
+ *   по расписанию (cron «0 * * * *», раз в час) — напоминания, итог недели и предупреждение о конце расписания
+ *   каждому по его часовому поясу.
  *
  * Настройки воркера (Settings):
  *   Secret   BOT_TOKEN — токен бота от @BotFather
  *   Secret   ANTHROPIC_API_KEY — ключ Claude API для ИИ-отчёта (без него приходит отчёт по правилам)
+ *   Secret   WEBHOOK_SECRET — случайная строка: так воркер отличает сообщения от Telegram (без неё бот не отвечает на /start)
  *   Text     OWNER_ID  — Telegram id владельца
  *   KV       KV        — хранилище расписаний (binding с именем KV)
  *   Cron     0 * * * *
@@ -21,10 +25,12 @@ import Anthropic from '@anthropic-ai/sdk';
 const OWNER_EXPORT = null;
 
 const APP_URL = 'https://k1vr1.github.io/zal-app/';
+const WORKER_URL = 'https://mygym.oleg25092007.workers.dev/';
 const MAX_AGE = 24 * 3600; // сколько секунд живёт подпись Telegram
 const SYNC_PER_DAY = 40; // сколько раз в сутки один человек может менять расписание в KV
 const AI_TIMEOUT = 25000; // воркеру дают около 30 секунд, если приложение уже закрыли
 const AI_MAX_FACTS = 8000; // больше символов данных об одной тренировке не бывает
+const BACKUP_MAX = 2000000; // предел для файла с копией, символов
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' };
 const json = obj => new Response(JSON.stringify(obj), { headers: Object.assign({ 'Content-Type': 'application/json; charset=utf-8' }, CORS) });
@@ -32,7 +38,13 @@ const json = obj => new Response(JSON.stringify(obj), { headers: Object.assign({
 export default {
   async fetch(req, env, ctx) {
     if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
-    if (req.method !== 'POST') return json({ ok: true, app: 'mygym', v: 4 });
+    if (req.method !== 'POST') return json({ ok: true, app: 'mygym', v: 5 });
+    const hook = req.headers.get('X-Telegram-Bot-Api-Secret-Token');
+    if (hook !== null) {
+      if (!env.WEBHOOK_SECRET || hook !== env.WEBHOOK_SECRET) return new Response('Нет доступа', { status: 403 });
+      try { await onUpdate(JSON.parse(await req.text() || '{}'), env); } catch (err) { console.error('Сообщение боту', String((err && err.message) || err)); }
+      return new Response('ok'); // иначе Telegram будет присылать то же сообщение снова
+    }
     try {
       const body = JSON.parse(await req.text() || '{}');
       const user = await auth(body.initData, env);
@@ -45,6 +57,7 @@ export default {
         ctx.waitUntil(job.catch(() => {})); // отчёт дойдёт, даже если приложение закроют раньше
         return json({ ok: true, data: await job });
       }
+      if (body.action === 'backup') return json({ ok: true, data: await backup(user, body, env) });
       if (body.action === 'export') {
         if (String(user.id) !== String(env.OWNER_ID)) throw new Error('Нет доступа');
         const data = OWNER_EXPORT || JSON.parse((await env.KV.get('export')) || 'null');
@@ -58,7 +71,7 @@ export default {
     }
   },
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(remind(env));
+    ctx.waitUntil(Promise.allSettled([remind(env), ensureWebhook(env)]));
   }
 };
 
@@ -109,13 +122,24 @@ async function sync(user, req, env) {
   const rec = {
     id: user.id, tz: Math.max(-720, Math.min(840, Math.round(Number(req.tz) || 0))),
     m: hour(req.m, 9), e: hour(req.e, 20), plan: plan, done: (req.done || []).filter(isDate).slice(-5),
-    wd: today, wn: count + 1
+    wd: today, wn: count + 1, week: cleanWeek(req.week),
+    warned: old && old.warned, wsent: old && old.wsent // чтобы обновление расписания не присылало их повторно
   };
   await env.KV.put(key, JSON.stringify(rec));
   return { on: !!req.on };
 }
 
+function cleanWeek(w) {
+  if (!w || !isDate(w.from)) return null;
+  const list = v => (Array.isArray(v) ? v : []).slice(0, 5).map(s => String(s).slice(0, 60));
+  const num = v => Math.max(0, Math.round(Number(v) || 0));
+  return { from: w.from, done: num(w.done), target: num(w.target), ton: num(w.ton), prs: list(w.prs), stuck: list(w.stuck) };
+}
+
 /* ---------- рассылка ---------- */
+const addDays = (d, n) => new Date(Date.parse(d + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
+const isSunday = d => new Date(d + 'T00:00:00Z').getUTCDay() === 0;
+const dm = d => d.slice(8, 10) + '.' + d.slice(5, 7);
 function localNow(tz) {
   const d = new Date(Date.now() + tz * 60000);
   return { date: d.toISOString().slice(0, 10), hour: d.getUTCHours() };
@@ -124,6 +148,35 @@ const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g,
 const morningText = p => '💪 <b>Сегодня: ' + esc(p.t) + '</b>\n\n' + p.x.map(x => '• ' + esc(x)).join('\n') + '\n\nВеса и подсказки — в приложении 👇';
 const eveningText = p => '⏰ Сегодня по плану <b>' + esc(p.t) + '</b>, а в журнале пока пусто.\nЕсли уже позанимался — отметь подходы. Не успеваешь — перенеси тренировку в приложении.';
 
+const endText = last => '⏳ Напоминания скоро закончатся: расписание есть только до ' + dm(last) + '.\nОткрой приложение, и оно обновится само.';
+function weekText(w, monday) {
+  const fmt = n => String(n).replace(/\B(?=(\d{3})+$)/g, ' ');
+  if (!w || w.from !== monday || !w.done) return '📅 <b>Итог недели</b>\n\nНа этой неделе тренировок не было. Новая неделя — хороший повод начать 💪';
+  let t = '📅 <b>Итог недели</b>\n\nТренировок: ' + w.done + (w.target ? ' из ' + w.target : '') + '\nТоннаж: ' + fmt(w.ton) + ' кг';
+  if (w.prs.length) t += '\n\n🏆 <b>Рекорды</b>\n' + w.prs.map(x => '• ' + esc(x)).join('\n');
+  if (w.stuck.length) t += '\n\n⚠️ <b>Вес стоит на месте</b>\n' + w.stuck.map(x => '• ' + esc(x)).join('\n');
+  return t;
+}
+
+async function remindUser(env, name, u) {
+  const days = Object.keys(u.plan || {}).sort();
+  if (!days.length) return; // напоминания выключены
+  const now = localNow(u.tz || 0), p = u.plan[now.date], last = days[days.length - 1], msgs = [];
+  let changed = false;
+  if (p && now.hour === u.m) msgs.push(morningText(p));
+  else if (p && now.hour === u.e && (u.done || []).indexOf(now.date) < 0) msgs.push(eveningText(p));
+  if (now.hour === u.m && last >= now.date && last <= addDays(now.date, 2) && u.warned !== last) { msgs.push(endText(last)); u.warned = last; changed = true; }
+  if (now.hour === u.e && isSunday(now.date) && last >= now.date) {
+    const monday = addDays(now.date, -6);
+    if (u.wsent !== monday) { msgs.push(weekText(u.week, monday)); u.wsent = monday; changed = true; }
+  }
+  for (const text of msgs) {
+    const r = await send(env, u.id, text);
+    if (r.status === 403) { await env.KV.delete(name); return; } // бот заблокирован — убираем из рассылки
+  }
+  if (changed) await env.KV.put(name, JSON.stringify(u));
+}
+
 async function remind(env) {
   let cursor;
   do {
@@ -131,15 +184,7 @@ async function remind(env) {
     for (const k of page.keys) {
       try { // сбой на одном человеке не должен оставить остальных без напоминаний
         const u = JSON.parse((await env.KV.get(k.name)) || 'null');
-        if (!u) continue;
-        const now = localNow(u.tz || 0), p = u.plan && u.plan[now.date];
-        if (!p) continue;
-        let text = null;
-        if (now.hour === u.m) text = morningText(p);
-        else if (now.hour === u.e && (u.done || []).indexOf(now.date) < 0) text = eveningText(p);
-        if (!text) continue;
-        const r = await send(env, u.id, text);
-        if (r.status === 403) await env.KV.delete(k.name); // бот заблокирован — убираем из рассылки
+        if (u) await remindUser(env, k.name, u);
       } catch (err) {
         console.error('Напоминание не отправлено', k.name, String((err && err.message) || err));
       }
@@ -205,6 +250,40 @@ async function report(user, req, env) {
   const s = await send(env, user.id, text);
   if (s.status !== 200) throw new Error(s.status === 403 ? 'Бот не может тебе написать — нажми «Старт» в чате с ботом' : 'Telegram: ' + s.status);
   return { sent: true, ai: ai, aiError: aiError };
+}
+
+/* ---------- копия данных ---------- */
+async function backup(user, req, env) {
+  const files = [['my-gym-trenirovki.csv', req.csv, 'text/csv', 'Таблица: открывается в Excel и Google Таблицах'], ['my-gym-kopiya.json', req.json, 'application/json', 'Полная копия: программа, тренировки, вес тела']];
+  for (const f of files) if (typeof f[1] !== 'string' || !f[1] || f[1].length > BACKUP_MAX) throw new Error('Не получилось собрать копию');
+  for (const f of files) {
+    const form = new FormData();
+    form.append('chat_id', String(user.id));
+    form.append('caption', f[3]);
+    form.append('document', new File([f[1]], f[0], { type: f[2] }));
+    const r = await fetch('https://api.telegram.org/bot' + env.BOT_TOKEN + '/sendDocument', { method: 'POST', body: form });
+    if (r.status !== 200) throw new Error(r.status === 403 ? 'Бот не может тебе написать — нажми «Старт» в чате с ботом' : 'Telegram: ' + r.status);
+  }
+  return { sent: true };
+}
+
+/* ---------- сообщения боту ---------- */
+const WELCOME = '👋 <b>Привет! Это MY GYM — журнал тренировок.</b>\n\nСоставь программу, записывай подходы, а я подскажу вес, напомню о тренировке и пришлю отчёт после неё.\n\nЖми кнопку ниже 👇';
+async function onUpdate(update, env) {
+  const m = update.message;
+  if (!m || !m.chat || m.chat.type !== 'private' || !/^\/(start|help)(\s|@|$)/.test(m.text || '')) return;
+  const { success } = await env.LIMIT.limit({ key: String(m.chat.id) });
+  if (success) await send(env, m.chat.id, WELCOME);
+}
+// Telegram должен узнать адрес воркера: делаем это один раз из cron, потому что токен есть только здесь
+async function ensureWebhook(env) {
+  if (!env.WEBHOOK_SECRET || (await env.KV.get('webhook')) === '1') return;
+  const r = await fetch('https://api.telegram.org/bot' + env.BOT_TOKEN + '/setWebhook', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: WORKER_URL, secret_token: env.WEBHOOK_SECRET, allowed_updates: ['message'], drop_pending_updates: true })
+  });
+  if (r.status === 200) await env.KV.put('webhook', '1');
+  else console.error('setWebhook', r.status);
 }
 
 function send(env, chat, text) {

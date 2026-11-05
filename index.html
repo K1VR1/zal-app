@@ -373,6 +373,11 @@
   .seg.liquid { position: relative; touch-action: none; user-select: none; -webkit-user-select: none; }
   .seg.liquid button { position: relative; z-index: 2; pointer-events: none; transition: color .2s; }
   .seg.liquid button.on { background: none; box-shadow: none; }
+  .warmbtn { display: block; margin: 8px 0 0; font-size: 12.5px; font-weight: 600; color: var(--acc); padding: 4px 2px; }
+  .wrow { display: flex; align-items: baseline; gap: 10px; padding: 10px 0; border-top: .5px solid rgba(255,255,255,.1); }
+  .wrow b { flex: none; width: 92px; font-size: 15px; font-weight: 700; white-space: nowrap; }
+  .wrow span { flex: 1; min-width: 0; font-size: 12.5px; color: var(--soft); line-height: 1.35; text-align: right; }
+  .wrow.work b { color: var(--acc); }
   .seg.liquid .lens, .seg.liquid .lens.drag { top: 3px; height: 32px; border-radius: 16px; transition: background .2s, box-shadow .2s; }
   .note2 { font-size: 11.5px; color: var(--mut); text-align: center; margin: 14px 4px 4px; line-height: 1.4; }
 </style>
@@ -432,6 +437,7 @@ const ICONS = {
   arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
   trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  save: '<path d="M12 4v11M7.5 11l4.5 4.5 4.5-4.5M5 20h14"/>',
   up: '<path d="M6 15l6-6 6 6"/>',
   down: '<path d="M6 9l6 6 6-6"/>'
 };
@@ -599,6 +605,10 @@ function planFor(d) {
 const recHas = r => !!r && r.x.some(e => (e[1] || []).some(s => s && (s[0] != null || s[1] != null)));
 
 /* ---------- расчёты по всем тренировкам ---------- */
+// расчётный максимум на один повтор (формула Эпли): сводит разные вес и повторы к одному числу
+function e1rm(kg, reps) { return kg > 0 && reps > 0 ? (reps === 1 ? kg : kg * (1 + reps / 30)) : 0; }
+function bestE1(sets) { return sets.reduce((m, s) => (s ? Math.max(m, e1rm(s[0], s[1])) : m), 0); }
+const fmtE1 = v => fmtNum(Math.round(v * 2) / 2);
 function idx() {
   if (IDX) return IDX;
   const dates = Object.keys(DB.w).filter(d => recHas(DB.w[d])).sort();
@@ -736,7 +746,8 @@ function buildProgress() {
     const st = start != null && start !== '' ? start : (list[0] ? list[0].top : null);
     const best = list.length ? Math.max.apply(null, list.map(x => x.top)) : null;
     const g = st && best != null ? Math.round((best / st - 1) * 100) : null;
-    exercises.push({ day: day, name: name, start: st != null ? fmtNum(st) : '', best: best ? fmtNum(best) : '', gainPct: g == null || isBW(name) && !best ? '' : (g > 0 ? '+' : '') + g + '%',
+    const lastSets = list.length ? list[list.length - 1].sets : null;
+    exercises.push({ e1: lastSets && !isBW(name) ? bestE1(lastSets) : 0, day: day, name: name, start: st != null ? fmtNum(st) : '', best: best ? fmtNum(best) : '', gainPct: g == null || isBW(name) && !best ? '' : (g > 0 ? '+' : '') + g + '%',
       count: String(list.length), maxReps: list.length ? String(Math.max.apply(null, list.map(x => x.reps))) : '' });
   };
   P.days.forEach(d => d.x.forEach(x => exStat(x.n, d.id, x.k)));
@@ -812,13 +823,23 @@ function buildWeek(n) {
 
 /* ---------- напоминания: расписание на 2 недели вперёд уходит на сервер бота ---------- */
 let syncT = null;
+function weekStats(t) {
+  const I = idx(), from = mondayOf(t), to = addDays(from, 6), w = weekLive(t);
+  const stuck = [];
+  (DB.prog.days || []).forEach(d => d.x.forEach(x => {
+    const l = (I.byEx[x.n] || []).slice(-3);
+    if (l.length === 3 && !x.bw && !isBW(x.n) && l.every(v => v.top === l[2].top) && stuck.indexOf(x.n) < 0) stuck.push(x.n);
+  }));
+  return { from: from, done: w.done, target: w.target, ton: Math.round(w.ton),
+    prs: I.prs.filter(p => p.d >= from && p.d <= to).map(p => p.name + ': ' + fmtNum(p.kg) + ' кг'), stuck: stuck };
+}
 function syncReminders(force) {
   if (DEMO || !DB.prog || !API_URL) return;
   const r = DB.prog.rem || { on: false, m: 9, e: 20 };
   const t = isoToday(), plan = {};
   for (let i = 0; i < 14; i++) { const d = addDays(t, i), p = planFor(d); if (p) plan[d] = { t: p.t, x: p.x.map(x => x.n) }; }
   const done = idx().dates.filter(d => d >= addDays(t, -2));
-  const payload = { on: !!r.on, tz: -new Date().getTimezoneOffset(), m: r.m, e: r.e, plan: plan, done: done };
+  const payload = { on: !!r.on, tz: -new Date().getTimezoneOffset(), m: r.m, e: r.e, plan: plan, done: done, week: weekStats(t) };
   const sig = JSON.stringify(payload);
   if (!force && local.get('syncSig') === sig) return;
   clearTimeout(syncT);
@@ -907,6 +928,11 @@ function targetText(e) {
   if (!h || h.kg == null) return '';
   if (isBW(e.name)) return h.text ? 'цель <b>' + h.text + ' ↑</b>' : '';
   return 'цель <b>' + fmtNum(h.kg) + ' кг' + (h.up ? ' ↑' : h.warn ? ' ↓' : '') + '</b>' + (h.hold ? ' · закрепляем, ↑ в след. раз' : '');
+}
+// тоннаж сравниваем только по упражнениям, которые были и в этот раз, и в прошлый: пропуск или новое упражнение не должны его искажать
+function tonDelta(done) {
+  const same = done.filter(e => lastTonnage(e) > 0);
+  return pct(same.reduce((s, e) => s + (e.tonnage || 0), 0), same.reduce((s, e) => s + lastTonnage(e), 0));
 }
 function lastTonnage(e) {
   if (!e.last || /^старт/.test(e.last)) return 0;
@@ -1009,6 +1035,7 @@ function currentCard(e) {
     (canNote ? '<button class="iconbtn" data-act="note" aria-label="Заметка">' + ic('note') + '</button>' : '') +
     '<span class="cnt' + (n >= plan.sets ? ' ok' : '') + '">' + n + '/' + plan.sets + '</span></div>';
   if (h && h.warn && !n) s += '<div class="warn">' + esc(h.warn) + '</div>';
+  if (!isBW(e.name)) s += '<button class="warmbtn" data-act="warmup">Разминка и блины →</button>';
   const count = Math.min(4, Math.max(plan.sets, lastFilled(e) + 1, sel + 1));
   s += '<div class="pills">';
   for (let i = 0; i < count; i++) {
@@ -1081,6 +1108,7 @@ function bindToday() {
     else if (a === 'extra') pickExtra();
     else if (a === 'more' || a === 'less') { state.listOpen = a === 'more'; tap(); renderToday(); }
     else if (a === 'note') editNote(curEx());
+    else if (a === 'warmup') openWarmup(curEx());
     else if (a === 'save') saveCurrent();
     else if (a === 'del') deleteCurrent();
     else if (a === 'cancel') { const e = curEx(); selectSet(e, firstEmpty(e)); renderToday(); }
@@ -1378,8 +1406,7 @@ function showSummary() {
   const t = state.today.today, ex = named();
   const done = ex.filter(e => doneSets(e));
   const m = metrics();
-  const prevT = done.reduce((s, e) => s + lastTonnage(e), 0);
-  const delta = pct(m.ton, prevT);
+  const delta = tonDelta(done);
   const ss = session();
   const mins = ss.start ? Math.max(1, Math.round((Date.now() - ss.start) / 60000)) : null;
   let h = '<div class="sh"><div><small>' + esc(t.group) + ' · ' + dm(t.date) + '</small><h2>Тренировка завершена</h2></div>' + closeBtn + '</div>';
@@ -1410,14 +1437,14 @@ function buildReport() {
   const t = state.today.today, ex = named(), done = ex.filter(e => doneSets(e));
   const m = metrics(), ss = session();
   const mins = ss.start ? Math.max(1, Math.round((Date.now() - ss.start) / 60000)) : null;
-  const delta = pct(m.ton, done.reduce((s, e) => s + lastTonnage(e), 0));
+  const delta = tonDelta(done);
   const skipped = ex.filter(e => !doneSets(e) && !e.extra).map(e => e.name);
   const planned = ex.filter(e => !e.extra).length;
-  const good = [], bad = [], next = [], clean = [], facts = [];
+  const good = [], bad = [], next = [], clean = [], facts = [], stronger = [];
 
   ss.prs.forEach(p => good.push(p.name + ': рекорд, ' + fmtNum(p.kg) + ' кг (было ' + fmtNum(p.prev) + ')'));
-  if (delta != null && delta > 0) good.push('Тоннаж ' + sign(delta) + '% к прошлому разу');
-  if (delta != null && delta < 0) bad.push('Тоннаж ' + sign(delta) + '% к прошлому разу');
+  if (delta != null && delta > 0) good.push('Тоннаж в тех же упражнениях ' + sign(delta) + '%');
+  if (delta != null && delta < 0) bad.push('Тоннаж в тех же упражнениях ' + sign(delta) + '%');
   if (skipped.length) bad.push('Пропущено: ' + listNames(skipped));
 
   done.forEach(e => {
@@ -1426,7 +1453,8 @@ function buildReport() {
     const top = Math.max.apply(null, sets.map(s => s[0] || 0));
     const lastStr = sets.map(s => (s[0] == null ? '' : fmtNum(s[0])) + '×' + (s[1] == null ? '' : s[1])).join('   ');
     const h = hintFrom(e, lastStr, [{ kg: top }].concat(recent));
-    const was = recent[0] && recent[0].kg;
+    const prevSets = /^старт/.test(e.last || '') ? [] : parseLast(e.last, plan);
+    const e1Now = bw ? 0 : bestE1(sets), e1Was = bw ? 0 : bestE1(prevSets), e1Pct = e1Now && e1Was ? pct(e1Now, e1Was) : null;
     const missed = [];
     if (sets.length < plan.sets) missed.push(sets.length + ' из ' + plan.sets + ' подходов');
     if (plan.reps != null) {
@@ -1435,15 +1463,18 @@ function buildReport() {
     }
     if (missed.length) bad.push(e.name + ': ' + missed.join(', '));
     else if (plan.reps != null) clean.push(e.name);
-    if (!bw && was && top && top < was) bad.push(e.name + ': вес снижен, ' + fmtNum(was) + ' → ' + fmtNum(top) + ' кг');
+    const e1Text = e.name + ': расчётный максимум ' + sign(e1Pct) + '%, ' + fmtE1(e1Was) + ' → ' + fmtE1(e1Now) + ' кг';
+    if (e1Pct != null && e1Pct >= 1 && !ss.prs.some(p => p.name === e.name)) stronger.push({ p: e1Pct, t: e1Text });
+    if (e1Pct != null && e1Pct <= -3) bad.push(e1Text); // вес могли снизить ради повторов: минус только если реально стало слабее
 
     if (h && h.warn) next.push(e.name + ': застой, сбрось до ' + fmtNum(h.kg) + ' кг и разгонись заново');
     else if (h && h.up && bw && h.text) next.push(e.name + ': ' + h.text);
     else if (h && h.up && h.kg != null) next.push(e.name + ': ' + fmtNum(h.kg) + ' кг ↑');
     else if (h && missed.length && !bw && h.kg != null) next.push(e.name + ': снова ' + fmtNum(h.kg) + ' кг, добери повторы');
 
-    facts.push({ name: e.name, plan: e.plan, sets: sets.map(s => ({ kg: s[0], reps: s[1] })), last: e.last, recent: recent.map(r => r.kg), bodyweight: bw, extra: !!e.extra });
+    facts.push({ name: e.name, plan: e.plan, sets: sets.map(s => ({ kg: s[0], reps: s[1] })), last: e.last, recent: recent.map(r => r.kg), e1rm: Math.round(e1Now), e1rmLast: Math.round(e1Was), bodyweight: bw, extra: !!e.extra });
   });
+  stronger.sort((a, b) => b.p - a.p).slice(0, 3).forEach(x => good.push(x.t));
   if (clean.length) good.push('Все повторы по плану: ' + listNames(clean));
 
   const head = 'Упражнения: ' + done.length + ' из ' + Math.max(planned, done.length) + ' · подходов: ' + m.done + ' · тоннаж: ' + fmtT(m.ton) + ' кг' + (mins ? ' · ' + mins + ' мин' : '');
@@ -1505,7 +1536,7 @@ function exList(p) {
     const g = e.gainPct || '', cls = g.indexOf('+') === 0 ? '' : g.indexOf('-') === 0 ? 'dn' : 'z';
     const best = e.best && !isBW(e.name) ? esc(e.best) : (e.maxReps ? esc(e.maxReps) + '<span style="font-size:11px;color:var(--mut)"> раз</span>' : '—');
     const color = stuck ? '#8E8E93' : cls === 'dn' ? '#FF375F' : cls === 'z' ? '#8E8E93' : '#30D158';
-    const sub = Number(e.count) ? (e.start && !isBW(e.name) ? 'старт ' + esc(e.start) + ' · ' : '') + (stuck ? '<span style="color:#FFB340">застой</span>' : esc(e.count) + ' трен.') : 'ещё не делал';
+    const sub = Number(e.count) ? (e.start && !isBW(e.name) ? 'старт ' + esc(e.start) + ' · ' : '') + (stuck ? '<span style="color:#FFB340">застой</span>' : esc(e.count) + ' трен.') + (e.e1 ? ' · 1ПМ ≈ ' + fmtE1(e.e1) : '') : 'ещё не делал';
     h += '<div class="it"><div class="nm"><b>' + esc(e.name) + '</b><small>' + sub + '</small></div>' +
       spark(sp, color) + '<div class="v"><b>' + best + '</b><small class="' + cls + '">' + esc(isBW(e.name) ? '' : g) + '</small></div></div>';
   });
@@ -1862,6 +1893,56 @@ function saveProgram() {
   else note('Программа сохранена');
 }
 
+/* ---------- разминка и блины ---------- */
+const PLATES = [25, 20, 15, 10, 5, 2.5, 1.25];
+function platesText(kg, bar) {
+  if (!bar) return 'тренажёр или гантели';
+  if (kg < bar) return 'легче грифа';
+  if (kg === bar) return 'пустой гриф';
+  let side = (kg - bar) / 2;
+  const out = [];
+  PLATES.forEach(p => { let n = 0; while (side >= p - 1e-9) { side -= p; n++; } if (n) out.push(n > 1 ? n + '×' + fmtNum(p) : fmtNum(p)); });
+  if (!out.length) return 'гриф, блинами не набрать ' + fmtNum(side * 2) + ' кг';
+  return 'с каждой стороны: ' + out.join(' + ') + (side > 0.01 ? ' (не хватает ' + fmtNum(side * 2) + ' кг)' : '');
+}
+function warmupSets(kg, bar) {
+  const step = kg >= 20 ? 2.5 : 1, out = [];
+  [[0.5, 10], [0.7, 5], [0.85, 3]].forEach(x => {
+    const w = Math.max(bar || 0, Math.round(kg * x[0] / step) * step);
+    if (w > 0 && w < kg && !out.some(o => o.kg === w)) out.push({ kg: w, reps: x[1] });
+  });
+  return out;
+}
+function openWarmup(e) {
+  const P = DB.prog, bars = P.bars || (P.bars = {}), OPTS = [[20, '20 кг'], [15, '15 кг'], [10, '10 кг'], [0, 'Без грифа']];
+  const kg = (state.ed && state.ed.kg) || 0;
+  const barOf = () => (bars[e.name] == null ? 20 : bars[e.name]);
+  const rows = () => {
+    const bar = barOf(), work = kg;
+    if (!work) return '<div class="empty">Укажи рабочий вес на карточке упражнения, и я посчитаю разминку</div>';
+    const line = (s, cls) => '<div class="wrow' + (cls ? ' ' + cls : '') + '"><b>' + fmtNum(s.kg) + ' кг × ' + s.reps + '</b><span>' + platesText(s.kg, bar) + '</span></div>';
+    return warmupSets(work, bar).map(s => line(s)).join('') + line({ kg: work, reps: parsePlan(e.plan).reps || '…' }, 'work');
+  };
+  const s = openSheet('<div class="sh"><div><small>Разминка и блины</small><h2>' + esc(e.name) + '</h2></div>' + closeBtn + '</div>' +
+    '<div class="sec">Гриф</div><div class="seg sm liquid" id="barSeg"><div class="lens"></div>' + OPTS.map(o => '<button>' + o[1] + '</button>').join('') + '</div>' +
+    '<div class="sec">Подходы</div><div id="wrows">' + rows() + '</div>' +
+    '<div class="note2">Подходы считаются от рабочего веса на карточке. Значения примерные: ориентируйся на самочувствие.</div>');
+  const start = Math.max(0, OPTS.findIndex(o => o[0] === barOf()));
+  liquidSeg(s.el.querySelector('#barSeg'), start, i => { bars[e.name] = OPTS[i][0]; put('prog', P); s.el.querySelector('#wrows').innerHTML = rows(); });
+  tap();
+}
+
+/* ---------- копия данных ---------- */
+function backupFiles() {
+  const q = v => { let t = String(v == null ? '' : v); if (/^[=+\-@]/.test(t)) t = "'" + t; return '"' + t.replace(/"/g, '""') + '"'; };
+  const rows = [['Дата', 'Тренировка', 'Упражнение', 'Подход', 'Вес, кг', 'Повторы']];
+  Object.keys(DB.w).sort().forEach(d => { const r = DB.w[d]; (r && r.x || []).forEach(x => (x[1] || []).forEach((s, i) => { if (s) rows.push([d, r.t, x[0], i + 1, fmtNum(s[0]), s[1] == null ? '' : s[1]]); })); });
+  return {
+    csv: '\uFEFF' + rows.map(r => r.map(q).join(';')).join('\r\n'),
+    json: JSON.stringify({ app: 'mygym', saved: isoToday(), prog: DB.prog, workouts: DB.w, moves: DB.ov, bodyweight: DB.bw })
+  };
+}
+
 /* ---------- переключатель с жидкой линзой: едет за пальцем, тянется на скорости и пружинит на месте ---------- */
 function liquidSeg(seg, start, onPick) {
   const btns = Array.from(seg.querySelectorAll('button')), lens = seg.querySelector('.lens');
@@ -1922,6 +2003,7 @@ function openSettings() {
       '<button class="link acc" data-s="test" style="display:block;margin:6px 0 2px">Прислать пробное напоминание</button>' : '') + '</div>' +
     (USER && USER.id === OWNER_ID ? '<div class="sgroup"><div class="frow"><span>ИИ-отчёт<small>разбор тренировки от Claude вместо обычного</small></span><button class="tgl' + (P.aiReport ? ' on' : '') + '" data-s="ai"><i></i></button></div></div>' : '') +
     '<div class="sgroup"><div class="frow"><span>Таймер отдыха</span></div><div class="seg sm liquid" id="restSeg"><div class="lens"></div>' + REST_OPTS.map(v => '<button>' + Math.floor(v / 60) + ':' + String(v % 60).padStart(2, '0') + '</button>').join('') + '</div></div>' +
+    '<button class="srow" data-s="backup"><span>' + ic('save') + '</span><div><b>Копия тренировок</b><small>пришлю файлы в чат с ботом</small></div>' + ic('arrow') + '</button>' +
     '<div class="note2">Сохранено тренировок: ' + idx().dates.length + '. Все данные хранятся в твоём аккаунте Telegram' + (pending() ? ' · синхронизация…' : '') + '.</div>';
   const s = openSheet('<div id="setb">' + body() + '</div>');
   const bindRest = () => {
@@ -1932,6 +2014,13 @@ function openSettings() {
   const bind = () => { bindRest(); s.el.querySelectorAll('[data-s]').forEach(b => b.addEventListener('click', () => {
     const a = b.dataset.s;
     if (a === 'prog') { s.close(); openProgramEditor(); return; }
+    if (a === 'backup') {
+      if (b.dataset.busy) return;
+      b.dataset.busy = '1'; tap();
+      api('backup', backupFiles()).then(() => { toast('Копия в чате с ботом'); haptic('success'); })
+        .catch(err => toast('Копия: ' + err.message, true)).finally(() => { delete b.dataset.busy; });
+      return;
+    }
     if (a === 'test') {
       b.textContent = 'Отправляю…';
       syncReminders(true);
@@ -1951,7 +2040,8 @@ function openSettings() {
   bind();
 }
 function enableReminders(after) {
-  const on = () => { DB.prog.rem = Object.assign({ m: 9, e: 20 }, DB.prog.rem || {}, { on: true }); put('prog', DB.prog); syncReminders(true); haptic('success'); if (after) after(); };
+  // меняем тот же объект: открытые настройки держат ссылку на него
+  const on = () => { const r = DB.prog.rem || (DB.prog.rem = { m: 9, e: 20 }); r.on = true; put('prog', DB.prog); syncReminders(true); haptic('success'); if (after) after(); };
   try {
     if (tg && tg.requestWriteAccess && !DEMO) tg.requestWriteAccess(ok => { if (ok) on(); else toast('Без разрешения бот не сможет писать тебе'); });
     else on();

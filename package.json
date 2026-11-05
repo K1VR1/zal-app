@@ -12,5 +12,9 @@
   "private": true,
   "dependencies": {
     "@anthropic-ai/sdk": "^1.5.0"
+  },
+  "scripts": {
+    "test": "node test/worker.test.mjs",
+    "deploy": "npm test && npx wrangler deploy"
   }
 }
