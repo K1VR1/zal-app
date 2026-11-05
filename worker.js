@@ -7,6 +7,7 @@
  *   POST /  { action: 'export' } — один раз отдать владельцу его старые тренировки (ключ export в KV);
  *   POST /  { action: 'report' } — прислать отчёт о тренировке: у всех по правилам, у владельца по желанию от ИИ;
  *   POST /  { action: 'backup' } — прислать пользователю файлы с его тренировками (на сервере не хранятся);
+ *   POST /  { action: 'card' }   — прислать пользователю картинку с его рекордом, чтобы переслать другу;
  *   POST /  с заголовком секрета — сообщения боту от Telegram: отвечает на /start и /help;
  *   по расписанию (cron «0 * * * *», раз в час) — напоминания, итог недели и предупреждение о конце расписания
  *   каждому по его часовому поясу.
@@ -31,6 +32,7 @@ const SYNC_PER_DAY = 40; // сколько раз в сутки один чел�
 const AI_TIMEOUT = 25000; // воркеру дают около 30 секунд, если приложение уже закрыли
 const AI_MAX_FACTS = 8000; // больше символов данных об одной тренировке не бывает
 const BACKUP_MAX = 2000000; // предел для файла с копией, символов
+const CARD_MAX = 4000000; // предел для картинки рекорда, символов base64
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' };
 const json = obj => new Response(JSON.stringify(obj), { headers: Object.assign({ 'Content-Type': 'application/json; charset=utf-8' }, CORS) });
@@ -57,6 +59,7 @@ export default {
         ctx.waitUntil(job.catch(() => {})); // отчёт дойдёт, даже если приложение закроют раньше
         return json({ ok: true, data: await job });
       }
+      if (body.action === 'card') return json({ ok: true, data: await card(user, body, env) });
       if (body.action === 'backup') return json({ ok: true, data: await backup(user, body, env) });
       if (body.action === 'export') {
         if (String(user.id) !== String(env.OWNER_ID)) throw new Error('Нет доступа');
@@ -250,6 +253,21 @@ async function report(user, req, env) {
   const s = await send(env, user.id, text);
   if (s.status !== 200) throw new Error(s.status === 403 ? 'Бот не может тебе написать — нажми «Старт» в чате с ботом' : 'Telegram: ' + s.status);
   return { sent: true, ai: ai, aiError: aiError };
+}
+
+/* ---------- карточка рекорда ---------- */
+async function card(user, req, env) {
+  const b64 = req.image;
+  if (typeof b64 !== 'string' || !b64 || b64.length > CARD_MAX || !/^[A-Za-z0-9+/]+={0,2}$/.test(b64)) throw new Error('Не получилось подготовить картинку');
+  const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  if (bytes[0] !== 0xFF || bytes[1] !== 0xD8 || bytes[2] !== 0xFF) throw new Error('Не получилось подготовить картинку'); // принимаем только JPEG
+  const form = new FormData();
+  form.append('chat_id', String(user.id));
+  form.append('caption', '🏆 MY GYM — журнал тренировок в Telegram: @my_gyymm_bot');
+  form.append('photo', new File([bytes], 'my-gym-rekord.jpg', { type: 'image/jpeg' }));
+  const r = await fetch('https://api.telegram.org/bot' + env.BOT_TOKEN + '/sendPhoto', { method: 'POST', body: form });
+  if (r.status !== 200) throw new Error(r.status === 403 ? 'Бот не может тебе написать — нажми «Старт» в чате с ботом' : 'Telegram: ' + r.status);
+  return { sent: true };
 }
 
 /* ---------- копия данных ---------- */

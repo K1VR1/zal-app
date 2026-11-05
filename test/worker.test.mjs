@@ -104,4 +104,11 @@ Date.now=realNow;
 // --- обновление расписания не сбрасывает отметки ---
 const kv4=memKV({'u:5':JSON.stringify({id:5,warned:'2026-11-20',wsent:'2026-11-02'})});r=await call(5,{action:'sync',on:true,plan:{},week:{from:'2026-11-02',done:'2',target:3,ton:100.6,prs:['a'.repeat(99)],stuck:'x'}},{...E,KV:kv4});u=JSON.parse(kv4.m.get('u:5'));
 ok('sync хранит отметки и чистит неделю',r.ok&&u.warned==='2026-11-20'&&u.wsent==='2026-11-02'&&u.week.done===2&&u.week.ton===101&&u.week.prs[0].length===60&&u.week.stuck.length===0);
+// --- карточка рекорда ---
+const jpeg=Buffer.from([0xFF,0xD8,0xFF,0xE0,1,2,3]).toString('base64');
+calls={tg:[],ai:[]};r=await call(8,{action:'card',image:jpeg},E);ok('карточка: картинка уходит тому, кто просил',r.ok&&calls.tg.length===1&&calls.tg[0].chat_id==='8'&&calls.tg[0].photo.size===7);
+calls={tg:[],ai:[]};r=await call(8,{action:'card',image:Buffer.from('<svg>').toString('base64')},E);ok('карточка: не JPEG отклонён',!r.ok&&calls.tg.length===0);
+calls={tg:[],ai:[]};r=await call(8,{action:'card',image:'a'.repeat(4000001)},E);ok('карточка: слишком большая отклонена',!r.ok&&calls.tg.length===0);
+calls={tg:[],ai:[]};r=await call(8,{action:'card',image:'не base64!'},E);ok('карточка: мусор отклонён',!r.ok&&calls.tg.length===0);
+calls={tg:[],ai:[]};r=await call(8,{action:'card'},E);ok('карточка: без картинки отклонена',!r.ok&&calls.tg.length===0);
 if(!process.exitCode)console.log('Все проверки прошли');

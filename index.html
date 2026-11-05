@@ -373,6 +373,16 @@
   .seg.liquid { position: relative; touch-action: none; user-select: none; -webkit-user-select: none; }
   .seg.liquid button { position: relative; z-index: 2; pointer-events: none; transition: color .2s; }
   .seg.liquid button.on { background: none; box-shadow: none; }
+  #rateBar { position: fixed; left: 14px; right: 14px; bottom: calc(168px + env(safe-area-inset-bottom)); max-width: 492px; margin: 0 auto; border-radius: 22px; padding: 7px 7px 7px 14px; display: flex; align-items: center; gap: 6px; z-index: 15; }
+  #rateBar span { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; color: var(--soft); white-space: nowrap; }
+  #rateBar button { flex: none; height: 34px; padding: 0 11px; border-radius: 17px; background: rgba(255,255,255,.12); font-size: 12.5px; font-weight: 700; }
+  .it[data-exn] { cursor: pointer; }
+  .chart { width: 100%; height: auto; display: block; margin: 10px 0 2px; }
+  .chart text { fill: var(--mut); font-size: 10px; font-weight: 600; font-family: inherit; }
+  .rate { font-size: 11px; font-weight: 700; margin-left: 4px; }
+  .rate.r1 { color: var(--done); } .rate.r3 { color: var(--red); }
+  .cardimg { display: block; width: 100%; border-radius: 18px; margin-top: 10px; }
+  .row2 .sharebtn { display: block; margin: 3px 0 0 auto; font-size: 11.5px; font-weight: 700; color: var(--acc); }
   .warmbtn { display: block; margin: 8px 0 0; font-size: 12.5px; font-weight: 600; color: var(--acc); padding: 4px 2px; }
   .wrow { display: flex; align-items: baseline; gap: 10px; padding: 10px 0; border-top: .5px solid rgba(255,255,255,.1); }
   .wrow b { flex: none; width: 92px; font-size: 15px; font-weight: 700; white-space: nowrap; }
@@ -666,7 +676,7 @@ function lastString(name, before, start) {
 }
 const planStr = (s, r) => (s || 3) + '×' + (r == null ? 'макс' : r);
 const empty4 = () => [[null, null], [null, null], [null, null], [null, null]];
-const norm4 = ss => { const out = empty4(); (ss || []).slice(0, 4).forEach((s, i) => { if (s) out[i] = [s[0], s[1]]; }); return out; };
+const norm4 = ss => { const out = empty4(); (ss || []).slice(0, 4).forEach((s, i) => { if (s) out[i] = s[2] ? [s[0], s[1], s[2]] : [s[0], s[1]]; }); return out; };
 const tonOf = sets => sets.reduce((a, s) => a + (s[0] || 0) * (s[1] || 0), 0);
 
 /* ---------- сборка экранов из данных ---------- */
@@ -707,8 +717,8 @@ function nextPlanned(t) {
   return null;
 }
 function mkEx(name, s, r, start) { return { name: name, plan: planStr(s, r), sets: empty4(), start: start, tonnage: 0 }; }
-function buildToday() {
-  const t = isoToday(), rec = DB.w[t], plan = planFor(t);
+function buildToday(day) {
+  const t = day || isoToday(), rec = DB.w[t], plan = planFor(t);
   const res = { date: t, weekday: wdOf(t), today: null, next: null, notes: DB.prog.notes || {}, bodyweight: lastBW(), options: allOptions(), move: moveOptions(t), recent: {} };
   if (!plan && !(rec && rec.x.length)) { res.next = nextPlanned(t); return res; }
   const list = (plan ? plan.x : []).map(x => mkEx(x.n, x.s, x.r, x.k));
@@ -729,7 +739,7 @@ function buildToday() {
 function saveToday() {
   const T = state.today, t = T.date, day = T.today;
   const x = day.exercises.filter(e => e.name && (e.extra || e.sets.some(filled)))
-    .map(e => { const ss = e.sets.map(s => filled(s) ? [s[0], s[1]] : null); while (ss.length && !ss[ss.length - 1]) ss.pop(); return e.extra ? [e.name, ss, 1] : [e.name, ss]; });
+    .map(e => { const ss = e.sets.map(s => filled(s) ? (s[2] ? [s[0], s[1], s[2]] : [s[0], s[1]]) : null); while (ss.length && !ss[ss.length - 1]) ss.pop(); return e.extra ? [e.name, ss, 1] : [e.name, ss]; });
   const rec = x.length ? { d: t, p: day.pw, t: day.group, x: x } : null;
   if (rec) DB.w[t] = rec; else delete DB.w[t];
   put(keyOf(t), rec);
@@ -895,10 +905,14 @@ function streakChip() {
 
 /* ---------- подсказки веса ---------- */
 function hintFor(e) {
-  return hintFrom(e, e.last, ((state.today && state.today.recent) || {})[e.name] || []);
+  const t = state.today && state.today.date, list = (idx().byEx[e.name] || []).filter(x => x.d < t);
+  const lastRun = list[list.length - 1];
+  return hintFrom(e, e.last, ((state.today && state.today.recent) || {})[e.name] || [], lastRun ? lastRun.sets.map(s => s[2]).filter(Boolean) : []);
 }
 // подсказка на следующий раз: lastStr — последняя тренировка строкой, rec — лучшие веса прошлых раз, начиная со свежего
-function hintFrom(e, lastStr, rec) {
+function hintFrom(e, lastStr, rec, rates) {
+  rates = rates || [];
+  const hard = rates.indexOf(3) >= 0;
   const plan = parsePlan(e.plan);
   const bw = isBW(e.name) && state.today && state.today.bodyweight ? state.today.bodyweight : null;
   if (!lastStr || /^(старт|—)/.test(lastStr) || plan.reps == null) {
@@ -911,7 +925,8 @@ function hintFrom(e, lastStr, rec) {
   const top = Math.max.apply(null, last.map(x => x[0] || 0));
   if (isBW(e.name) || !top) {
     const best = Math.max.apply(null, last.map(x => x[1] || 0));
-    return { kg: bw != null && top > 0 ? bw : top, reps: hit ? best + 1 : plan.reps, up: hit, text: hit ? 'по ' + (best + 1) + ' повт.' : '' };
+    const more = hit && !hard;
+    return { kg: bw != null && top > 0 ? bw : top, reps: more ? best + 1 : plan.reps, up: more, hard: hit && hard, text: more ? 'по ' + (best + 1) + ' повт.' : '' };
   }
   const step = top >= 20 ? 2.5 : 1;
   if (!hit && rec.length >= 3 && rec.slice(0, 3).every(r => r.kg === top)) {
@@ -920,14 +935,16 @@ function hintFrom(e, lastStr, rec) {
   }
   // прибавка через тренировку (≈ раз в 2 недели): если в прошлый раз уже подняли вес — сначала закрепляем его
   const justUp = rec.length >= 2 && rec[0].kg > rec[1].kg;
-  if (hit && justUp) return { kg: top, up: false, hold: true };
+  const easy = rates.length >= plan.sets && rates.every(r => r === 1);
+  if (hit && hard) return { kg: top, up: false, hard: true }; // повторы сделаны, но на пределе: вес пока не прибавляем
+  if (hit && justUp && !easy) return { kg: top, up: false, hold: true };
   return hit ? { kg: top + step, up: true } : { kg: top, up: false };
 }
 function targetText(e) {
   const h = hintFor(e);
   if (!h || h.kg == null) return '';
   if (isBW(e.name)) return h.text ? 'цель <b>' + h.text + ' ↑</b>' : '';
-  return 'цель <b>' + fmtNum(h.kg) + ' кг' + (h.up ? ' ↑' : h.warn ? ' ↓' : '') + '</b>' + (h.hold ? ' · закрепляем, ↑ в след. раз' : '');
+  return 'цель <b>' + fmtNum(h.kg) + ' кг' + (h.up ? ' ↑' : h.warn ? ' ↓' : '') + '</b>' + (h.hold ? ' · закрепляем, ↑ в след. раз' : '') + (h.hard ? ' · в прошлый раз было тяжело' : '');
 }
 // тоннаж сравниваем только по упражнениям, которые были и в этот раз, и в прошлый: пропуск или новое упражнение не должны его искажать
 function tonDelta(done) {
@@ -1153,12 +1170,28 @@ function saveCurrent() {
   const i = state.sel, wasEdit = hasSet(e, i);
   commitSet(e, i, kg, Math.round(reps));
   haptic('success');
-  if (!wasEdit) startRest();
+  if (!wasEdit) { startRest(); askRate(e.name, i); }
   const next = e.sets.findIndex((s, k) => !filled(s) && k < parsePlan(e.plan).sets);
   if (next >= 0) selectSet(e, next);
   else { state.cur = null; state.sel = null; }
   renderToday();
   setTimeout(() => checkBadges(buildProgress()), 600);
+}
+const RATES = ['', 'Легко', 'Нормально', 'Тяжело'];
+let rateT = null;
+function hideRate() { clearTimeout(rateT); const b = document.getElementById('rateBar'); if (b) b.remove(); }
+function askRate(name, i) {
+  hideRate();
+  const bar = document.createElement('div');
+  bar.id = 'rateBar'; bar.className = 'glass';
+  bar.innerHTML = '<span>Как подход?</span>' + [1, 2, 3].map(r => '<button data-r="' + r + '">' + RATES[r] + '</button>').join('');
+  bar.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => {
+    const e = state.today && state.today.today && named().find(x => x.name === name);
+    if (e && e.sets[i] && filled(e.sets[i])) { e.sets[i][2] = Number(b.dataset.r); saveToday(); }
+    tap(); hideRate();
+  }));
+  document.body.appendChild(bar);
+  rateT = setTimeout(hideRate, 20000);
 }
 function deleteCurrent() {
   const e = curEx(); if (!e || !hasSet(e, state.sel)) return;
@@ -1166,7 +1199,8 @@ function deleteCurrent() {
   selectSet(e, firstEmpty(e)); haptic('warning'); renderToday();
 }
 function commitSet(e, i, kg, reps) {
-  e.sets[i] = [kg, reps];
+  const rate = kg == null && reps == null ? null : e.sets[i] && e.sets[i][2];
+  e.sets[i] = rate ? [kg, reps, rate] : [kg, reps];
   e.tonnage = tonOf(e.sets);
   const ss = session();
   if (!ss.start && reps != null) { ss.start = Date.now(); saveCache(); }
@@ -1415,7 +1449,7 @@ function showSummary() {
     '<div><small>Время</small><b style="color:var(--cyn)">' + (mins ? mins + '<small>мин</small>' : '—') + '</b></div></div>';
   if (ss.prs.length) {
     h += '<div class="sec">Рекорды</div>';
-    ss.prs.forEach(p => { h += '<div class="row2"><div class="nm"><b>' + esc(p.name) + '<span class="tag">PR</span></b><small>было ' + fmtNum(p.prev) + ' кг</small></div><div class="v" style="color:var(--org)">' + fmtNum(p.kg) + ' кг</div></div>'; });
+    ss.prs.forEach((p, i) => { h += '<div class="row2"><div class="nm"><b>' + esc(p.name) + '<span class="tag">PR</span></b><small>было ' + fmtNum(p.prev) + ' кг</small></div><div class="v" style="color:var(--org)">' + fmtNum(p.kg) + ' кг<button class="sharebtn" data-prcard="' + i + '">поделиться</button></div></div>'; });
   }
   h += '<div class="sec">По сравнению с прошлым разом</div>';
   done.forEach(e => {
@@ -1426,21 +1460,26 @@ function showSummary() {
   if (!done.length) h += '<div class="empty">Пока ни одного подхода</div>';
   if (pending()) h += '<div class="hintfull" style="display:block">Сохраняю в облако Telegram — не закрывай приложение секунду-другую</div>';
   h += '<button class="btn" data-close>Готово</button>';
-  openSheet(h);
+  const sheet = openSheet(h);
+  sheet.el.querySelectorAll('[data-prcard]').forEach(b => b.addEventListener('click', () => {
+    const p = ss.prs[Number(b.dataset.prcard)];
+    sheet.close(); openRecordCard({ name: p.name, kg: p.kg, prev: p.prev, d: t.date });
+  }));
   haptic('success');
   sendReport();
 }
 
 /* ---------- отчёт о тренировке в бота ---------- */
 const listNames = a => a.slice(0, 4).join(', ') + (a.length > 4 ? ' и ещё ' + (a.length - 4) : '');
-function buildReport() {
+function buildReport(ss) {
   const t = state.today.today, ex = named(), done = ex.filter(e => doneSets(e));
-  const m = metrics(), ss = session();
+  const m = metrics();
+  ss = ss || session();
   const mins = ss.start ? Math.max(1, Math.round((Date.now() - ss.start) / 60000)) : null;
   const delta = tonDelta(done);
   const skipped = ex.filter(e => !doneSets(e) && !e.extra).map(e => e.name);
   const planned = ex.filter(e => !e.extra).length;
-  const good = [], bad = [], next = [], clean = [], facts = [], stronger = [];
+  const good = [], bad = [], next = [], clean = [], facts = [], stronger = [], easyList = [];
 
   ss.prs.forEach(p => good.push(p.name + ': рекорд, ' + fmtNum(p.kg) + ' кг (было ' + fmtNum(p.prev) + ')'));
   if (delta != null && delta > 0) good.push('Тоннаж в тех же упражнениях ' + sign(delta) + '%');
@@ -1452,7 +1491,9 @@ function buildReport() {
     const recent = (state.today.recent || {})[e.name] || [];
     const top = Math.max.apply(null, sets.map(s => s[0] || 0));
     const lastStr = sets.map(s => (s[0] == null ? '' : fmtNum(s[0])) + '×' + (s[1] == null ? '' : s[1])).join('   ');
-    const h = hintFrom(e, lastStr, [{ kg: top }].concat(recent));
+    const rates = sets.map(s => s[2]).filter(Boolean);
+    const h = hintFrom(e, lastStr, [{ kg: top }].concat(recent), rates);
+    if (rates.length >= sets.length && rates.every(r => r === 1)) easyList.push(e.name);
     const prevSets = /^старт/.test(e.last || '') ? [] : parseLast(e.last, plan);
     const e1Now = bw ? 0 : bestE1(sets), e1Was = bw ? 0 : bestE1(prevSets), e1Pct = e1Now && e1Was ? pct(e1Now, e1Was) : null;
     const missed = [];
@@ -1468,14 +1509,16 @@ function buildReport() {
     if (e1Pct != null && e1Pct <= -3) bad.push(e1Text); // вес могли снизить ради повторов: минус только если реально стало слабее
 
     if (h && h.warn) next.push(e.name + ': застой, сбрось до ' + fmtNum(h.kg) + ' кг и разгонись заново');
+    else if (h && h.hard) next.push(e.name + ': снова ' + (bw ? plan.reps + ' повт.' : fmtNum(h.kg) + ' кг') + ', в этот раз было тяжело');
     else if (h && h.up && bw && h.text) next.push(e.name + ': ' + h.text);
     else if (h && h.up && h.kg != null) next.push(e.name + ': ' + fmtNum(h.kg) + ' кг ↑');
     else if (h && missed.length && !bw && h.kg != null) next.push(e.name + ': снова ' + fmtNum(h.kg) + ' кг, добери повторы');
 
-    facts.push({ name: e.name, plan: e.plan, sets: sets.map(s => ({ kg: s[0], reps: s[1] })), last: e.last, recent: recent.map(r => r.kg), e1rm: Math.round(e1Now), e1rmLast: Math.round(e1Was), bodyweight: bw, extra: !!e.extra });
+    facts.push({ name: e.name, plan: e.plan, sets: sets.map(s => ({ kg: s[0], reps: s[1], felt: RATES[s[2]] || undefined })), last: e.last, recent: recent.map(r => r.kg), e1rm: Math.round(e1Now), e1rmLast: Math.round(e1Was), bodyweight: bw, extra: !!e.extra });
   });
   stronger.sort((a, b) => b.p - a.p).slice(0, 3).forEach(x => good.push(x.t));
   if (clean.length) good.push('Все повторы по плану: ' + listNames(clean));
+  if (easyList.length) good.push('Дались легко: ' + listNames(easyList));
 
   const head = 'Упражнения: ' + done.length + ' из ' + Math.max(planned, done.length) + ' · подходов: ' + m.done + ' · тоннаж: ' + fmtT(m.ton) + ' кг' + (mins ? ' · ' + mins + ' мин' : '');
   return {
@@ -1490,8 +1533,20 @@ function sendReport() {
   if (local.get('reportSig') === sig) return; // та же тренировка: второй раз не присылаем
   local.set('reportSig', sig);
   api('report', Object.assign({ ai: ai }, ai ? b : { report: b.report }))
-    .then(d => toast(d.aiError ? 'ИИ не ответил, отчёт по правилам в чате с ботом' : 'Отчёт в чате с ботом'))
+    .then(d => { markReported(state.today.date); toast(d.aiError ? 'ИИ не ответил, отчёт по правилам в чате с ботом' : 'Отчёт в чате с ботом'); })
     .catch(err => { local.set('reportSig', null); toast('Отчёт: ' + err.message, true); });
+}
+function markReported(d) { if (!DB.prog.rep || DB.prog.rep < d) { DB.prog.rep = d; put('prog', DB.prog); } }
+// забыл нажать «Завершить»: при следующем открытии досылаем отчёт о последней тренировке, но не старше 3 дней
+function sendMissedReport() {
+  if (DEMO || !API_URL || !DB.prog) return;
+  const t = isoToday(), past = idx().dates.filter(d => d < t), d = past[past.length - 1];
+  if (!d || d < addDays(t, -3) || (DB.prog.rep && DB.prog.rep >= d)) return;
+  const keep = state.today, I = idx(), ai = !!(DB.prog.aiReport && USER && USER.id === OWNER_ID);
+  const prs = I.prs.filter(p => p.d === d).map(p => ({ name: p.name, kg: p.kg, prev: Math.max.apply(null, [0].concat(I.byEx[p.name].filter(x => x.d < d).map(x => x.top))) }));
+  let b;
+  try { state.today = buildToday(d); b = buildReport({ start: null, prs: prs }); } finally { state.today = keep; }
+  api('report', Object.assign({ ai: ai }, ai ? b : { report: b.report })).then(() => markReported(d)).catch(() => {}); // не вышло — попробуем при следующем открытии
 }
 
 /* ---------- «Прогресс» ---------- */
@@ -1517,6 +1572,7 @@ function renderProgress() {
   $view.innerHTML = h;
   $view.querySelectorAll('[data-seg]').forEach(b => b.addEventListener('click', () => { state.pseg = b.dataset.seg; tap(); renderProgress(); }));
   $view.querySelectorAll('[data-day]').forEach(b => b.addEventListener('click', () => { state.pday = b.dataset.day; tap(); renderProgress(); }));
+  $view.querySelectorAll('[data-exn]').forEach(b => b.addEventListener('click', () => { tap(); openExercise(p.exercises[Number(b.dataset.exn)].name); }));
   bindWeight();
 }
 function exList(p) {
@@ -1537,10 +1593,54 @@ function exList(p) {
     const best = e.best && !isBW(e.name) ? esc(e.best) : (e.maxReps ? esc(e.maxReps) + '<span style="font-size:11px;color:var(--mut)"> раз</span>' : '—');
     const color = stuck ? '#8E8E93' : cls === 'dn' ? '#FF375F' : cls === 'z' ? '#8E8E93' : '#30D158';
     const sub = Number(e.count) ? (e.start && !isBW(e.name) ? 'старт ' + esc(e.start) + ' · ' : '') + (stuck ? '<span style="color:#FFB340">застой</span>' : esc(e.count) + ' трен.') + (e.e1 ? ' · 1ПМ ≈ ' + fmtE1(e.e1) : '') : 'ещё не делал';
-    h += '<div class="it"><div class="nm"><b>' + esc(e.name) + '</b><small>' + sub + '</small></div>' +
+    h += '<div class="it" data-exn="' + p.exercises.indexOf(e) + '"><div class="nm"><b>' + esc(e.name) + '</b><small>' + sub + '</small></div>' +
       spark(sp, color) + '<div class="v"><b>' + best + '</b><small class="' + cls + '">' + esc(isBW(e.name) ? '' : g) + '</small></div></div>';
   });
   return h + '</div>';
+}
+function bigChart(points, unit) {
+  if (points.length < 2) return '<div class="empty">График появится после второй тренировки</div>';
+  const W = 320, H = 130, L = 30, T = 8, B = 20, vals = points.map(p => p.v);
+  let mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals);
+  if (mn === mx) { mn -= 1; mx += 1; }
+  const x = i => L + i * (W - L - 6) / (points.length - 1), y = v => T + (1 - (v - mn) / (mx - mn)) * (H - T - B);
+  const line = points.map((p, i) => x(i).toFixed(1) + ',' + y(p.v).toFixed(1)).join(' ');
+  const dots = points.map((p, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(p.v).toFixed(1) + '" r="' + (p.pr ? 4 : 2.4) + '" fill="' + (p.pr ? 'var(--org)' : 'var(--acc)') + '"/>').join('');
+  return '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="График, ' + esc(unit) + '">' +
+    '<line x1="' + L + '" x2="' + (W - 6) + '" y1="' + y(mx).toFixed(1) + '" y2="' + y(mx).toFixed(1) + '" stroke="rgba(255,255,255,.1)"/><line x1="' + L + '" x2="' + (W - 6) + '" y1="' + y(mn).toFixed(1) + '" y2="' + y(mn).toFixed(1) + '" stroke="rgba(255,255,255,.1)"/>' +
+    '<text x="0" y="' + (y(mx) + 3).toFixed(1) + '">' + fmtE1(mx) + '</text><text x="0" y="' + (y(mn) + 3).toFixed(1) + '">' + fmtE1(mn) + '</text>' +
+    '<text x="' + L + '" y="' + (H - 4) + '">' + dm(points[0].d) + '</text><text x="' + (W - 6) + '" y="' + (H - 4) + '" text-anchor="end">' + dm(points[points.length - 1].d) + '</text>' +
+    '<polyline points="' + line + '" fill="none" stroke="var(--acc)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' + dots + '</svg>';
+}
+function openExercise(name) {
+  const list = idx().byEx[name] || [], bw = isBW(name);
+  let best = 0;
+  const runs = list.map(x => { const pr = !bw && best > 0 && x.top > best; best = Math.max(best, x.top); return Object.assign({}, x, { pr: pr, e1: bw ? 0 : bestE1(x.sets) }); });
+  const bestRun = runs.reduce((m, x) => (x.top > (m ? m.top : 0) ? x : m), null);
+  const mode = bw ? 'reps' : 'kg';
+  const pts = m => runs.slice(-30).map(x => ({ d: x.d, pr: x.pr, v: m === 'e1' ? x.e1 : m === 'reps' ? x.reps : x.top }));
+  const unit = { kg: 'кг', e1: 'кг, расчётный максимум', reps: 'повторов' };
+  let h = '<div class="sh"><div><small>Упражнение</small><h2>' + esc(name) + '</h2></div>' + closeBtn + '</div>';
+  if (!runs.length) { openSheet(h + '<div class="empty">Ещё не делал это упражнение</div>'); return; }
+  h += '<div class="ws three"><div><small>' + (bw ? 'Макс. повторов' : 'Лучший вес') + '</small><b>' + (bw ? Math.max.apply(null, runs.map(x => x.reps)) : fmtNum(best) + '<small>кг</small>') + '</b></div>' +
+    (bw ? '' : '<div><small>Лучший 1ПМ</small><b>' + fmtE1(Math.max.apply(null, runs.map(x => x.e1))) + '<small>кг</small></b></div>') +
+    '<div><small>Тренировок</small><b>' + runs.length + '</b></div></div>';
+  if (!bw) h += '<div class="seg sm liquid" id="exSeg"><div class="lens"></div><button>Вес</button><button>Расчётный максимум</button></div>';
+  h += '<div id="exChart">' + bigChart(pts(mode), unit[mode]) + '</div>';
+  if (!bw) h += '<button class="btn gray" data-card>Поделиться рекордом</button>';
+  h += '<div class="sec">История</div>';
+  runs.slice().reverse().forEach(x => {
+    const sets = x.sets.map(s => fmtNum(s[0]) + '×' + (s[1] == null ? '' : s[1]) + (s[2] && s[2] !== 2 ? '<span class="rate r' + s[2] + '">' + RATES[s[2]].toLowerCase() + '</span>' : '')).join(' · ');
+    h += '<div class="row2"><div class="nm"><b>' + dlong(x.d) + (x.pr ? '<span class="tag">PR</span>' : '') + '</b><small>' + sets + '</small></div>' + (x.e1 ? '<div class="v">' + fmtE1(x.e1) + '<small style="color:var(--mut)">1ПМ</small></div>' : '') + '</div>';
+  });
+  const s = openSheet(h, { expandable: true });
+  if (!bw) {
+    liquidSeg(s.el.querySelector('#exSeg'), 0, i => { const m = i ? 'e1' : 'kg'; s.el.querySelector('#exChart').innerHTML = bigChart(pts(m), unit[m]); });
+    s.el.querySelector('[data-card]').addEventListener('click', () => {
+      const before = runs.filter(x => x.d < bestRun.d).map(x => x.top);
+      s.close(); openRecordCard({ name: name, kg: bestRun.top, prev: before.length ? Math.max.apply(null, before) : null, d: bestRun.d });
+    });
+  }
 }
 function spark(vals, color) {
   if (!vals || vals.length < 2) return '<svg class="sp" viewBox="0 0 54 22"></svg>';
@@ -1893,6 +1993,59 @@ function saveProgram() {
   else note('Программа сохранена');
 }
 
+/* ---------- карточка рекорда ---------- */
+function wrapText(c, text, maxW, maxLines) {
+  const lines = []; let cur = '';
+  text.split(' ').forEach(w => { const t = cur ? cur + ' ' + w : w; if (c.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; });
+  if (cur) lines.push(cur);
+  if (lines.length > maxLines) { lines.length = maxLines; lines[maxLines - 1] = lines[maxLines - 1].replace(/.{0,2}$/, '') + '…'; }
+  return lines;
+}
+async function drawRecordCard(r) {
+  try { await Promise.all([document.fonts.load('800 100px Inter', 'Жим'), document.fonts.load('600 40px Inter', 'Жим')]); } catch (e) {}
+  const W = 1080, H = 1350, cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const c = cv.getContext('2d'), F = (w, s) => w + ' ' + s + 'px Inter, -apple-system, system-ui, sans-serif';
+  c.fillStyle = '#000'; c.fillRect(0, 0, W, H);
+  const g = c.createRadialGradient(W / 2, H + 80, 40, W / 2, H + 80, 1050);
+  g.addColorStop(0, 'rgba(255,159,10,.62)'); g.addColorStop(1, 'rgba(255,159,10,0)');
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+  c.textBaseline = 'alphabetic'; c.textAlign = 'left';
+  c.fillStyle = '#FF9F0A'; c.font = F(800, 46); c.fillText('MY GYM', 84, 130);
+  c.fillStyle = '#8E8E93'; c.font = F(600, 38); c.textAlign = 'right'; c.fillText(dlong(r.d), W - 84, 128); c.textAlign = 'left';
+  c.fillStyle = '#C7C7CC'; c.font = F(700, 52); c.fillText('Новый рекорд', 84, 390);
+  c.fillStyle = '#fff'; c.font = F(800, 84);
+  wrapText(c, r.name, W - 168, 2).forEach((l, i) => c.fillText(l, 84, 494 + i * 98));
+  const val = fmtNum(r.kg); let size = 320;
+  c.font = F(800, size);
+  while (c.measureText(val).width > W - 340 && size > 120) { size -= 10; c.font = F(800, size); }
+  c.fillStyle = '#FF9F0A'; c.fillText(val, 76, 950);
+  const vw = c.measureText(val).width;
+  c.fillStyle = '#fff'; c.font = F(800, 88); c.fillText('кг', 76 + vw + 26, 950);
+  if (r.prev) {
+    const diff = Math.round((r.kg - r.prev) * 100) / 100;
+    c.fillStyle = '#30D158'; c.font = F(800, 56); c.fillText('+' + fmtNum(diff) + ' кг', 84, 1058);
+    const dw = c.measureText('+' + fmtNum(diff) + ' кг').width;
+    c.fillStyle = '#C7C7CC'; c.font = F(600, 44); c.fillText('было ' + fmtNum(r.prev) + ' кг', 84 + dw + 30, 1056);
+  }
+  c.fillStyle = 'rgba(255,255,255,.72)'; c.font = F(600, 38); c.fillText('Журнал тренировок в Telegram: @my_gyymm_bot', 84, 1262);
+  return cv.toDataURL('image/jpeg', 0.9);
+}
+async function openRecordCard(r) {
+  const s = openSheet('<div class="sh"><div><small>Карточка рекорда</small><h2>' + esc(r.name) + '</h2></div>' + closeBtn + '</div><div id="cardBox"><div class="empty">Рисую…</div></div>');
+  let url;
+  try { url = await drawRecordCard(r); } catch (e) { s.el.querySelector('#cardBox').innerHTML = '<div class="empty">Не получилось нарисовать карточку</div>'; return; }
+  s.el.querySelector('#cardBox').innerHTML = '<img class="cardimg" alt="Карточка рекорда" src="' + url + '"><button class="btn" data-send>Прислать в чат с ботом</button><div class="note2">Оттуда её можно переслать другу</div>';
+  const b = s.el.querySelector('[data-send]');
+  b.addEventListener('click', () => {
+    if (b.dataset.busy) return;
+    b.dataset.busy = '1'; b.textContent = 'Отправляю…';
+    api('card', { image: url.split(',')[1] })
+      .then(() => { haptic('success'); toast('Карточка в чате с ботом'); s.close(); })
+      .catch(err => { toast('Карточка: ' + err.message, true); b.textContent = 'Прислать в чат с ботом'; delete b.dataset.busy; });
+  });
+}
+
 /* ---------- разминка и блины ---------- */
 const PLATES = [25, 20, 15, 10, 5, 2.5, 1.25];
 function platesText(kg, bar) {
@@ -1935,8 +2088,8 @@ function openWarmup(e) {
 /* ---------- копия данных ---------- */
 function backupFiles() {
   const q = v => { let t = String(v == null ? '' : v); if (/^[=+\-@]/.test(t)) t = "'" + t; return '"' + t.replace(/"/g, '""') + '"'; };
-  const rows = [['Дата', 'Тренировка', 'Упражнение', 'Подход', 'Вес, кг', 'Повторы']];
-  Object.keys(DB.w).sort().forEach(d => { const r = DB.w[d]; (r && r.x || []).forEach(x => (x[1] || []).forEach((s, i) => { if (s) rows.push([d, r.t, x[0], i + 1, fmtNum(s[0]), s[1] == null ? '' : s[1]]); })); });
+  const rows = [['Дата', 'Тренировка', 'Упражнение', 'Подход', 'Вес, кг', 'Повторы', 'Оценка']];
+  Object.keys(DB.w).sort().forEach(d => { const r = DB.w[d]; (r && r.x || []).forEach(x => (x[1] || []).forEach((s, i) => { if (s) rows.push([d, r.t, x[0], i + 1, fmtNum(s[0]), s[1] == null ? '' : s[1], RATES[s[2]] || '']); })); });
   return {
     csv: '\uFEFF' + rows.map(r => r.map(q).join(';')).join('\r\n'),
     json: JSON.stringify({ app: 'mygym', saved: isoToday(), prog: DB.prog, workouts: DB.w, moves: DB.ov, bodyweight: DB.bw })
@@ -2166,6 +2319,7 @@ async function boot() {
   }
   if (!state.view && state.tab === 'today' && !busyUI()) render();
   syncReminders();
+  if (cloudOk) sendMissedReport();
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && DB.prog && !busyUI() && state.today && state.today.date !== isoToday()) render(); });
 /* нижнее меню: стеклянная линза, которую можно водить пальцем */
