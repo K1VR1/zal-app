@@ -344,6 +344,15 @@
   .addex svg { width: 16px; height: 16px; }
   .btn svg { width: 18px; height: 18px; }
   .catl .sec { margin: 14px 0 6px; }
+  #libL .sec { margin: 14px 0 6px; }
+  .lx { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 10px 0; border-top: .5px solid var(--g2); }
+  .lx:first-child { border: 0; }
+  .lx .nm { flex: 1; min-width: 0; }
+  .lx .nm b { display: block; font-size: 14.5px; font-weight: 600; }
+  .lx .nm small { font-size: 11.5px; font-weight: 600; color: var(--done); }
+  .lx .pl { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--g2); color: var(--acc); display: grid; place-items: center; }
+  .lx .pl svg { width: 16px; height: 16px; }
+  .lx.in .pl { background: rgba(48,209,88,.16); color: var(--done); }
   .catl button { display: flex; justify-content: space-between; width: 100%; text-align: left; padding: 11px 12px; border-radius: 12px; background: rgba(255,255,255,.06); margin-bottom: 5px; font-size: 14.5px; font-weight: 600; }
   .catl button.used { color: var(--mut); }
   .catl button span { font-size: 11px; color: var(--mut); font-weight: 600; }
@@ -406,6 +415,7 @@
   <button data-tab="today" class="on"><svg class="i" viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg>Сегодня</button>
   <button data-tab="progress"><svg class="i" viewBox="0 0 24 24"><path d="M4 19h16M5 15l4.5-4.5 3.5 3 6-6.5"/><path d="M15 7h4v4"/></svg>Прогресс</button>
   <button data-tab="history"><svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h2M12 14h2M8 17h2"/></svg>История</button>
+  <button data-tab="library"><svg class="i" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>Упражнения</button>
 </nav>
 <div id="toast" class="glass"></div>
 <div id="cele"></div>
@@ -594,7 +604,9 @@ const mondayOf = iso => addDays(iso, 1 - wdOf(iso));
 const daysBetween = (a, b) => Math.round((dateOf(b) - dateOf(a)) / 86400000);
 
 /* ---------- программа ---------- */
-const BW_NAMES = ['Подтягивания', 'Пресс на брусьях', 'Отжимания на брусьях', 'Отжимания', 'Отжимания узким хватом', 'Подъём ног в висе', 'Скручивания', 'Гиперэкстензия', 'Планка'];
+const BW_NAMES = ['Подтягивания', 'Пресс на брусьях', 'Отжимания на брусьях', 'Отжимания', 'Отжимания узким хватом', 'Подъём ног в висе', 'Скручивания', 'Гиперэкстензия', 'Планка',
+  'Подтягивания широким хватом', 'Подтягивания обратным хватом', 'Подтягивания параллельным хватом', 'Австралийские подтягивания', 'Отжимания с ногами на возвышении', 'Отжимания с широкой постановкой рук', 'Обратные отжимания от скамьи', 'Пистолетик', 'Вис на перекладине',
+  'Скручивания на наклонной скамье', 'Косые скручивания', 'Обратные скручивания', 'Велосипед', 'Подъём коленей в висе', 'Подъём ног лёжа', 'Боковая планка', 'Книжка', 'Ролик для пресса'];
 function dayById(id) { return DB.prog && DB.prog.days.find(d => d.id === id) || null; }
 function progEx(name) {
   if (!DB.prog) return null;
@@ -1814,12 +1826,15 @@ function weekHtml(w) {
 
 /* ---------- справочник упражнений и шаблоны программ ---------- */
 const CATALOG = [
-  ['Грудь', ['Жим лежа', 'Жим на наклонной', 'Жим гантелей лежа', 'Жим гантелей на наклонной', 'Бабочка', 'Разводка гантелей', 'Кроссовер', 'Отжимания на брусьях', 'Отжимания']],
-  ['Спина', ['Подтягивания', 'Тяга верхнего блока', 'Тяга сверху вниз', 'Тяга к груди', 'Тяга среднего блока', 'Тяга штанги в наклоне', 'Тяга гантели в наклоне', 'Становая тяга', 'Гиперэкстензия']],
-  ['Ноги', ['Приседания со штангой', 'Жим ногами', 'Разгибание голени', 'Сгибание голени', 'Выпады', 'Румынская тяга', 'Ягодичный мост', 'Икры']],
-  ['Плечи', ['Жим штанги стоя', 'Жим гантелей сидя', 'Махи руками с гантелями', 'Махи в наклоне', 'Тяга к подбородку', 'Шраги с гантелями']],
-  ['Руки', ['Бицепс со штангой', 'Подъём гантелей на бицепс', 'Молотки', 'Сгибание на бицепс в тренажёре', 'Французский жим', 'Разгибание на блоке', 'Отжимания узким хватом', 'Предплечья']],
-  ['Пресс', ['Скручивания', 'Пресс на брусьях', 'Подъём ног в висе', 'Планка']]
+  ['Грудь', ['Жим лежа', 'Жим на наклонной', 'Жим штанги головой вниз', 'Жим в Смите лежа', 'Жим в Смите на наклонной', 'Жим гантелей лежа', 'Жим гантелей на наклонной', 'Жим гантелей головой вниз', 'Жим от груди в тренажёре', 'Жим на наклонной в тренажёре', 'Бабочка', 'Разводка гантелей', 'Разводка гантелей на наклонной', 'Кроссовер', 'Сведение в кроссовере снизу вверх', 'Пуловер с гантелью', 'Отжимания на брусьях', 'Отжимания на брусьях с весом', 'Отжимания', 'Отжимания с ногами на возвышении', 'Отжимания с широкой постановкой рук']],
+  ['Спина', ['Подтягивания', 'Подтягивания с весом', 'Подтягивания широким хватом', 'Подтягивания обратным хватом', 'Подтягивания параллельным хватом', 'Австралийские подтягивания', 'Тяга верхнего блока', 'Тяга верхнего блока узким хватом', 'Тяга верхнего блока обратным хватом', 'Тяга сверху вниз', 'Тяга к груди', 'Тяга среднего блока', 'Тяга штанги в наклоне', 'Тяга штанги обратным хватом', 'Тяга Т-грифа', 'Тяга гантели в наклоне', 'Тяга гантелей лёжа на наклонной скамье', 'Тяга в рычажном тренажёре', 'Пуловер на верхнем блоке', 'Становая тяга', 'Становая тяга сумо', 'Гиперэкстензия', 'Гиперэкстензия с весом', 'Доброе утро']],
+  ['Ноги', ['Приседания со штангой', 'Фронтальные приседания', 'Приседания в Смите', 'Кубковые приседания', 'Гакк-приседания', 'Болгарские сплит-приседания', 'Пистолетик', 'Жим ногами', 'Разгибание голени', 'Сгибание голени', 'Сгибание голени лёжа', 'Сгибание голени сидя', 'Выпады', 'Выпады со штангой', 'Выпады с гантелями', 'Выпады назад', 'Зашагивания на тумбу', 'Румынская тяга', 'Румынская тяга с гантелями', 'Сведение ног в тренажёре', 'Икры', 'Подъём на носки стоя', 'Подъём на носки сидя', 'Подъём на носки в жиме ногами']],
+  ['Ягодицы', ['Ягодичный мост', 'Ягодичный мост со штангой', 'Ягодичный мост в тренажёре', 'Разведение ног в тренажёре', 'Отведение ноги в кроссовере', 'Мах ногой назад в тренажёре']],
+  ['Плечи', ['Жим штанги стоя', 'Жим штанги сидя', 'Жим гантелей сидя', 'Жим гантелей стоя', 'Жим Арнольда', 'Жим на плечи в тренажёре', 'Жим в Смите сидя', 'Махи руками с гантелями', 'Махи в кроссовере', 'Махи в тренажёре', 'Махи в наклоне', 'Обратная бабочка', 'Подъём гантелей перед собой', 'Подъём штанги перед собой', 'Тяга к подбородку', 'Тяга каната к лицу', 'Шраги с гантелями', 'Шраги со штангой']],
+  ['Бицепс', ['Бицепс со штангой', 'Бицепс с EZ-грифом', 'Подъём гантелей на бицепс', 'Подъём гантелей на наклонной скамье', 'Молотки', 'Молотки на блоке с канатом', 'Концентрированный подъём', 'Скамья Скотта', 'Сгибание на бицепс в тренажёре', 'Сгибание на нижнем блоке', 'Сгибание на верхних блоках']],
+  ['Трицепс', ['Французский жим', 'Французский жим с гантелями', 'Жим лежа узким хватом', 'Разгибание на блоке', 'Разгибание на блоке с канатом', 'Разгибание на блоке одной рукой', 'Разгибание на блоке из-за головы', 'Разгибание гантели из-за головы', 'Разгибание с гантелью в наклоне', 'Разгибание в тренажёре', 'Обратные отжимания от скамьи', 'Отжимания узким хватом']],
+  ['Предплечья', ['Предплечья', 'Сгибание запястий со штангой', 'Разгибание запястий со штангой', 'Подъём штанги обратным хватом', 'Фермерская прогулка', 'Вис на перекладине']],
+  ['Пресс', ['Скручивания', 'Скручивания на блоке', 'Скручивания на наклонной скамье', 'Косые скручивания', 'Обратные скручивания', 'Русские скручивания', 'Велосипед', 'Пресс на брусьях', 'Подъём ног в висе', 'Подъём коленей в висе', 'Подъём ног лёжа', 'Книжка', 'Ролик для пресса', 'Дровосек в кроссовере', 'Планка', 'Боковая планка']]
 ];
 const X = (n, s, r, bw) => ({ n: n, s: s, r: r === undefined ? 10 : r, k: null, bw: bw || BW_NAMES.indexOf(n) >= 0 ? 1 : 0 });
 const TEMPLATES = [
@@ -1840,6 +1855,84 @@ const TEMPLATES = [
 ];
 const uid = () => 'd' + Math.random().toString(36).slice(2, 7);
 const copy = o => JSON.parse(JSON.stringify(o));
+
+/* ---------- вкладка «Упражнения» ---------- */
+const lib = { q: '', g: '' };
+const exNorm = s => String(s).toLowerCase().replace(/ё/g, 'е');
+function exGroups() {
+  const mine = allOptions().filter(n => !CATALOG.some(g => g[1].indexOf(n) >= 0));
+  return (mine.length ? [['Мои', mine]] : []).concat(CATALOG);
+}
+const daysWith = name => DB.prog.days.filter(d => d.x.some(x => x.n === name));
+function renderLibrary() {
+  const total = CATALOG.reduce((n, g) => n + g[1].length, 0), groups = exGroups();
+  if (lib.g && !groups.some(g => g[0] === lib.g)) lib.g = '';
+  $view.innerHTML = demoBanner() + '<div class="top"><span class="date">' + total + ' ' + plural(total, 'упражнение', 'упражнения', 'упражнений') + ' в каталоге</span></div><h1>Упражнения</h1>' +
+    '<input class="field" id="libQ" style="margin-top:0" maxlength="60" placeholder="Поиск или своё название" autocomplete="off" value="' + esc(lib.q) + '">' +
+    '<div class="chips">' + ['Все'].concat(groups.map(g => g[0])).map((n, i) => '<button data-g="' + (i ? esc(n) : '') + '" class="' + (lib.g === (i ? n : '') ? 'on' : '') + '">' + esc(n) + '</button>').join('') + '</div>' +
+    '<div id="libL"></div>';
+  const q = $view.querySelector('#libQ');
+  q.addEventListener('input', () => { lib.q = q.value; drawLibrary(); });
+  $view.querySelectorAll('.chips button').forEach(b => b.addEventListener('click', () => {
+    lib.g = b.dataset.g; tap();
+    $view.querySelectorAll('.chips button').forEach(x => x.classList.toggle('on', x === b));
+    drawLibrary();
+  }));
+  $view.querySelector('#libL').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-n]');
+    if (b) { tap(); openAddToDay(b.dataset.n); }
+  });
+  drawLibrary();
+}
+function drawLibrary() {
+  const box = $view.querySelector('#libL');
+  if (!box) return;
+  const raw = lib.q.trim(), v = exNorm(raw), groups = exGroups();
+  let h = '';
+  if (v && !groups.some(g => g[1].some(n => exNorm(n) === v))) h += '<div class="catl"><button class="own" data-n="' + esc(raw) + '">' + ic('plus') + 'Добавить «' + esc(raw) + '»</button></div>';
+  groups.filter(g => !lib.g || g[0] === lib.g).forEach(g => {
+    const list = g[1].filter(n => !v || exNorm(n).indexOf(v) >= 0);
+    if (!list.length) return;
+    h += '<div class="sec">' + esc(g[0]) + '</div><div class="list">' + list.map(n => {
+      const on = daysWith(n);
+      return '<button class="lx' + (on.length ? ' in' : '') + '" data-n="' + esc(n) + '"><span class="nm"><b>' + esc(n) + '</b>' + (on.length ? '<small>' + on.map(d => WD_SHORT[d.wd]).join(' · ') + '</small>' : '') + '</span><span class="pl">' + ic(on.length ? 'check' : 'plus') + '</span></button>';
+    }).join('') + '</div>';
+  });
+  box.innerHTML = h || '<div class="list"><div class="empty">Ничего не нашлось</div></div>';
+}
+function openAddToDay(name) {
+  const known = progEx(name), bw = isBW(name), tmp = { s: known ? known.s : 3, r: known ? known.r : (bw ? null : 10) };
+  const reps = () => tmp.r == null ? 'макс' : tmp.r;
+  const s = openSheet('<div class="sh"><div><small>Добавить в тренировку</small><h2>' + esc(name) + '</h2></div>' + closeBtn + '</div>' +
+    '<div class="frow"><span>Подходов</span><div class="step"><button data-st="s-">' + ic('minus') + '</button><b id="addS">' + tmp.s + '</b><button data-st="s+">' + ic('plus') + '</button></div></div>' +
+    '<div class="frow"><span>Повторов</span><div class="step"><button data-st="r-">' + ic('minus') + '</button><b id="addR">' + reps() + '</b><button data-st="r+">' + ic('plus') + '</button></div></div>' +
+    '<div class="sec">В какой день</div><div class="catl">' + DB.prog.days.map(d => {
+      const has = d.x.some(x => x.n === name);
+      return '<button data-day="' + esc(d.id) + '"' + (has ? ' class="used" disabled' : '') + '>' + WD_SHORT[d.wd] + ' · ' + esc(d.t) + (has ? '<span>уже есть</span>' : '') + '</button>';
+    }).join('') + '</div>' +
+    ((idx().byEx[name] || []).length ? '<button class="link" data-hist style="display:block;margin:10px auto 0">История и график</button>' : ''));
+  s.el.querySelectorAll('[data-st]').forEach(b => b.addEventListener('click', () => {
+    const a = b.dataset.st;
+    if (a === 's+') tmp.s = Math.min(6, tmp.s + 1);
+    if (a === 's-') tmp.s = Math.max(1, tmp.s - 1);
+    if (a === 'r+') tmp.r = tmp.r == null ? 10 : Math.min(100, tmp.r + 1);
+    if (a === 'r-') tmp.r = tmp.r == null ? 10 : Math.max(1, tmp.r - 1);
+    tap();
+    s.el.querySelector('#addS').textContent = tmp.s;
+    s.el.querySelector('#addR').textContent = reps();
+  }));
+  s.el.querySelectorAll('[data-day]').forEach(b => b.addEventListener('click', () => {
+    const day = dayById(b.dataset.day);
+    day.x.push({ n: name, s: tmp.s, r: tmp.r, k: known ? known.k : null, bw: bw ? 1 : 0 });
+    put('prog', DB.prog);
+    state.cur = null; state.sel = null; // номера строк сегодняшней тренировки могли сдвинуться
+    syncReminders();
+    s.close(); haptic('success'); drawLibrary();
+    note('Добавлено: ' + WD_SHORT[day.wd] + ' · ' + day.t);
+  }));
+  const hist = s.el.querySelector('[data-hist]');
+  if (hist) hist.addEventListener('click', () => { s.close(); openExercise(name); });
+}
 
 /* ---------- первый запуск ---------- */
 function renderWelcome() {
@@ -1924,13 +2017,11 @@ function pickExercise(done, exclude) {
     '<input class="field" id="exq" placeholder="Поиск или своё название" autocomplete="off"><div id="exl" class="catl"></div>');
   const q = s.el.querySelector('#exq'), box = s.el.querySelector('#exl');
   const draw = () => {
-    const v = q.value.trim().toLowerCase();
+    const v = exNorm(q.value.trim());
     let h = '';
-    if (v && !CATALOG.some(g => g[1].some(n => n.toLowerCase() === v))) h += '<button class="own" data-n="' + esc(q.value.trim()) + '">' + ic('plus') + 'Добавить «' + esc(q.value.trim()) + '»</button>';
-    const mine = allOptions().filter(n => !CATALOG.some(g => g[1].indexOf(n) >= 0));
-    const groups = (mine.length ? [['Мои', mine]] : []).concat(CATALOG);
-    groups.forEach(g => {
-      const list = g[1].filter(n => !v || n.toLowerCase().indexOf(v) >= 0);
+    if (v && !CATALOG.some(g => g[1].some(n => exNorm(n) === v))) h += '<button class="own" data-n="' + esc(q.value.trim()) + '">' + ic('plus') + 'Добавить «' + esc(q.value.trim()) + '»</button>';
+    exGroups().forEach(g => {
+      const list = g[1].filter(n => !v || exNorm(n).indexOf(v) >= 0);
       if (!list.length) return;
       h += '<div class="sec">' + g[0] + '</div>' + list.map(n => '<button data-n="' + esc(n) + '"' + (exclude.indexOf(n) >= 0 ? ' class="used"' : '') + '>' + esc(n) + (exclude.indexOf(n) >= 0 ? '<span>уже есть</span>' : '') + '</button>').join('');
     });
@@ -2291,6 +2382,7 @@ function render() {
     if (!state.pick || names.indexOf(state.pick) < 0) state.pick = buildHistory(null).names[0] || null;
     state.history = buildHistory(state.pick); return renderHistory();
   }
+  if (state.tab === 'library') return renderLibrary();
 }
 function busyUI() {
   const a = document.activeElement;
