@@ -17,8 +17,11 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; }
   [hidden] { display: none !important; }
   html, body { background: var(--bg); color: #fff; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-  body { min-height: 100vh; padding-bottom: calc(110px + env(safe-area-inset-bottom)); overflow-x: hidden; }
-  body.timer { padding-bottom: calc(180px + env(safe-area-inset-bottom)); }
+  /* документ не прокручивается, только #scroll: на iOS в Telegram меню с position: fixed перестаёт отвечать на касания, когда прокручен сам документ */
+  html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+  #scroll { position: fixed; inset: 0; z-index: 1; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  #view { min-height: 100%; padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
+  body.timer #view { padding-bottom: calc(180px + env(safe-area-inset-bottom)); }
   body:after { content: ""; position: fixed; left: 0; right: 0; bottom: 0; height: 380px; pointer-events: none; z-index: 0;
     background: radial-gradient(ellipse 75% 55% at 50% 100%, var(--glow) 0%, transparent 100%); }
   button, input { font-family: inherit; color: inherit; }
@@ -145,7 +148,7 @@
   #rest.go .x { color: var(--accT); }
 
   nav { position: fixed; left: 22px; right: 22px; bottom: calc(18px + env(safe-area-inset-bottom)); max-width: 476px; margin: 0 auto; height: 66px; border-radius: 33px; display: flex; align-items: center; padding: 5px; z-index: 16; }
-  nav { touch-action: none; user-select: none; -webkit-user-select: none; transform: translateZ(0); }
+  nav { touch-action: none; user-select: none; -webkit-user-select: none; }
   nav button { position: relative; z-index: 2; flex: 1; height: 56px; border-radius: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10.5px; font-weight: 600; color: rgba(255,255,255,.62); transition: color .25s, transform .25s; pointer-events: none; }
   nav button svg { width: 24px; height: 24px; stroke-width: 1.9; }
   nav button.on { color: var(--acc); }
@@ -306,7 +309,7 @@
   .topr { display: flex; align-items: center; gap: 8px; }
   .top .iconbtn { width: 30px; height: 30px; background: var(--g1); }
   body.nonav nav, body.nonav #rest { display: none !important; }
-  body.nonav { padding-bottom: calc(30px + env(safe-area-inset-bottom)); }
+  body.nonav #view { padding-bottom: calc(30px + env(safe-area-inset-bottom)); }
 
   /* первый запуск */
   .hero { min-height: 78vh; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 20px 8px; }
@@ -402,7 +405,7 @@
 </style>
 </head>
 <body>
-<div class="wrap" id="view"></div>
+<div id="scroll"><div class="wrap" id="view"></div></div>
 
 <div id="rest" class="glass" hidden>
   <button class="bt" data-r="-15">−15</button>
@@ -437,7 +440,7 @@ const MON = ['января', 'февраля', 'марта', 'апреля', 'м
 const MON3 = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
 const state = { tab: 'today', view: null, today: null, progress: null, history: null, pick: null, cur: null, sel: null, selRow: null, ed: null,
   listOpen: false, pseg: 'ex', pday: null, pend: {}, draft: null, firstRun: false };
-const $view = document.getElementById('view');
+const $view = document.getElementById('view'), $scroll = document.getElementById('scroll');
 
 if (tg) {
   tg.ready(); tg.expand();
@@ -1150,10 +1153,10 @@ function bindToday() {
     else if (a === 'save') saveCurrent();
     else if (a === 'del') deleteCurrent();
     else if (a === 'cancel') { selectNext(curEx()); renderToday(); }
-    else if (a === 'exdone') { state.cur = null; state.sel = null; tap(); renderToday(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    else if (a === 'exdone') { state.cur = null; state.sel = null; tap(); renderToday(); $scroll.scrollTo({ top: 0, behavior: 'smooth' }); }
   }));
   $view.querySelectorAll('[data-pick]').forEach(b => b.addEventListener('click', () => {
-    state.cur = Number(b.dataset.pick); state.sel = null; tap(); renderToday(); window.scrollTo({ top: 0, behavior: 'smooth' });
+    state.cur = Number(b.dataset.pick); state.sel = null; tap(); renderToday(); $scroll.scrollTo({ top: 0, behavior: 'smooth' });
   }));
   const card = $view.querySelector('.card[data-row]');
   if (!card) return;
@@ -2016,7 +2019,7 @@ function renderProgEditor() {
     if (a === 'add') return pickExercise(name => { day.x.push({ n: name, s: 3, r: isBWname(name) ? null : 10, k: null, bw: isBWname(name) ? 1 : 0 }); renderProgEditor(); }, day.x.map(x => x.n));
     if (a === 'edit') return editExercise(day, i);
     if (a === 'save') return saveProgram();
-    const y = window.scrollY; renderProgEditor(); window.scrollTo(0, y);
+    const y = $scroll.scrollTop; renderProgEditor(); $scroll.scrollTop = y;
   }));
 }
 const isBWname = n => BW_NAMES.indexOf(n) >= 0;
@@ -2377,7 +2380,7 @@ function show(tab) {
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
   if (typeof placeLens === 'function' && !navDrag) placeLens(TABS.indexOf(tab));
   render();
-  window.scrollTo(0, 0); // после отрисовки: иначе браузер зря считает раскладку старой страницы
+  $scroll.scrollTop = 0; // после отрисовки: иначе браузер зря считает раскладку старой страницы
 }
 function render() {
   document.body.classList.toggle('nonav', !!state.view || !DB.prog);
@@ -2452,43 +2455,54 @@ function nearestTab(cx) {
   navM.c.forEach((c, i) => { const d = Math.abs(c - cx); if (d < bd) { bd = d; best = i; } });
   return best;
 }
-// подсветка и линза меняются сразу, а страница рисуется через кадр, чтобы отрисовка не задерживала анимацию
+// подсветка и линза меняются сразу, а страница рисуется чуть позже, чтобы отрисовка не задерживала анимацию.
+// Таймер, а не requestAnimationFrame: браузер может приостанавливать кадры, и вкладка тогда не переключится
 let navNext = null;
 function goTab(tab) {
-  if (!navNext) requestAnimationFrame(() => requestAnimationFrame(() => { const t = navNext; navNext = null; if (t !== state.tab) show(t); }));
+  if (!navNext) setTimeout(() => { const t = navNext; navNext = null; if (t !== state.tab) show(t); }, 30);
   navNext = tab;
 }
 let navDrag = null;
-$nav.addEventListener('pointerdown', ev => {
+function navDown(id, clientX) {
   readNav();
-  const rect = $nav.getBoundingClientRect();
-  navDrag = { id: ev.pointerId, x0: ev.clientX, moved: false, left: rect.left, idx: nearestTab(ev.clientX - rect.left) };
-  try { $nav.setPointerCapture(ev.pointerId); } catch (e) {}
+  const left = $nav.getBoundingClientRect().left;
+  navDrag = { id: id, left: left, idx: nearestTab(clientX - left) };
   lens.classList.add('drag');
-  const cx = lensAt(ev.clientX - rect.left, 1.12);
+  const cx = lensAt(clientX - left, 1.12);
   navBtns.forEach((b, i) => b.classList.toggle('hover', i === nearestTab(cx)));
-});
-$nav.addEventListener('pointermove', ev => {
-  if (!navDrag || ev.pointerId !== navDrag.id) return;
-  if (Math.abs(ev.clientX - navDrag.x0) > 4) navDrag.moved = true;
-  const cx = lensAt(ev.clientX - navDrag.left, 1.12);
+}
+function navMove(id, clientX) {
+  if (!navDrag || id !== navDrag.id) return;
+  const cx = lensAt(clientX - navDrag.left, 1.12);
   const i = nearestTab(cx);
   if (i !== navDrag.idx) { navDrag.idx = i; tap(); }
   navBtns.forEach((b, k) => { b.classList.toggle('hover', k === i); b.classList.toggle('on', k === i); });
-});
-const navUp = ev => {
-  if (!navDrag || ev.pointerId !== navDrag.id) return;
-  // при отмене касания системой координаты бывают нулевыми: берём вкладку, над которой был палец
-  const i = ev.type === 'pointercancel' ? navDrag.idx : nearestTab(ev.clientX - navDrag.left);
+}
+function navEnd(id, clientX, cancelled) {
+  if (!navDrag || id !== navDrag.id) return;
+  // при отмене касания системой координаты ненадёжны: берём вкладку, над которой был палец
+  const i = cancelled ? navDrag.idx : nearestTab(clientX - navDrag.left);
   navDrag = null;
   lens.classList.remove('drag');
   navBtns.forEach((b, k) => { b.classList.remove('hover'); b.classList.toggle('on', k === i); });
   placeLens(i, 1);
   if (TABS[i] !== (navNext || state.tab)) { tap(); goTab(TABS[i]); }
-};
-$nav.addEventListener('pointerup', navUp);
-$nav.addEventListener('pointercancel', navUp);
-$nav.addEventListener('touchmove', ev => ev.preventDefault(), { passive: false }); // iOS не должен забирать касание себе и отменять его
+}
+// палец — через touch-события: preventDefault сразу забирает касание у прокрутки iOS
+const navTouch = (type, fn) => $nav.addEventListener(type, ev => {
+  if (ev.cancelable) ev.preventDefault();
+  Array.from(ev.changedTouches).forEach(fn);
+}, { passive: false });
+navTouch('touchstart', t => navDown(t.identifier, t.clientX));
+navTouch('touchmove', t => navMove(t.identifier, t.clientX));
+navTouch('touchend', t => navEnd(t.identifier, t.clientX, false));
+navTouch('touchcancel', t => navEnd(t.identifier, t.clientX, true));
+// мышь — для демо на компьютере
+const navMouse = (type, fn) => $nav.addEventListener(type, ev => { if (ev.pointerType === 'mouse') fn(ev); });
+navMouse('pointerdown', ev => { try { $nav.setPointerCapture(ev.pointerId); } catch (e) {} navDown(ev.pointerId, ev.clientX); });
+navMouse('pointermove', ev => navMove(ev.pointerId, ev.clientX));
+navMouse('pointerup', ev => navEnd(ev.pointerId, ev.clientX, false));
+navMouse('pointercancel', ev => navEnd(ev.pointerId, ev.clientX, true));
 window.addEventListener('resize', () => placeLens(TABS.indexOf(state.tab)));
 requestAnimationFrame(() => { lens.style.transition = 'none'; placeLens(TABS.indexOf(state.tab)); requestAnimationFrame(() => lens.style.transition = ''); });
 
