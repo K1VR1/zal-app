@@ -62,6 +62,7 @@
   .warn { margin-top: 10px; font-size: 12.5px; font-weight: 600; color: #FFB340; background: rgba(255,159,10,.10); border-radius: 12px; padding: 8px 10px; line-height: 1.35; }
 
   .pills { display: flex; gap: 7px; margin-top: 12px; }
+  .pills.many { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 10px; }
   .pill { flex: 1; min-width: 0; border-radius: 14px; padding: 7px 0; text-align: center; background: var(--g2); position: relative; border: 1.5px solid transparent; }
   .pill b { display: block; font-size: 15px; font-weight: 700; letter-spacing: -.02em; white-space: nowrap; }
   .pill small { font-size: 10.5px; font-weight: 600; color: var(--mut); }
@@ -688,7 +689,7 @@ function lastString(name, before, start) {
 }
 const planStr = (s, r) => (s || 3) + '×' + (r == null ? 'макс' : r);
 const empty4 = () => [[null, null], [null, null], [null, null], [null, null]];
-const norm4 = ss => { const out = empty4(); (ss || []).slice(0, 4).forEach((s, i) => { if (s) out[i] = s[2] ? [s[0], s[1], s[2]] : [s[0], s[1]]; }); return out; };
+const normSets = ss => { const out = empty4(); (ss || []).forEach((s, i) => { if (s) out[i] = s[2] ? [s[0], s[1], s[2]] : [s[0], s[1]]; }); return out; };
 const tonOf = sets => sets.reduce((a, s) => a + (s[0] || 0) * (s[1] || 0), 0);
 
 /* ---------- сборка экранов из данных ---------- */
@@ -737,7 +738,7 @@ function buildToday(day) {
   (rec ? rec.x : []).forEach(e => {
     let it = list.find(x => x.name === e[0]);
     if (!it) { const px = progEx(e[0]); it = mkEx(e[0], px ? px.s : 3, px ? px.r : 10, px ? px.k : null); it.extra = true; list.push(it); }
-    it.sets = norm4(e[1]);
+    it.sets = normSets(e[1]);
   });
   const I = idx();
   list.forEach((e, i) => {
@@ -895,7 +896,7 @@ function parseLast(last, plan) {
   }
   return out;
 }
-const filled = s => s[0] != null || s[1] != null;
+const filled = s => !!s && (s[0] != null || s[1] != null);
 const doneSets = e => e.sets.filter(filled).length;
 const isDone = e => doneSets(e) >= parsePlan(e.plan).sets;
 
@@ -1037,7 +1038,14 @@ function renderToday() {
 const hasSet = (e, i) => i != null && e.sets[i] && filled(e.sets[i]);
 const kgStep = kg => (kg || 0) >= 20 ? 2.5 : 1;
 function lastFilled(e) { return e.sets.reduce((m, s, i) => filled(s) ? i : m, -1); }
-function firstEmpty(e) { const i = e.sets.findIndex(s => !filled(s)); return i < 0 ? 3 : i; }
+// выбрать следующий незаписанный подход из плана; если все записаны — sel = -1: форма скрыта, видна кнопка «Завершить упражнение»
+function selectNext(e) {
+  const planned = parsePlan(e.plan).sets;
+  let i = 0;
+  while (i < planned && filled(e.sets[i])) i++;
+  if (i < planned) selectSet(e, i);
+  else { state.sel = -1; state.selRow = e.row; }
+}
 function selectSet(e, i) {
   state.sel = i; state.selRow = e.row;
   if (hasSet(e, i)) { state.ed = { kg: e.sets[i][0] || 0, reps: e.sets[i][1] || 0 }; return; }
@@ -1053,7 +1061,7 @@ function selectSet(e, i) {
 function currentCard(e) {
   const plan = parsePlan(e.plan);
   const n = doneSets(e);
-  if (state.sel == null || state.selRow !== e.row) selectSet(e, firstEmpty(e));
+  if (state.sel == null || state.selRow !== e.row) selectNext(e);
   const sel = state.sel, ed = state.ed;
   const h = hintFor(e);
   const nt = (state.today.notes || {})[e.name] || '';
@@ -1065,16 +1073,17 @@ function currentCard(e) {
     '<span class="cnt' + (n >= plan.sets ? ' ok' : '') + '">' + n + '/' + plan.sets + '</span></div>';
   if (h && h.warn && !n) s += '<div class="warn">' + esc(h.warn) + '</div>';
   if (!isBW(e.name)) s += '<button class="warmbtn" data-act="warmup">Разминка и блины →</button>';
-  const count = Math.min(4, Math.max(plan.sets, lastFilled(e) + 1, sel + 1));
-  s += '<div class="pills">';
+  const count = Math.max(plan.sets, lastFilled(e) + 1, sel + 1);
+  s += '<div class="pills' + (count >= 4 ? ' many' : '') + '">';
   for (let i = 0; i < count; i++) {
     const v = e.sets[i], isOn = filled(v), pend = state.pend[e.row + ':' + i];
     if (i === sel) s += '<button class="pill act" data-set="' + i + '"><b>' + (isOn ? fmtNum(v[0]) + '×' + fmtNum(v[1]) : (i + 1) + ' подход') + '</b><small>' + (isOn ? 'правишь' : 'вводишь') + '</small></button>';
     else if (isOn) s += '<button class="pill ok' + (pend ? ' ' + pend : '') + '" data-set="' + i + '"><b>' + fmtNum(v[0]) + '×' + fmtNum(v[1]) + '</b><small>' + (i + 1) + ' подход</small></button>';
     else s += '<button class="pill add" data-set="' + i + '"><b>' + (i + 1) + '</b><small>подход</small></button>';
   }
-  if (count < 4) s += '<button class="pill more" data-set="' + count + '" aria-label="Ещё подход">' + ic('plus') + '</button>';
+  s += '<button class="pill more" data-set="' + count + '" aria-label="Ещё подход">' + ic('plus') + '</button>';
   s += '</div>';
+  if (sel < 0) return s + '<button class="save" data-act="exdone">' + ic('check') + 'Завершить упражнение</button></div>';
   const editing = hasSet(e, sel);
   const prevSet = e.sets.slice(0, sel).filter(filled).pop();
   s += '<div class="edit">' +
@@ -1089,6 +1098,7 @@ function currentCard(e) {
     '<button class="b" data-ed="r+">' + ic('plus') + '</button></div>' +
     '<button class="save" data-act="save">' + ic('check') + (editing ? 'Сохранить подход' : 'Записать подход') + '</button>' +
     (editing ? '<div class="subrow"><button class="link red" data-act="del">Удалить подход</button><button class="link" data-act="cancel">Отмена</button></div>' : '') +
+    (isDone(e) ? '<button class="btn gray" style="margin-top:8px" data-act="exdone">Завершить упражнение</button>' : '') +
     '</div></div>';
   return s;
 }
@@ -1140,7 +1150,8 @@ function bindToday() {
     else if (a === 'warmup') openWarmup(curEx());
     else if (a === 'save') saveCurrent();
     else if (a === 'del') deleteCurrent();
-    else if (a === 'cancel') { const e = curEx(); selectSet(e, firstEmpty(e)); renderToday(); }
+    else if (a === 'cancel') { selectNext(curEx()); renderToday(); }
+    else if (a === 'exdone') { state.cur = null; state.sel = null; tap(); renderToday(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
   }));
   $view.querySelectorAll('[data-pick]').forEach(b => b.addEventListener('click', () => {
     state.cur = Number(b.dataset.pick); state.sel = null; tap(); renderToday(); window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1150,6 +1161,7 @@ function bindToday() {
   const e = curEx();
   card.querySelectorAll('.pill[data-set]').forEach(p => p.addEventListener('click', () => { selectSet(e, Number(p.dataset.set)); tap(); renderToday(); }));
   const kgIn = card.querySelector('[data-f=kg]'), rIn = card.querySelector('[data-f=reps]');
+  if (!kgIn) return; // все подходы записаны, формы нет
   const fit = x => { x.style.width = (Math.max(1, x.value.length) + 0.4) + 'ch'; };
   const sync = () => { kgIn.value = fmtNum(state.ed.kg); rIn.value = fmtNum(state.ed.reps); fit(kgIn); fit(rIn); };
   sync();
@@ -1183,9 +1195,8 @@ function saveCurrent() {
   commitSet(e, i, kg, Math.round(reps));
   haptic('success');
   if (!wasEdit) { startRest(); askRate(e.name, i); }
-  const next = e.sets.findIndex((s, k) => !filled(s) && k < parsePlan(e.plan).sets);
-  if (next >= 0) selectSet(e, next);
-  else { state.cur = null; state.sel = null; }
+  state.cur = e.row; // остаёмся на упражнении, пока не нажмут «Завершить упражнение»
+  selectNext(e);
   renderToday();
   setTimeout(() => checkBadges(buildProgress()), 600);
 }
@@ -1208,9 +1219,10 @@ function askRate(name, i) {
 function deleteCurrent() {
   const e = curEx(); if (!e || !hasSet(e, state.sel)) return;
   commitSet(e, state.sel, null, null);
-  selectSet(e, firstEmpty(e)); haptic('warning'); renderToday();
+  selectNext(e); haptic('warning'); renderToday();
 }
 function commitSet(e, i, kg, reps) {
+  while (e.sets.length <= i) e.sets.push([null, null]);
   const rate = kg == null && reps == null ? null : e.sets[i] && e.sets[i][2];
   e.sets[i] = rate ? [kg, reps, rate] : [kg, reps];
   e.tonnage = tonOf(e.sets);
