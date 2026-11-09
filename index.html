@@ -2437,20 +2437,31 @@ function placeLens(i, scale) {
   lens.style.width = r.w + 'px';
   lens.style.transform = 'translateX(' + r.x + 'px) scale(' + (scale || 1) + ')';
 }
+// размеры читаем один раз за касание: чтение на каждое движение пальца заставляет браузер пересчитывать раскладку
+let navM = null;
+function readNav() {
+  navM = { w: navBtns[0].offsetWidth, min: navBtns[0].offsetLeft, max: navBtns[navBtns.length - 1].offsetLeft, c: navBtns.map(b => b.offsetLeft + b.offsetWidth / 2) };
+}
 function lensAt(x, scale) {
-  const w = navBtns[0].offsetWidth, min = navBtns[0].offsetLeft, max = navBtns[navBtns.length - 1].offsetLeft;
-  const lx = Math.max(min - 6, Math.min(max + 6, x - w / 2));
-  lens.style.width = w + 'px';
+  const lx = Math.max(navM.min - 6, Math.min(navM.max + 6, x - navM.w / 2));
+  lens.style.width = navM.w + 'px';
   lens.style.transform = 'translateX(' + lx + 'px) scale(' + scale + ')';
-  return lx + w / 2;
+  return lx + navM.w / 2;
 }
 function nearestTab(cx) {
   let best = 0, bd = 1e9;
-  navBtns.forEach((b, i) => { const c = b.offsetLeft + b.offsetWidth / 2, d = Math.abs(c - cx); if (d < bd) { bd = d; best = i; } });
+  navM.c.forEach((c, i) => { const d = Math.abs(c - cx); if (d < bd) { bd = d; best = i; } });
   return best;
+}
+// подсветка и линза меняются сразу, а страница рисуется через кадр, чтобы отрисовка не задерживала анимацию
+let navNext = null;
+function goTab(tab) {
+  if (!navNext) requestAnimationFrame(() => requestAnimationFrame(() => { const t = navNext; navNext = null; if (t !== state.tab) show(t); }));
+  navNext = tab;
 }
 let navDrag = null;
 $nav.addEventListener('pointerdown', ev => {
+  readNav();
   const rect = $nav.getBoundingClientRect();
   navDrag = { id: ev.pointerId, x0: ev.clientX, moved: false, left: rect.left, idx: nearestTab(ev.clientX - rect.left) };
   try { $nav.setPointerCapture(ev.pointerId); } catch (e) {}
@@ -2467,16 +2478,18 @@ $nav.addEventListener('pointermove', ev => {
   navBtns.forEach((b, k) => { b.classList.toggle('hover', k === i); b.classList.toggle('on', k === i); });
 });
 const navUp = ev => {
-  if (!navDrag) return;
-  const i = nearestTab(ev.clientX - navDrag.left);
+  if (!navDrag || ev.pointerId !== navDrag.id) return;
+  // при отмене касания системой координаты бывают нулевыми: берём вкладку, над которой был палец
+  const i = ev.type === 'pointercancel' ? navDrag.idx : nearestTab(ev.clientX - navDrag.left);
   navDrag = null;
   lens.classList.remove('drag');
-  navBtns.forEach(b => b.classList.remove('hover'));
+  navBtns.forEach((b, k) => { b.classList.remove('hover'); b.classList.toggle('on', k === i); });
   placeLens(i, 1);
-  if (TABS[i] !== state.tab) { tap(); show(TABS[i]); } else navBtns.forEach((b, k) => b.classList.toggle('on', k === i));
+  if (TABS[i] !== (navNext || state.tab)) { tap(); goTab(TABS[i]); }
 };
 $nav.addEventListener('pointerup', navUp);
 $nav.addEventListener('pointercancel', navUp);
+$nav.addEventListener('touchmove', ev => ev.preventDefault(), { passive: false }); // iOS не должен забирать касание себе и отменять его
 window.addEventListener('resize', () => placeLens(TABS.indexOf(state.tab)));
 requestAnimationFrame(() => { lens.style.transition = 'none'; placeLens(TABS.indexOf(state.tab)); requestAnimationFrame(() => lens.style.transition = ''); });
 
