@@ -11,7 +11,7 @@
 <style>
   :root {
     --red: #FF375F; --lime: #A6FF00; --cyn: #00E5FF; --org: #FF9F0A; --done: #30D158;
-    --acc: #FF9F0A; --accT: #1a1000; --glow: rgba(255,159,10,.30);
+    --acc: #FF9F0A; --accT: #1a1000; --glow: rgba(255,159,10,.30); --accRGB: 255,159,10;
     --bg: #000; --g1: #1C1C1E; --g2: #2C2C2E; --g3: #3A3A3C; --g4: #48484A; --mut: #8E8E93; --soft: #C7C7CC;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; }
@@ -28,12 +28,12 @@
   button { border: 0; background: none; cursor: pointer; padding: 0; }
   svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
   .wrap { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; padding: 14px 16px 0; }
-  .demo { margin: 0 0 10px; padding: 8px 12px; border-radius: 12px; background: rgba(255,159,10,.12); color: var(--org); font-size: 12px; font-weight: 600; }
+  .demo { margin: 0 0 10px; padding: 8px 12px; border-radius: 12px; background: rgba(var(--accRGB),.12); color: var(--org); font-size: 12px; font-weight: 600; }
 
   /* шапка */
   .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 24px; }
   .date { font-size: 13px; font-weight: 600; color: var(--mut); }
-  .streak { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: var(--org); background: rgba(255,159,10,.14); border-radius: 999px; padding: 4px 9px 4px 7px; white-space: nowrap; }
+  .streak { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: var(--org); background: rgba(var(--accRGB),.14); border-radius: 999px; padding: 4px 9px 4px 7px; white-space: nowrap; }
   .streak svg { width: 14px; height: 14px; fill: var(--org); stroke: none; }
   h1 { font-size: 27px; line-height: 1.1; font-weight: 800; letter-spacing: -.03em; margin: 2px 0 10px; }
   h1 .acc { color: var(--acc); }
@@ -121,7 +121,7 @@
   .nr.toggle { justify-content: center; color: var(--mut); font-size: 12.5px; font-weight: 600; }
 
   /* день отдыха */
-  .movebox { margin-top: 10px; background: var(--g1); border-radius: 22px; padding: 14px; border: 1px solid rgba(255,159,10,.35); }
+  .movebox { margin-top: 10px; background: var(--g1); border-radius: 22px; padding: 14px; border: 1px solid rgba(var(--accRGB),.35); }
   .movebox p { font-size: 14px; color: var(--soft); line-height: 1.4; margin-bottom: 12px; }
   .movebox p b { color: #fff; }
   .rest { margin-top: 10px; display: flex; align-items: center; gap: 12px; background: var(--g1); border-radius: 22px; padding: 14px; }
@@ -150,6 +150,8 @@
   nav { position: fixed; left: 22px; right: 22px; bottom: calc(18px + env(safe-area-inset-bottom)); max-width: 476px; margin: 0 auto; height: 66px; border-radius: 33px; display: flex; align-items: center; padding: 5px; z-index: 16; }
   nav { touch-action: none; user-select: none; -webkit-user-select: none; }
   nav button { position: relative; z-index: 2; flex: 1; height: 56px; border-radius: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10.5px; font-weight: 600; color: rgba(255,255,255,.62); transition: color .25s, transform .25s; pointer-events: none; }
+  nav button { min-width: 0; white-space: nowrap; font-size: 10px; letter-spacing: -.1px; }
+  @media (max-width: 359px) { nav { left: 10px; right: 10px; } nav button { font-size: 9px; } }
   nav button svg { width: 24px; height: 24px; stroke-width: 1.9; }
   nav button.on { color: var(--acc); }
   nav button.hover { transform: scale(1.06); }
@@ -187,7 +189,7 @@
   .wd .day { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; font-size: 12px; font-weight: 800; flex: none; }
   .wd .day.ok { background: rgba(48,209,88,.16); color: var(--done); }
   .wd .day.miss { background: rgba(255,255,255,.06); color: #636366; }
-  .wd .day.soon { background: rgba(255,159,10,.12); color: var(--acc); }
+  .wd .day.soon { background: rgba(var(--accRGB),.12); color: var(--acc); }
   .wd .nm { flex: 1; min-width: 0; }
   .wd .nm b { display: block; font-size: 14.5px; font-weight: 600; }
   .wd .nm small { font-size: 12px; font-weight: 500; color: var(--mut); }
@@ -238,7 +240,7 @@
   .seg button.on { background: var(--g3); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.12); }
   .days { display: flex; gap: 6px; margin-bottom: 8px; }
   .days button { font-size: 12px; font-weight: 700; padding: 6px 11px; border-radius: 999px; background: var(--g1); color: var(--mut); }
-  .days button.on { background: rgba(255,159,10,.16); color: var(--org); }
+  .days button.on { background: rgba(var(--accRGB),.16); color: var(--org); }
   .list { background: var(--g1); border-radius: 20px; padding: 2px 14px; }
   .it { display: flex; align-items: center; gap: 10px; padding: 8.5px 0; border-top: .5px solid var(--g2); }
   .it:first-child { border: 0; }
@@ -250,14 +252,6 @@
   .it .v b { display: block; font-size: 15px; font-weight: 700; letter-spacing: -.02em; }
   .it .v small { font-size: 11px; font-weight: 700; color: var(--done); }
   .it .v small.z { color: var(--mut); } .it .v small.dn { color: var(--red); }
-  .badges { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .badge { background: var(--g1); border-radius: 16px; padding: 10px 4px 9px; text-align: center; }
-  .badge .bi { font-size: 26px; line-height: 1.2; }
-  .badge .bt { font-size: 10.5px; font-weight: 700; margin-top: 4px; line-height: 1.2; }
-  .badge .bp { font-size: 9.5px; color: var(--mut); margin-top: 3px; font-weight: 600; }
-  .badge.off .bi { filter: grayscale(1); opacity: .3; }
-  .badge.off .bt { color: var(--mut); }
-  .badge.on { background: linear-gradient(180deg, rgba(255,159,10,.18), rgba(255,159,10,.06)); box-shadow: inset 0 0 0 1px rgba(255,159,10,.25); }
   .wform { display: flex; gap: 8px; margin-top: 8px; }
   .wform .inp { flex: 1; position: relative; }
   .wform input { width: 100%; height: 48px; border-radius: 14px; border: 1px solid var(--g3); background: var(--g1); font-size: 18px; font-weight: 700; text-align: center; outline: none; padding: 0 30px 0 10px; }
@@ -292,7 +286,7 @@
   /* всплывашки */
   #cele { position: fixed; left: 50%; top: calc(14px + env(safe-area-inset-top)); transform: translate(-50%, -30px) scale(.92); opacity: 0; pointer-events: none; z-index: 40;
     min-width: 260px; max-width: 92vw; border-radius: 24px; padding: 12px 18px; text-align: center; transition: all .35s cubic-bezier(.2,1.4,.4,1);
-    background: linear-gradient(180deg, rgba(255,159,10,.95), rgba(230,130,0,.95)); color: var(--accT); box-shadow: 0 14px 40px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.5); }
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,.1)), rgba(var(--accRGB),.95); color: var(--accT); box-shadow: 0 14px 40px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.5); }
   #cele.on { opacity: 1; transform: translate(-50%, 0) scale(1); }
   #cele .t1 { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .75; }
   #cele .t2 { font-size: 19px; font-weight: 800; margin-top: 2px; letter-spacing: -.02em; }
@@ -314,11 +308,97 @@
   /* первый запуск */
   .hero { min-height: 78vh; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 20px 8px; }
   .hero .logo { width: 84px; height: 84px; border-radius: 26px; margin: 0 auto 18px; display: grid; place-items: center; color: var(--accT);
-    background: linear-gradient(160deg, #FFB547, var(--acc)); box-shadow: 0 16px 50px -10px var(--glow), inset 0 1px 0 rgba(255,255,255,.5); }
+    background: linear-gradient(160deg, rgba(255,255,255,.28), transparent), var(--acc); box-shadow: 0 16px 50px -10px var(--glow), inset 0 1px 0 rgba(255,255,255,.5); }
   .hero .logo svg { width: 44px; height: 44px; stroke-width: 2.2; }
   .hero h1 { font-size: 34px; }
   .hero p { color: var(--soft); font-size: 15px; line-height: 1.45; margin: 4px 6px 26px; }
   .spin.big { width: 34px; height: 34px; border-width: 3px; }
+  /* профиль */
+  .prof { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 6px 0 4px; }
+  .ava { position: relative; width: 116px; height: 116px; border-radius: 50%; background: var(--g2); color: var(--mut); display: grid; place-items: center; cursor: pointer; }
+  .ava img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+  .ava > svg { width: 56px; height: 56px; stroke-width: 1.5; }
+  .ava .cam { position: absolute; right: 0; bottom: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--acc); color: var(--accT); border: 3px solid var(--bg); display: grid; place-items: center; }
+  .ava .cam svg { width: 17px; height: 17px; stroke-width: 2.2; }
+  .ava.busy { opacity: .5; pointer-events: none; }
+  .pname { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; font-size: 22px; font-weight: 800; color: #fff; margin: 12px 0 2px; padding: 0; }
+  .pname span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pname svg { flex: none; width: 16px; height: 16px; color: var(--mut); }
+  .thm { display: flex; justify-content: space-between; gap: 6px; padding: 12px 14px; }
+  .thm button { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: var(--accT); }
+  .thm button.on { box-shadow: 0 0 0 2px var(--g1), 0 0 0 4px #fff; }
+  .thm svg { width: 18px; height: 18px; stroke-width: 3; }
+  .sgroup .thm { padding: 8px 2px 6px; }
+  @media (max-width: 359px) { .thm button { width: 30px; height: 30px; } }
+  .goals { padding-top: 4px; padding-bottom: 4px; }
+  .gl { display: block; width: 100%; text-align: left; padding: 10px 0; border-top: .5px solid var(--g2); }
+  .gl:first-child { border-top: 0; }
+  .gl .ghd { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .gl b { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gl span { flex: none; font-size: 12.5px; font-weight: 600; color: var(--mut); }
+  .gl.ok span { color: var(--done); }
+  .gbar { height: 8px; border-radius: 4px; background: var(--g3); margin-top: 7px; overflow: hidden; }
+  .gbar i { display: block; height: 100%; border-radius: 4px; background: var(--acc); }
+  .gl.ok .gbar i { background: var(--done); }
+  .calh { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .calh b { display: block; font-size: 16px; font-weight: 700; }
+  .calh small { display: block; font-size: 12px; font-weight: 500; color: var(--mut); margin-top: 1px; }
+  .calnav { display: flex; gap: 6px; flex: none; }
+  .calnav .iconbtn:disabled { opacity: .3; }
+  .calw, .calg { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .calw { margin-top: 12px; font-size: 10.5px; font-weight: 600; color: var(--mut); text-align: center; }
+  .calg { margin-top: 6px; }
+  .calg i { position: relative; display: grid; place-items: center; height: 38px; box-sizing: border-box; border-radius: 10px; background: var(--g2); font-style: normal; font-size: 13px; font-weight: 600; color: var(--mut); }
+  .calg i.o { visibility: hidden; }
+  i.l1 { background: #0F3120 !important; } i.l2 { background: #123823 !important; } i.l3 { background: #154027 !important; } i.l4 { background: #17472B !important; }
+  .calg i.fu { background: transparent; color: var(--g4); }
+  .calg i.dn { color: #6EE7A0; font-weight: 700; }
+  .calg i.pl, .calleg i.pl { background: transparent; border: 1px dashed #6C6C70; }
+  .calg i.pl { color: var(--soft); }
+  .calg i.ms, .calleg i.ms { background: #4F1D29; }
+  .calg i.ms { color: #FF8FA0; font-weight: 700; }
+  .calg i.dn::after, .calg i.ms::after { position: absolute; top: 2px; right: 4px; font-size: 9px; font-weight: 800; line-height: 1; }
+  .calg i.dn::after { content: '✓'; }
+  .calg i.ms::after { content: '✕'; }
+  .calg i.td { box-shadow: 0 0 0 1.5px #fff; color: #fff; }
+  .calg i.td.dn { color: #6EE7A0; }
+  .calleg { display: flex; align-items: center; gap: 12px; margin-top: 10px; font-size: 10px; font-weight: 600; color: var(--mut); }
+  .calleg div { display: flex; align-items: center; gap: 3px; }
+  .calleg i { display: block; width: 12px; height: 12px; box-sizing: border-box; border-radius: 3px; background: var(--g2); }
+  .calleg span { margin: 0 3px; }
+  .plt { display: flex; align-items: center; gap: 10px; }
+  .pltb { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left; }
+  .pltb > div { min-width: 0; }
+  .pltb b { display: block; font-size: 16px; font-weight: 700; }
+  .pltb small { display: block; font-size: 12px; font-weight: 500; color: var(--mut); margin-top: 2px; }
+  .pltb svg { flex: none; width: 20px; height: 20px; color: var(--mut); }
+  .pst { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 16px; }
+  .pst > div { grid-column: span 2; min-width: 0; background: var(--g1); border-radius: 18px; padding: 12px; font-size: 11px; font-weight: 600; color: var(--mut); white-space: nowrap; }
+  .pst > div.w { grid-column: span 3; }
+  .pst > div > i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
+  .pst b { display: block; font-size: 22px; font-weight: 800; letter-spacing: -.03em; margin-top: 3px; }
+  .pst .w b { font-size: 30px; }
+  .pst b small { font-size: 12px; font-weight: 600; color: var(--mut); margin-left: 3px; letter-spacing: 0; }
+  .pst em { display: block; font-style: normal; font-size: 10.5px; margin-top: 1px; }
+  .pbars { display: flex; align-items: flex-end; gap: 4px; height: 26px; margin-top: 8px; }
+  .pbars span { flex: 1; border-radius: 3px; background: var(--c); opacity: .4; }
+  .pbars span:last-child { opacity: 1; }
+  .pbars span.z { background: var(--g3); opacity: 1; }
+  @media (max-width: 359px) { .pst > div { padding: 10px; } .pst b { font-size: 19px; } .pst .w b { font-size: 26px; } .pst em { font-size: 9.5px; } }
+  .bests { padding-top: 4px; padding-bottom: 4px; }
+  .bests .nr:first-child { border-top: 0; }
+  .bests .nr span { color: var(--org); font-weight: 700; }
+  .prof .sub { font-size: 13px; color: var(--mut); }
+  .prof .acts { display: flex; gap: 14px; margin-top: 6px; }
+  .prof .acts .link { cursor: pointer; }
+  .fileIn { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .pln .phd { display: flex; align-items: center; gap: 8px; }
+  .pln .pwd { flex: none; font-size: 12px; font-weight: 800; color: var(--acc); }
+  .pln .phd b { flex: 1; min-width: 0; font-size: 16px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pln .pnow { flex: none; font-size: 11px; font-weight: 800; color: var(--accT); background: var(--acc); border-radius: 9px; padding: 2px 8px; }
+  .pln .nr { padding: 8px 0; }
+  .pln .nr:first-of-type { margin-top: 8px; }
+  .pln .nr b { font-size: 14px; font-weight: 500; }
   .lead { color: var(--mut); font-size: 13.5px; line-height: 1.4; margin: -4px 0 12px; }
   .tpl { display: block; width: 100%; text-align: left; background: var(--g1); border-radius: 20px; padding: 14px 16px; margin-bottom: 8px; border: 1px solid transparent; }
   .tpl:active { border-color: var(--acc); }
@@ -359,7 +439,7 @@
   .catl button { display: flex; justify-content: space-between; width: 100%; text-align: left; padding: 11px 12px; border-radius: 12px; background: rgba(255,255,255,.06); margin-bottom: 5px; font-size: 14.5px; font-weight: 600; }
   .catl button.used { color: var(--mut); }
   .catl button span { font-size: 11px; color: var(--mut); font-weight: 600; }
-  .catl .own { background: rgba(255,159,10,.14); color: var(--acc); justify-content: flex-start; gap: 6px; margin-top: 8px; }
+  .catl .own { background: rgba(var(--accRGB),.14); color: var(--acc); justify-content: flex-start; gap: 6px; margin-top: 8px; }
   .catl .own svg { width: 16px; height: 16px; }
   .frow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 0; border-top: .5px solid rgba(255,255,255,.1); }
   .frow > span { font-size: 15px; font-weight: 600; }
@@ -419,6 +499,7 @@
   <button data-tab="progress"><svg class="i" viewBox="0 0 24 24"><path d="M4 19h16M5 15l4.5-4.5 3.5 3 6-6.5"/><path d="M15 7h4v4"/></svg>Прогресс</button>
   <button data-tab="history"><svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h2M12 14h2M8 17h2"/></svg>История</button>
   <button data-tab="library"><svg class="i" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>Упражнения</button>
+  <button data-tab="profile"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1-4 4-6 7.5-6s6.5 2 7.5 6"/></svg>Профиль</button>
 </nav>
 <div id="toast" class="glass"></div>
 <div id="cele"></div>
@@ -439,7 +520,7 @@ const WD_SHORT = ['', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 const MON = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
 const MON3 = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
 const state = { tab: 'today', view: null, today: null, progress: null, history: null, pick: null, cur: null, sel: null, selRow: null, ed: null,
-  listOpen: false, pseg: 'ex', pday: null, pend: {}, draft: null, firstRun: false };
+  planOpen: false, calM: null, listOpen: false, pseg: 'ex', pday: null, pend: {}, draft: null, firstRun: false };
 const $view = document.getElementById('view'), $scroll = document.getElementById('scroll');
 
 if (tg) {
@@ -462,7 +543,11 @@ const ICONS = {
   trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
   save: '<path d="M12 4v11M7.5 11l4.5 4.5 4.5-4.5M5 20h14"/>',
   up: '<path d="M6 15l6-6 6 6"/>',
-  down: '<path d="M6 9l6 6 6-6"/>'
+  down: '<path d="M6 9l6 6 6-6"/>',
+  left: '<path d="M15 6l-6 6 6 6"/>',
+  right: '<path d="M9 6l6 6-6 6"/>',
+  user: '<circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1-4 4-6 7.5-6s6.5 2 7.5 6"/>',
+  camera: '<path d="M4 8h3.5L9 5.5h6L16.5 8H20a1 1 0 0 1 1 1v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>'
 };
 const ic = (n, cls) => '<svg class="i' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24">' + ICONS[n] + '</svg>';
 const FLAME = '<svg viewBox="0 0 24 24"><path d="M12 2c1 3.5 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5.3.2 1.8 1 2.8 2 3.3-.6-3.5.2-6.5.5-9z"/></svg>';
@@ -527,7 +612,7 @@ function unpack(k, all) {
 }
 const parseJ = s => { try { return s ? JSON.parse(s) : null; } catch (e) { return null; } };
 
-const DB = { prog: null, w: {}, ov: {}, bw: [] };
+const DB = { prog: null, w: {}, ov: {}, bw: [], ava: null };
 const dirty = new Set(parseJ(local.get('dirty')) || []);
 const keyOf = d => 'w_' + d.replace(/-/g, '');
 let IDX = null;
@@ -536,11 +621,12 @@ function loadLocal() {
   DB.prog = parseJ(local.get('prog'));
   DB.ov = parseJ(local.get('ov')) || {};
   DB.bw = parseJ(local.get('bw')) || [];
+  DB.ava = parseJ(local.get('ava'));
   DB.w = {};
   local.keys().forEach(k => { if (/^w_\d{8}$/.test(k)) { const r = parseJ(local.get(k)); if (r && r.d) DB.w[r.d] = r; } });
   IDX = null;
 }
-function snapshot() { return JSON.stringify([DB.prog, DB.ov, DB.bw, Object.keys(DB.w).sort().map(d => DB.w[d])]); }
+function snapshot() { return JSON.stringify([DB.prog, DB.ov, DB.bw, DB.ava, Object.keys(DB.w).sort().map(d => DB.w[d])]); }
 
 async function loadCloud() {
   if (!CS) return false;
@@ -553,12 +639,12 @@ async function loadCloud() {
   dirty.forEach(k => { if (/^w_\d{8}$/.test(k)) { const r = parseJ(local.get(k)); const d = k.slice(2, 6) + '-' + k.slice(6, 8) + '-' + k.slice(8); if (r && r.d) w[r.d] = r; else delete w[d]; } });
   const prog = parseJ(val('prog'));
   if (!prog && !keys.length && DB.prog && dirty.size) return false; // облако пустое, а на телефоне есть несохранённое — не затираем
-  DB.prog = prog; DB.ov = parseJ(val('ov')) || {}; DB.bw = parseJ(val('bw')) || []; DB.w = w;
+  DB.prog = prog; DB.ov = parseJ(val('ov')) || {}; DB.bw = parseJ(val('bw')) || []; DB.ava = parseJ(val('ava')); DB.w = w;
   IDX = null;
   // копия на телефоне
   local.keys().forEach(k => { if (/^w_\d{8}$/.test(k) && !w[k.slice(2, 6) + '-' + k.slice(6, 8) + '-' + k.slice(8)]) local.set(k, null); });
   Object.keys(w).forEach(d => local.set(keyOf(d), JSON.stringify(w[d])));
-  local.set('prog', DB.prog ? JSON.stringify(DB.prog) : null); local.set('ov', JSON.stringify(DB.ov)); local.set('bw', JSON.stringify(DB.bw));
+  local.set('prog', DB.prog ? JSON.stringify(DB.prog) : null); local.set('ov', JSON.stringify(DB.ov)); local.set('bw', JSON.stringify(DB.bw)); local.set('ava', DB.ava ? JSON.stringify(DB.ava) : null);
   return snapshot() !== before;
 }
 
@@ -674,13 +760,11 @@ function stats() {
   while (w >= 1 && (perWeek[w] || 0) >= tg3) { streak++; w--; }
   let best = 0, run = 0;
   for (let i = 1; i <= now; i++) { run = (perWeek[i] || 0) >= tg3 ? run + 1 : 0; best = Math.max(best, run); }
-  let maxLift = 0;
-  Object.keys(I.byEx).forEach(n => { if (!isBW(n)) I.byEx[n].forEach(x => { maxLift = Math.max(maxLift, x.top); }); });
   const from7 = addDays(t, -6);
   return {
     workouts: I.dates.length, tonnage: Math.round(I.sessions.reduce((a, s) => a + s.ton, 0)),
     t7: Math.round(I.sessions.filter(s => s.d >= from7).reduce((a, s) => a + s.ton, 0)),
-    prs: I.prs.length, perWeek: perWeek, streak: streak, bestStreak: best, thisWeek: perWeek[now] || 0, now: now, maxLift: maxLift, target: tg3
+    prs: I.prs.length, perWeek: perWeek, streak: streak, bestStreak: best, thisWeek: perWeek[now] || 0, now: now, target: tg3
   };
 }
 function lastString(name, before, start) {
@@ -755,7 +839,9 @@ function saveToday() {
   const T = state.today, t = T.date, day = T.today;
   const x = day.exercises.filter(e => e.name && (e.extra || e.sets.some(filled)))
     .map(e => { const ss = e.sets.map(s => filled(s) ? (s[2] ? [s[0], s[1], s[2]] : [s[0], s[1]]) : null); while (ss.length && !ss[ss.length - 1]) ss.pop(); return e.extra ? [e.name, ss, 1] : [e.name, ss]; });
-  const rec = x.length ? { d: t, p: day.pw, t: day.group, x: x } : null;
+  const ss = session(), old = DB.w[t];
+  const m = ss.date === t && ss.start && ss.last ? Math.min(300, Math.max(1, Math.round((ss.last - ss.start) / 60000))) : old && old.m; // минуты от первого подхода до последнего
+  const rec = x.length ? Object.assign({ d: t, p: day.pw, t: day.group, x: x }, m ? { m: m } : {}) : null;
   if (rec) DB.w[t] = rec; else delete DB.w[t];
   put(keyOf(t), rec);
   syncReminders();
@@ -779,35 +865,13 @@ function buildProgress() {
   Object.keys(I.byEx).forEach(n => { if (!seen[n]) exStat(n, 'other', null); });
   const spark = {};
   Object.keys(I.byEx).forEach(n => { spark[n] = I.byEx[n].map(x => x.top).slice(-6); });
-  const ach = achievements(s);
   const weeks5 = [];
   for (let w = Math.max(1, s.now - 4); w <= s.now; w++) weeks5.push({ week: w, n: s.perWeek[w] || 0, current: w === s.now });
   return {
     tiles: { workouts: s.workouts, tonnage: s.tonnage, week: s.t7, prs: s.prs }, exercises: exercises, spark: spark,
-    streak: s.streak, bestStreak: s.bestStreak, thisWeek: s.thisWeek, achievements: ach, target: s.target,
+    streak: s.streak, bestStreak: s.bestStreak, thisWeek: s.thisWeek, target: s.target,
     weights: DB.bw.slice(-60).map(x => ({ date: x[0], kg: x[1] })), weeks5: weeks5, start: P.start, nowWeek: s.now
   };
-}
-function achievements(s) {
-  const list = [
-    ['w1', '🎯', 'Первый шаг', 'Первая тренировка', s.workouts, 1],
-    ['w10', '💪', 'Десятка', '10 тренировок', s.workouts, 10],
-    ['w25', '🏋️', 'Втянулся', '25 тренировок', s.workouts, 25],
-    ['w50', '🦾', 'Полсотни', '50 тренировок', s.workouts, 50],
-    ['w100', '👑', 'Сотня', '100 тренировок', s.workouts, 100],
-    ['s1', '📅', 'Полная неделя', 'Все тренировки недели', s.bestStreak, 1],
-    ['s4', '🔥', 'Месяц без пропусков', '4 полные недели подряд', s.bestStreak, 4],
-    ['s8', '☄️', 'Машина', '8 полных недель подряд', s.bestStreak, 8],
-    ['t10', '🧱', '10 тонн', 'Тоннаж всего 10 т', s.tonnage, 10000],
-    ['t50', '🚚', '50 тонн', 'Тоннаж всего 50 т', s.tonnage, 50000],
-    ['t100', '🚂', '100 тонн', 'Тоннаж всего 100 т', s.tonnage, 100000],
-    ['t250', '🚀', '250 тонн', 'Тоннаж всего 250 т', s.tonnage, 250000],
-    ['p5', '🏆', 'Рекордсмен', '5 личных рекордов', s.prs, 5],
-    ['p25', '🥇', 'Без потолка', '25 личных рекордов', s.prs, 25],
-    ['k50', '🪨', 'Полтинник', 'Рабочий вес 50 кг', s.maxLift, 50],
-    ['k100', '🗿', 'Сотка', 'Рабочий вес 100 кг', s.maxLift, 100]
-  ];
-  return list.map(a => ({ id: a[0], icon: a[1], title: a[2], desc: a[3], got: a[4] >= a[5], have: Math.min(a[4], a[5]), need: a[5] }));
 }
 function buildHistory(pick) {
   const I = idx(), s = stats(), weeks = {};
@@ -994,7 +1058,7 @@ function renderToday() {
   const d = state.today;
   if (!d) return skeleton();
   let h = demoBanner();
-  h += '<div class="top"><span class="date">' + DAYS[d.weekday] + ', ' + dlong(d.date) + '</span><span class="topr">' + streakChip() + '<button class="iconbtn" data-act="settings" aria-label="Настройки">' + ic('gear') + '</button></span></div>';
+  h += '<div class="top"><span class="date">' + DAYS[d.weekday] + ', ' + dlong(d.date) + '</span><span class="topr">' + streakChip() + '</span></div>';
   if (d.today) {
     h += '<h1>' + esc(d.today.group) + '</h1>';
     const m = metrics(), np = m.prsToday;
@@ -1144,7 +1208,6 @@ function bindToday() {
   $view.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => {
     const a = b.dataset.act;
     if (a === 'finish') showSummary();
-    else if (a === 'settings') openSettings();
     else if (a === 'move') moveWorkout(b);
     else if (a === 'extra') pickExtra();
     else if (a === 'more' || a === 'less') { state.listOpen = a === 'more'; tap(); renderToday(); }
@@ -1200,7 +1263,6 @@ function saveCurrent() {
   state.cur = e.row; // остаёмся на упражнении, пока не нажмут «Завершить упражнение»
   selectNext(e);
   renderToday();
-  setTimeout(() => checkBadges(buildProgress()), 600);
 }
 const RATES = ['', 'Легко', 'Нормально', 'Тяжело'];
 let rateT = null;
@@ -1229,12 +1291,12 @@ function commitSet(e, i, kg, reps) {
   e.sets[i] = rate ? [kg, reps, rate] : [kg, reps];
   e.tonnage = tonOf(e.sets);
   const ss = session();
-  if (!ss.start && reps != null) { ss.start = Date.now(); saveCache(); }
+  if (reps != null) { if (!ss.start) ss.start = Date.now(); ss.last = Date.now(); saveCache(); }
   if (kg != null && reps) checkRecord(e, kg);
   saveToday();
 }
 
-/* ---------- состояние интерфейса на телефоне (таймер, рекорды за сессию, награды) ---------- */
+/* ---------- состояние интерфейса на телефоне (таймер, рекорды за сессию) ---------- */
 const cache = parseJ(local.get('ui')) || {};
 function saveCache() { local.set('ui', JSON.stringify(cache)); }
 function markSet() {}
@@ -1591,10 +1653,9 @@ function renderProgress() {
     h += '<div class="strk">' + FLAME.replace('<svg', '<svg class="f' + (p.streak ? '' : ' off') + '"') + '<b>' + (p.streak ? p.streak + ' ' + plural(p.streak, 'неделя', 'недели', 'недель') + ' подряд' : 'Серия пока не началась') + '</b>' +
       '<div class="weeks">' + p.weeks5.map(w => '<i class="' + (w.n >= p.target ? 'f' : '') + '" style="' + (w.n > 0 && w.n < p.target ? 'background:linear-gradient(0deg,var(--org) ' + Math.round(w.n / p.target * 100) + '%,var(--g3) 0)' : '') + '" title="Неделя ' + w.week + ': ' + w.n + '/' + p.target + '"></i>').join('') + '</div></div>';
   }
-  h += '<div class="seg">' + [['ex', 'Упражнения'], ['w', 'Вес тела'], ['b', 'Награды']].map(s => '<button data-seg="' + s[0] + '" class="' + (state.pseg === s[0] ? 'on' : '') + '">' + s[1] + '</button>').join('') + '</div>';
+  h += '<div class="seg">' + [['ex', 'Упражнения'], ['w', 'Вес тела']].map(s => '<button data-seg="' + s[0] + '" class="' + (state.pseg === s[0] ? 'on' : '') + '">' + s[1] + '</button>').join('') + '</div>';
   if (state.pseg === 'ex') h += exList(p);
-  else if (state.pseg === 'w') h += weightBlock(p);
-  else h += badgesBlock(p);
+  else h += weightBlock(p);
   $view.innerHTML = h;
   $view.querySelectorAll('[data-seg]').forEach(b => b.addEventListener('click', () => { state.pseg = b.dataset.seg; tap(); renderProgress(); }));
   $view.querySelectorAll('[data-day]').forEach(b => b.addEventListener('click', () => { state.pday = b.dataset.day; tap(); renderProgress(); }));
@@ -1703,21 +1764,6 @@ function bindWeight() {
   wb.addEventListener('click', go);
   inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') go(); });
 }
-function badgesBlock(p) {
-  if (!p.achievements) return '<div class="list"><div class="empty">Обнови API, чтобы увидеть награды</div></div>';
-  return '<div class="badges">' + p.achievements.map(a => '<div class="badge ' + (a.got ? 'on' : 'off') + '"><div class="bi">' + a.icon + '</div><div class="bt">' + esc(a.title) + '</div>' +
-    '<div class="bp">' + (a.got ? esc(a.desc) : (a.need >= 1000 ? fmtTon(a.have) + ' / ' + a.need / 1000 + ' т' : fmtNum(a.have) + ' / ' + a.need)) + '</div></div>').join('') + '</div>';
-}
-function checkBadges(p) {
-  if (!p || !p.achievements) return;
-  const got = p.achievements.filter(a => a.got).map(a => a.id);
-  if (!cache.badges) { cache.badges = got; saveCache(); return; }
-  const fresh = p.achievements.filter(a => a.got && cache.badges.indexOf(a.id) < 0);
-  cache.badges = got; saveCache();
-  if (!fresh.length) return;
-  popup('🏅 Новое достижение', fresh[0].icon + ' ' + esc(fresh[0].title), esc(fresh[0].desc) + (fresh.length > 1 ? ' · и ещё ' + (fresh.length - 1) : ''));
-  haptic('success');
-}
 
 /* ---------- «История» ---------- */
 function renderHistory() {
@@ -1738,7 +1784,7 @@ function renderHistory() {
       const first = pts[0], last = pts[pts.length - 1], g = pct(last.weight, first.weight);
       const vals = pts.map(p => ({ date: p.date, v: bwx ? p.reps : p.weight }));
       s += '<div class="card" style="margin-top:0"><div class="bigs"><div>Сейчас<b>' + (bwx ? last.reps + ' раз' : fmtNum(last.weight) + ' кг') + '</b></div><div>Старт<b>' + (bwx ? first.reps + ' раз' : fmtNum(first.weight) + ' кг') + '</b></div>' +
-        (!bwx && g != null ? '<div>Прирост<b class="' + (g < 0 ? 'dn' : 'g') + '">' + sign(g) + '%</b></div>' : '') + '</div>' + areaChart(vals.slice(-8), '#FF9F0A') + '</div>';
+        (!bwx && g != null ? '<div>Прирост<b class="' + (g < 0 ? 'dn' : 'g') + '">' + sign(g) + '%</b></div>' : '') + '</div>' + areaChart(vals.slice(-8), theme().c) + '</div>';
     } else s += '<div class="list"><div class="empty">Выбери упражнение</div></div>';
   }
   if (h.recent && h.recent.length) {
@@ -1769,10 +1815,10 @@ function weekBars(weeks, sel) {
     const h = w.tonnage ? Math.max(8, (H - 50) * w.tonnage / max) : 4;
     const y = H - 22 - h;
     const isCur = i === n - 1, isSel = sel === w.week, hot = sel ? isSel : isCur;
-    s += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="' + Math.min(9, h / 2).toFixed(1) + '" fill="' + (hot ? '#FF9F0A' : '#3A3A3C') + '"' +
-      (sel && isCur && !isSel ? ' stroke="#FF9F0A" stroke-width="1.5" stroke-dasharray="4 3"' : '') + '/>';
-    if (w.tonnage) s += '<text x="' + cx.toFixed(1) + '" y="' + (y - 6).toFixed(1) + '" fill="' + (hot ? '#FF9F0A' : '#D1D1D6') + '">' + fmtTon(w.tonnage) + 'т</text>';
-    s += '<text x="' + cx.toFixed(1) + '" y="' + (H - 6) + '" fill="' + (hot ? '#FF9F0A' : '#8E8E93') + '">Н' + w.week + '</text>';
+    s += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="' + Math.min(9, h / 2).toFixed(1) + '" fill="' + (hot ? theme().c : '#3A3A3C') + '"' +
+      (sel && isCur && !isSel ? ' stroke="' + theme().c + '" stroke-width="1.5" stroke-dasharray="4 3"' : '') + '/>';
+    if (w.tonnage) s += '<text x="' + cx.toFixed(1) + '" y="' + (y - 6).toFixed(1) + '" fill="' + (hot ? theme().c : '#D1D1D6') + '">' + fmtTon(w.tonnage) + 'т</text>';
+    s += '<text x="' + cx.toFixed(1) + '" y="' + (H - 6) + '" fill="' + (hot ? theme().c : '#8E8E93') + '">Н' + w.week + '</text>';
     s += '<rect class="hit" data-w="' + w.week + '" x="' + (5 + i * gap).toFixed(1) + '" y="0" width="' + gap.toFixed(1) + '" height="' + H + '" fill="transparent"/>';
   });
   return s + '</g></svg>';
@@ -1948,6 +1994,252 @@ function openAddToDay(name) {
   if (hist) hist.addEventListener('click', () => { s.close(); openExercise(name); });
 }
 
+/* ---------- цвет приложения ---------- */
+const THEMES = [['orange', 'Оранжевый', '#FF9F0A'], ['red', 'Красный', '#FF5A4F'], ['pink', 'Розовый', '#FF6FB5'], ['purple', 'Фиолетовый', '#B98CFF'],
+  ['blue', 'Синий', '#4DA3FF'], ['teal', 'Бирюзовый', '#2DD4BF'], ['green', 'Зелёный', '#7BE04A']].map(t => ({ id: t[0], n: t[1], c: t[2] }));
+const theme = () => THEMES.find(t => DB.prog && t.id === DB.prog.theme) || THEMES[0];
+const rgbOf = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)).join(',');
+function applyTheme() {
+  const t = theme(), rgb = rgbOf(t.c), r = document.documentElement.style;
+  r.setProperty('--acc', t.c); r.setProperty('--org', t.c); r.setProperty('--accRGB', rgb); r.setProperty('--glow', 'rgba(' + rgb + ',.30)');
+}
+
+/* ---------- цели и стаж в профиле ---------- */
+const GOALS_MAX = 5;
+const goals = () => DB.prog.goals || [];
+function goalState(g) {
+  if (g.t === 'bw') {
+    const cur = lastBW(), s = g.s != null ? g.s : (DB.bw.length ? DB.bw[0][1] : null);
+    const done = cur != null && s != null && (g.v < s ? cur <= g.v : cur >= g.v);
+    const pct = cur == null || s == null ? 0 : s === g.v ? 1 : (cur - s) / (g.v - s);
+    return { name: 'Вес тела', unit: 'кг', cur: cur, done: done, pct: Math.max(0, Math.min(1, pct)) };
+  }
+  const list = idx().byEx[g.n] || [], bw = isBW(g.n);
+  const cur = list.length ? Math.max.apply(null, list.map(x => bw ? x.reps : x.top)) : null;
+  return { name: g.n, unit: bw ? 'раз' : 'кг', cur: cur, done: cur != null && cur >= g.v, pct: cur == null ? 0 : Math.max(0, Math.min(1, cur / g.v)) };
+}
+function openGoalAdd() {
+  const hasBW = goals().some(g => g.t === 'bw');
+  const s = openSheet('<div class="sh"><div><small>Профиль</small><h2>Новая цель</h2></div>' + closeBtn + '</div>' +
+    '<button class="srow" data-k="ex"><span>' + ic('dumb') + '</span><div><b>Упражнение</b><small>например, жим 100 кг</small></div>' + ic('arrow') + '</button>' +
+    (hasBW ? '' : '<button class="srow" data-k="bw"><span>' + ic('user') + '</span><div><b>Вес тела</b><small>например, 75 кг</small></div>' + ic('arrow') + '</button>'));
+  s.el.querySelectorAll('[data-k]').forEach(b => b.addEventListener('click', () => {
+    s.close(); tap();
+    if (b.dataset.k === 'bw') return openGoalEdit({ t: 'bw' }, -1);
+    pickExercise(name => {
+      const i = goals().findIndex(g => g.t === 'ex' && g.n === name);
+      openGoalEdit(i >= 0 ? goals()[i] : { t: 'ex', n: name }, i);
+    }, goals().filter(g => g.t === 'ex').map(g => g.n), 'Цель по упражнению');
+  }));
+}
+function openGoalEdit(g, i) {
+  const st = goalState(g), P = DB.prog;
+  const s = openSheet('<div class="sh"><div><small>Цель</small><h2>' + esc(st.name) + '</h2></div>' + closeBtn + '</div>' +
+    '<div class="frow"><span>Сейчас</span><b>' + (st.cur != null ? fmtNum(st.cur) + ' ' + st.unit : '—') + '</b></div>' +
+    '<div class="frow"><span>Хочу</span><div class="kgin"><input id="goalIn" inputmode="decimal" placeholder="—" value="' + fmtNum(g.v) + '"><small>' + st.unit + '</small></div></div>' +
+    '<button class="btn" data-a="ok">Сохранить</button>' +
+    (i >= 0 ? '<button class="link red" data-a="del" style="display:block;margin:10px auto 0">Удалить цель</button>' : ''));
+  s.el.querySelector('[data-a=ok]').addEventListener('click', () => {
+    const v = parseNum(s.el.querySelector('#goalIn').value);
+    if (!(v > 0 && v <= 1000)) return toast('Введи число от 1 до 1000');
+    g.v = v;
+    if (i < 0) { if (g.t === 'bw' && lastBW() != null) g.s = lastBW(); (P.goals || (P.goals = [])).push(g); }
+    put('prog', P); haptic('success'); s.close(); renderProfile();
+  });
+  const del = s.el.querySelector('[data-a=del]');
+  if (del) del.addEventListener('click', () => { P.goals.splice(i, 1); put('prog', P); tap(); s.close(); renderProfile(); });
+}
+function goalsHTML() {
+  const list = goals();
+  return secHead('Цели', list.length < GOALS_MAX ? '<button class="link acc" data-p="goal">Добавить</button>' : '') +
+    (list.length ? '<div class="card goals">' + list.map((g, i) => {
+      const st = goalState(g);
+      return '<button class="gl' + (st.done ? ' ok' : '') + '" data-goal="' + i + '"><div class="ghd"><b>' + esc(st.name) + '</b><span>' + (st.done ? 'Достигнута · ' : '') + (st.cur != null ? fmtNum(st.cur) : '—') + ' / ' + fmtNum(g.v) + ' ' + st.unit + '</span></div>' +
+        '<div class="gbar"><i style="width:' + Math.round(st.pct * 100) + '%"></i></div></button>';
+    }).join('') + '</div>' : '<div class="card"><div class="empty" style="padding:8px">Поставь цель: полоска будет двигаться сама после тренировок</div></div>');
+}
+const secHead = (title, right) => '<div class="sec" style="display:flex;justify-content:space-between;align-items:center;margin-top:18px">' + title + (right || '') + '</div>';
+const MON_N = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+const shiftMonth = (ym, n) => { const d = new Date(Number(ym.slice(0, 4)), Number(ym.slice(5, 7)) - 1 + n, 1, 12); return isoOf(d).slice(0, 7); };
+function calendarInner() {
+  const t = isoToday(), I = idx(), now = t.slice(0, 7), first = I.dates.length ? I.dates[0].slice(0, 7) : now;
+  if (!state.calM || state.calM > now || state.calM < first) state.calM = now;
+  const m = state.calM, y = Number(m.slice(0, 4)), mo = Number(m.slice(5, 7)), len = new Date(y, mo, 0).getDate();
+  const max = Math.max.apply(null, [1].concat(I.sessions.map(x => x.sets))), list = I.sessions.filter(x => x.d.slice(0, 7) === m), sets = {};
+  list.forEach(x => { sets[x.d] = x.sets; });
+  const ton = list.reduce((a, x) => a + x.ton, 0);
+  const start = I.dates[0] || t;
+  let miss = 0, cells = '<i class="o"></i>'.repeat(wdOf(m + '-01') - 1);
+  for (let n = 1; n <= len; n++) {
+    const d = m + '-' + String(n).padStart(2, '0'), v = sets[d];
+    const missed = !v && d < t && d > start && planFor(d); // пропуск считаем только после первой тренировки, сегодня ещё не пропуск
+    if (missed) miss++;
+    const cls = (v ? 'dn l' + Math.max(1, Math.ceil(v / max * 4)) : missed ? 'ms' : d >= t && planFor(d) ? 'pl' : d > t ? 'fu' : '') + (d === t ? ' td' : '');
+    cells += '<i class="' + cls + '">' + n + '</i>';
+  }
+  const nav = (dir, on) => '<button class="iconbtn" data-c="' + dir + '"' + (on ? '' : ' disabled') + ' aria-label="' + (dir < 0 ? 'Предыдущий месяц' : 'Следующий месяц') + '">' + ic(dir < 0 ? 'left' : 'right') + '</button>';
+  return '<div class="calh"><div><b>' + MON_N[mo - 1] + ' ' + y + '</b><small>' + (list.length ? list.length + ' ' + plural(list.length, 'тренировка', 'тренировки', 'тренировок') + ' · ' + fmtTon(ton) + ' т' : 'Тренировок не было') + (miss ? ' · ' + miss + ' ' + plural(miss, 'пропуск', 'пропуска', 'пропусков') : '') + '</small></div>' +
+    '<span class="calnav">' + nav(-1, m > first) + nav(1, m < now) + '</span></div>' +
+    '<div class="calw">' + WD_SHORT.slice(1).map(d => '<span>' + d + '</span>').join('') + '</div><div class="calg">' + cells + '</div>' +
+    '<div class="calleg"><div><i class="l4"></i><span>сходил</span></div><div><i class="ms"></i><span>пропустил</span></div><div><i class="pl"></i><span>план</span></div></div>';
+}
+function calendarHTML() { return secHead('Активность') + '<div class="card" id="cal">' + calendarInner() + '</div>'; }
+const longDate = iso => { const d = dateOf(iso); return d.getDate() + ' ' + MON[d.getMonth()] + ' ' + d.getFullYear(); };
+function loadImg(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('bad image')); i.src = src; }); }
+async function drawProfileCard() {
+  try { await Promise.all([document.fonts.load('800 100px Inter', 'Жим'), document.fonts.load('600 40px Inter', 'Жим')]); } catch (e) {}
+  const W = 1080, H = 1350, cv = document.createElement('canvas'), acc = theme().c, rgb = rgbOf(acc);
+  cv.width = W; cv.height = H;
+  const c = cv.getContext('2d'), F = (w, s) => w + ' ' + s + 'px Inter, -apple-system, system-ui, sans-serif';
+  const st = stats(), I = idx(), name = DB.prog.nick || tgName();
+  c.fillStyle = '#000'; c.fillRect(0, 0, W, H);
+  const g = c.createRadialGradient(W / 2, H + 80, 40, W / 2, H + 80, 1050);
+  g.addColorStop(0, 'rgba(' + rgb + ',.62)'); g.addColorStop(1, 'rgba(' + rgb + ',0)');
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+  c.textBaseline = 'alphabetic'; c.textAlign = 'left';
+  c.fillStyle = acc; c.font = F(800, 46); c.fillText('MY GYM', 84, 130);
+  if (I.dates.length) { c.fillStyle = '#8E8E93'; c.font = F(600, 36); c.textAlign = 'right'; c.fillText('в зале с ' + longDate(I.dates[0]), W - 84, 128); }
+  // фото
+  const cx = W / 2, cy = 345, r = 160;
+  c.save(); c.beginPath(); c.arc(cx, cy, r, 0, Math.PI * 2); c.closePath(); c.clip();
+  if (validAva(DB.ava)) c.drawImage(await loadImg(DB.ava), cx - r, cy - r, r * 2, r * 2);
+  else { c.fillStyle = '#2C2C2E'; c.fillRect(cx - r, cy - r, r * 2, r * 2); c.fillStyle = '#C7C7CC'; c.font = F(800, 150); c.textAlign = 'center'; c.fillText(Array.from(name)[0].toUpperCase(), cx, cy + 54); }
+  c.restore();
+  c.strokeStyle = acc; c.lineWidth = 8; c.beginPath(); c.arc(cx, cy, r + 14, 0, Math.PI * 2); c.stroke();
+  // ник
+  c.textAlign = 'center'; c.fillStyle = '#fff';
+  let size = 88; c.font = F(800, size);
+  while (c.measureText(name).width > W - 168 && size > 40) { size -= 4; c.font = F(800, size); }
+  c.fillText(name, cx, 640);
+  // цифры
+  [[String(st.workouts), plural(st.workouts, 'тренировка', 'тренировки', 'тренировок')], [fmtTon(st.tonnage), 'тонн поднято'], [String(st.prs), plural(st.prs, 'рекорд', 'рекорда', 'рекордов')]].forEach((x, i) => {
+    const tx = W * (1 + i * 2) / 6;
+    c.fillStyle = acc; c.font = F(800, 92); c.fillText(x[0], tx, 800);
+    c.fillStyle = '#C7C7CC'; c.font = F(600, 34); c.fillText(x[1], tx, 852);
+  });
+  // лучшие веса
+  const bests = Object.keys(I.best).map(n => [n, I.best[n]]).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  bests.forEach((x, i) => {
+    const y = 960 + i * 92, kg = fmtNum(x[1]) + ' кг';
+    c.textAlign = 'right'; c.fillStyle = acc; c.font = F(800, 50); c.fillText(kg, W - 84, y);
+    const maxW = W - 168 - c.measureText(kg).width - 40;
+    c.textAlign = 'left'; c.fillStyle = '#fff'; c.font = F(600, 46);
+    let n = x[0]; while (c.measureText(n).width > maxW && n.length > 3) n = n.slice(0, -2).trimEnd() + '…';
+    c.fillText(n, 84, y);
+  });
+  c.textAlign = 'left'; c.fillStyle = 'rgba(255,255,255,.72)'; c.font = F(600, 38); c.fillText('Журнал тренировок в Telegram: @my_gyymm_bot', 84, 1262);
+  return cv.toDataURL('image/jpeg', 0.9);
+}
+
+function statsHTML(st, kg) {
+  const I = idx(), mon = mondayOf(isoToday()), monthAgo = addDays(isoToday(), -29);
+  const weeks = [5, 4, 3, 2, 1, 0].map(n => { const a = addDays(mon, -7 * n), b = addDays(a, 6); return I.sessions.filter(x => x.d >= a && x.d <= b); });
+  const bars = (vals, color) => {
+    const max = Math.max.apply(null, vals.concat([1]));
+    return '<div class="pbars" style="--c:' + color + '">' + vals.map(v => '<span class="' + (v ? '' : 'z') + '" style="height:' + (v ? Math.max(15, Math.round(v / max * 100)) : 15) + '%"></span>').join('') + '</div>';
+  };
+  const prsMonth = I.prs.filter(p => p.d >= monthAgo).length;
+  const dBw = DB.bw.length >= 2 ? Math.round((DB.bw[DB.bw.length - 1][1] - DB.bw[0][1]) * 10) / 10 : null;
+  const bwSub = kg == null ? 'записать вес' : dBw == null ? 'первый замер' : !dBw ? 'как на старте' : (dBw > 0 ? '+' : '−') + fmtNum(Math.abs(dBw)) + ' с начала';
+  const tile = (cls, color, label, val, sub, extra, attr) => '<div class="' + cls + '"' + (attr || '') + '><i style="background:' + color + '"></i>' + label + '<b style="color:' + color + '">' + val + '</b><em>' + sub + '</em>' + (extra || '') + '</div>';
+  return '<div class="pst">' +
+    tile('w', 'var(--red)', 'Тренировок', st.workouts, 'на неделе ' + st.thisWeek + ' из ' + st.target, bars(weeks.map(w => w.length), 'var(--red)')) +
+    tile('w', 'var(--lime)', 'Поднято', fmtTon(st.tonnage) + '<small>т</small>', '+' + fmtTon(st.t7) + ' т за 7 дней', bars(weeks.map(w => w.reduce((a, x) => a + x.ton, 0)), 'var(--lime)')) +
+    tile('', 'var(--org)', 'Рекорды', st.prs, '+' + prsMonth + ' за месяц') +
+    tile('', 'var(--done)', 'Серия', st.streak + '<small>нед.</small>', 'лучшая: ' + st.bestStreak) +
+    tile('', 'var(--cyn)', 'Вес', kg != null ? fmtNum(kg) + '<small>кг</small>' : '—', bwSub, '', ' data-p="weight"') +
+    '</div>';
+}
+
+/* ---------- профиль ---------- */
+// Фото хранится в облаке Telegram: не больше трёх частей, столько flush() умеет удалять (ключи ava, ava__1..3)
+const AVA_MAX = CHUNK * 3 - 2;
+const AVA_STEPS = [[320, .8], [320, .65], [256, .65], [200, .6], [160, .5], [120, .4]];
+async function makeAvatar(file) {
+  // только data: — адреса blob: запрещены политикой безопасности страницы (img-src)
+  const url = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(new Error('read failed')); r.readAsDataURL(file); });
+  const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('bad image')); i.src = url; });
+  const w = img.naturalWidth, h = img.naturalHeight, side = Math.min(w, h);
+  const c = document.createElement('canvas'), g = c.getContext('2d');
+  for (const [px, q] of AVA_STEPS) {
+    c.width = c.height = px;
+    g.imageSmoothingQuality = 'high';
+    g.fillStyle = '#1C1C1E'; g.fillRect(0, 0, px, px); // у PNG с прозрачностью иначе будет чёрный фон
+    g.drawImage(img, (w - side) / 2, (h - side) / 2, side, side, 0, 0, px, px);
+    const data = c.toDataURL('image/jpeg', q);
+    if (data.length <= AVA_MAX) return data;
+  }
+  throw new Error('too big');
+}
+const tgName = () => USER ? [USER.first_name, USER.last_name].filter(Boolean).join(' ') : 'Демо-профиль';
+function openNick() {
+  const s = openSheet('<div class="sh"><div><small>Профиль</small><h2>Ник</h2></div>' + closeBtn + '</div>' +
+    '<input class="field" id="nickIn" maxlength="30" autocomplete="off" placeholder="' + esc(tgName()) + '" value="' + esc(DB.prog.nick || '') + '">' +
+    '<button class="btn" data-ok>Сохранить</button><div class="note2">Оставь пустым, чтобы показывалось имя из Telegram.</div>');
+  const q = s.el.querySelector('#nickIn');
+  const save = () => {
+    const v = q.value.trim().replace(/\s+/g, ' ');
+    if (v) DB.prog.nick = v; else delete DB.prog.nick;
+    put('prog', DB.prog); haptic('success'); s.close(); renderProfile();
+  };
+  s.el.querySelector('[data-ok]').addEventListener('click', save);
+  q.addEventListener('keydown', ev => { if (ev.key === 'Enter') save(); });
+}
+const validAva = v => typeof v === 'string' && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(v);
+function renderProfile() {
+  const P = DB.prog, today = planFor(isoToday()), name = P.nick || tgName(), st = stats(), kg = lastBW();
+  const bests = Object.keys(idx().best).map(n => [n, idx().best[n]]).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const count = P.days.length, ava = validAva(DB.ava) ? DB.ava : null;
+  const firstDay = idx().dates[0], planDays = P.days.slice().sort((a, b) => a.wd - b.wd), exCount = P.days.reduce((a, d) => a + d.x.length, 0);
+  let h = demoBanner() + '<div class="top"><span class="date">' + (firstDay ? 'В зале с ' + longDate(firstDay) : 'Первая тренировка впереди') + '</span><button class="iconbtn" data-p="settings" aria-label="Настройки">' + ic('gear') + '</button></div><h1>Профиль</h1>' +
+    '<div class="prof"><input type="file" accept="image/*" id="avaIn" class="fileIn">' +
+    '<label class="ava" id="avaBox" for="avaIn" aria-label="Загрузить фото">' + (ava ? '<img alt="" src="' + esc(ava) + '">' : ic('user')) + '<span class="cam">' + ic('camera') + '</span></label>' +
+    '<button class="pname" data-p="nick" aria-label="Изменить ник"><span>' + esc(name) + '</span>' + ic('note') + '</button><div class="sub">' + count + ' ' + plural(count, 'тренировка', 'тренировки', 'тренировок') + ' в неделю</div>' +
+    '<div class="acts"><label class="link acc" for="avaIn">' + (ava ? 'Сменить фото' : 'Загрузить фото') + '</label>' + (ava ? '<button class="link" data-p="del">Удалить</button>' : '') + '</div></div>' +
+    statsHTML(st, kg) +
+    '<button class="btn gray" data-p="share" style="margin-top:10px">Поделиться профилем</button>' +
+    goalsHTML() + calendarHTML() +
+    (bests.length ? '<div class="sec" style="margin-top:18px">Лучшие результаты</div><div class="card bests">' + bests.map(x => '<div class="nr"><b>' + esc(x[0]) + '</b><span>' + fmtNum(x[1]) + ' кг</span></div>').join('') + '</div>' : '') +
+    '<div class="card plt" style="margin-top:18px"><button class="pltb" data-p="plan" aria-expanded="' + !!state.planOpen + '"><div><b>План тренировок</b><small>' + planDays.map(d => WD_SHORT[d.wd]).join(' · ') + ' · ' + exCount + ' ' + plural(exCount, 'упражнение', 'упражнения', 'упражнений') + '</small></div>' + ic(state.planOpen ? 'up' : 'down') + '</button>' +
+    (state.planOpen ? '<button class="link acc" data-p="edit">Изменить</button>' : '') + '</div>';
+  if (state.planOpen) planDays.forEach(d => {
+    h += '<div class="card pln"><div class="phd"><span class="pwd">' + DSH[d.wd] + '</span><b>' + esc(d.t) + '</b>' + (today && today.id === d.id ? '<span class="pnow">Сегодня</span>' : '') + '</div>' +
+      d.x.map(x => '<div class="nr"><b>' + esc(x.n) + '</b><span>' + planStr(x.s, x.r) + '</span></div>').join('') + '</div>';
+  });
+  $view.innerHTML = h;
+  const cal = $view.querySelector('#cal');
+  cal.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-c]');
+    if (!b || b.disabled) return;
+    state.calM = shiftMonth(state.calM, Number(b.dataset.c)); tap(); cal.innerHTML = calendarInner();
+  });
+  $view.querySelectorAll('[data-goal]').forEach(b => b.addEventListener('click', () => { tap(); const i = Number(b.dataset.goal); openGoalEdit(goals()[i], i); }));
+  const input = $view.querySelector('#avaIn'), box = $view.querySelector('#avaBox');
+  input.addEventListener('change', async () => {
+    const file = input.files && input.files[0];
+    input.value = ''; // чтобы тот же файл можно было выбрать снова
+    if (!file) return;
+    box.classList.add('busy');
+    try {
+      DB.ava = await makeAvatar(file);
+      put('ava', DB.ava); haptic('success');
+    } catch (e) { toast('Не получилось открыть это фото, попробуй другое'); }
+    if (state.tab === 'profile' && !state.view) renderProfile(); else box.classList.remove('busy');
+  });
+  $view.querySelectorAll('[data-p]').forEach(b => b.addEventListener('click', () => {
+    const a = b.dataset.p;
+    tap();
+    if (a === 'edit') return openProgramEditor();
+    if (a === 'nick') return openNick();
+    if (a === 'plan') { state.planOpen = !state.planOpen; const y = $scroll.scrollTop; renderProfile(); $scroll.scrollTop = y; return; }
+    if (a === 'settings') return openSettings();
+    if (a === 'goal') return openGoalAdd();
+    if (a === 'share') return openCard('Карточка профиля', DB.prog.nick || tgName(), drawProfileCard);
+    if (a === 'weight') { state.pseg = 'w'; return show('progress'); }
+    if (a === 'del') { DB.ava = null; put('ava', null); renderProfile(); }
+  }));
+}
+
 /* ---------- первый запуск ---------- */
 function renderWelcome() {
   document.body.classList.add('nonav');
@@ -2025,9 +2317,9 @@ function renderProgEditor() {
 const isBWname = n => BW_NAMES.indexOf(n) >= 0;
 function confirmish(q) { return true; }
 
-function pickExercise(done, exclude) {
+function pickExercise(done, exclude, label) {
   exclude = exclude || [];
-  const s = openSheet('<div class="sh"><div><small>Добавить в день</small><h2>Упражнение</h2></div>' + closeBtn + '</div>' +
+  const s = openSheet('<div class="sh"><div><small>' + (label || 'Добавить в день') + '</small><h2>Упражнение</h2></div>' + closeBtn + '</div>' +
     '<input class="field" id="exq" placeholder="Поиск или своё название" autocomplete="off"><div id="exl" class="catl"></div>');
   const q = s.el.querySelector('#exq'), box = s.el.querySelector('#exl');
   const draw = () => {
@@ -2092,7 +2384,7 @@ function saveProgram() {
   haptic('success');
   const first = state.firstRun;
   state.view = null; state.draft = null; state.firstRun = false;
-  show('today');
+  show(state.tab);
   syncReminders();
   if (first) setTimeout(() => askReminders(), 500);
   else note('Программа сохранена');
@@ -2113,10 +2405,11 @@ async function drawRecordCard(r) {
   const c = cv.getContext('2d'), F = (w, s) => w + ' ' + s + 'px Inter, -apple-system, system-ui, sans-serif';
   c.fillStyle = '#000'; c.fillRect(0, 0, W, H);
   const g = c.createRadialGradient(W / 2, H + 80, 40, W / 2, H + 80, 1050);
-  g.addColorStop(0, 'rgba(255,159,10,.62)'); g.addColorStop(1, 'rgba(255,159,10,0)');
+  const rgb = rgbOf(theme().c);
+  g.addColorStop(0, 'rgba(' + rgb + ',.62)'); g.addColorStop(1, 'rgba(' + rgb + ',0)');
   c.fillStyle = g; c.fillRect(0, 0, W, H);
   c.textBaseline = 'alphabetic'; c.textAlign = 'left';
-  c.fillStyle = '#FF9F0A'; c.font = F(800, 46); c.fillText('MY GYM', 84, 130);
+  c.fillStyle = theme().c; c.font = F(800, 46); c.fillText('MY GYM', 84, 130);
   c.fillStyle = '#8E8E93'; c.font = F(600, 38); c.textAlign = 'right'; c.fillText(dlong(r.d), W - 84, 128); c.textAlign = 'left';
   c.fillStyle = '#C7C7CC'; c.font = F(700, 52); c.fillText('Новый рекорд', 84, 390);
   c.fillStyle = '#fff'; c.font = F(800, 84);
@@ -2124,7 +2417,7 @@ async function drawRecordCard(r) {
   const val = fmtNum(r.kg); let size = 320;
   c.font = F(800, size);
   while (c.measureText(val).width > W - 340 && size > 120) { size -= 10; c.font = F(800, size); }
-  c.fillStyle = '#FF9F0A'; c.fillText(val, 76, 950);
+  c.fillStyle = theme().c; c.fillText(val, 76, 950);
   const vw = c.measureText(val).width;
   c.fillStyle = '#fff'; c.font = F(800, 88); c.fillText('кг', 76 + vw + 26, 950);
   if (r.prev) {
@@ -2136,11 +2429,12 @@ async function drawRecordCard(r) {
   c.fillStyle = 'rgba(255,255,255,.72)'; c.font = F(600, 38); c.fillText('Журнал тренировок в Telegram: @my_gyymm_bot', 84, 1262);
   return cv.toDataURL('image/jpeg', 0.9);
 }
-async function openRecordCard(r) {
-  const s = openSheet('<div class="sh"><div><small>Карточка рекорда</small><h2>' + esc(r.name) + '</h2></div>' + closeBtn + '</div><div id="cardBox"><div class="empty">Рисую…</div></div>');
+const openRecordCard = r => openCard('Карточка рекорда', r.name, () => drawRecordCard(r));
+async function openCard(label, title, draw) {
+  const s = openSheet('<div class="sh"><div><small>' + label + '</small><h2>' + esc(title) + '</h2></div>' + closeBtn + '</div><div id="cardBox"><div class="empty">Рисую…</div></div>');
   let url;
-  try { url = await drawRecordCard(r); } catch (e) { s.el.querySelector('#cardBox').innerHTML = '<div class="empty">Не получилось нарисовать карточку</div>'; return; }
-  s.el.querySelector('#cardBox').innerHTML = '<img class="cardimg" alt="Карточка рекорда" src="' + url + '"><button class="btn" data-send>Прислать в чат с ботом</button><div class="note2">Оттуда её можно переслать другу</div>';
+  try { url = await draw(); } catch (e) { s.el.querySelector('#cardBox').innerHTML = '<div class="empty">Не получилось нарисовать карточку</div>'; return; }
+  s.el.querySelector('#cardBox').innerHTML = '<img class="cardimg" alt="' + label + '" src="' + url + '"><button class="btn" data-send>Прислать в чат с ботом</button><div class="note2">Оттуда её можно переслать другу</div>';
   const b = s.el.querySelector('[data-send]');
   b.addEventListener('click', () => {
     if (b.dataset.busy) return;
@@ -2254,12 +2548,12 @@ function openSettings() {
   const P = DB.prog, r = P.rem || (P.rem = { on: false, m: 9, e: 20 });
   const REST_OPTS = [60, 90, 120, 180];
   const body = () => '<div class="sh"><div><small>MY GYM</small><h2>Настройки</h2></div>' + closeBtn + '</div>' +
-    '<button class="srow" data-s="prog"><span>' + ic('dumb') + '</span><div><b>Программа тренировок</b><small>' + P.days.map(d => WD_SHORT[d.wd]).join(' · ') + ' · ' + P.days.reduce((a, d) => a + d.x.length, 0) + ' упражнений</small></div>' + ic('arrow') + '</button>' +
     '<div class="sgroup"><div class="frow"><span>Напоминания в боте<small>утром план, вечером — если день пропущен</small></span><button class="tgl' + (r.on ? ' on' : '') + '" data-s="rem"><i></i></button></div>' +
     (r.on ? '<div class="frow"><span>Утром в</span><div class="step"><button data-s="m-">' + ic('minus') + '</button><b>' + r.m + ':00</b><button data-s="m+">' + ic('plus') + '</button></div></div>' +
       '<div class="frow"><span>Вечером в</span><div class="step"><button data-s="e-">' + ic('minus') + '</button><b>' + r.e + ':00</b><button data-s="e+">' + ic('plus') + '</button></div></div>' +
       '<button class="link acc" data-s="test" style="display:block;margin:6px 0 2px">Прислать пробное напоминание</button>' : '') + '</div>' +
     (USER && USER.id === OWNER_ID ? '<div class="sgroup"><div class="frow"><span>ИИ-отчёт<small>разбор тренировки от Claude вместо обычного</small></span><button class="tgl' + (P.aiReport ? ' on' : '') + '" data-s="ai"><i></i></button></div></div>' : '') +
+    '<div class="sgroup"><div class="frow"><span>Цвет приложения</span></div><div class="thm">' + THEMES.map(t => '<button data-s="th" data-id="' + t.id + '" class="' + (t === theme() ? 'on' : '') + '" style="background:' + t.c + '" aria-label="' + t.n + '">' + (t === theme() ? ic('check') : '') + '</button>').join('') + '</div></div>' +
     '<div class="sgroup"><div class="frow"><span>Таймер отдыха</span></div><div class="seg sm liquid" id="restSeg"><div class="lens"></div>' + REST_OPTS.map(v => '<button>' + Math.floor(v / 60) + ':' + String(v % 60).padStart(2, '0') + '</button>').join('') + '</div></div>' +
     '<button class="srow" data-s="backup"><span>' + ic('save') + '</span><div><b>Копия тренировок</b><small>пришлю файлы в чат с ботом</small></div>' + ic('arrow') + '</button>' +
     '<div class="note2">Сохранено тренировок: ' + idx().dates.length + '. Все данные хранятся в твоём аккаунте Telegram' + (pending() ? ' · синхронизация…' : '') + '.</div>';
@@ -2271,7 +2565,12 @@ function openSettings() {
   };
   const bind = () => { bindRest(); s.el.querySelectorAll('[data-s]').forEach(b => b.addEventListener('click', () => {
     const a = b.dataset.s;
-    if (a === 'prog') { s.close(); openProgramEditor(); return; }
+    if (a === 'th') {
+      P.theme = b.dataset.id; put('prog', P); tap();
+      const y = $scroll.scrollTop; render(); $scroll.scrollTop = y; // графики на странице под настройками тоже перекрашиваем
+      s.el.querySelector('#setb').innerHTML = body(); s.bindClose(); bind();
+      return;
+    }
     if (a === 'backup') {
       if (b.dataset.busy) return;
       b.dataset.busy = '1'; tap();
@@ -2383,6 +2682,7 @@ function show(tab) {
   $scroll.scrollTop = 0; // после отрисовки: иначе браузер зря считает раскладку старой страницы
 }
 function render() {
+  applyTheme();
   document.body.classList.toggle('nonav', !!state.view || !DB.prog);
   if (state.view === 'welcome') return renderWelcome();
   if (state.view === 'tpl') return renderTemplates();
@@ -2390,13 +2690,14 @@ function render() {
   if (state.view === 'migrate') return renderMigrate();
   if (!DB.prog) return skeleton();
   if (state.tab === 'today') { state.today = buildToday(); return renderToday(); }
-  if (state.tab === 'progress') { state.progress = buildProgress(); renderProgress(); return checkBadges(state.progress); }
+  if (state.tab === 'progress') { state.progress = buildProgress(); return renderProgress(); }
   if (state.tab === 'history') {
     const names = Object.keys(idx().byEx);
     if (!state.pick || names.indexOf(state.pick) < 0) state.pick = buildHistory(null).names[0] || null;
     state.history = buildHistory(state.pick); return renderHistory();
   }
   if (state.tab === 'library') return renderLibrary();
+  if (state.tab === 'profile') return renderProfile();
 }
 function busyUI() {
   const a = document.activeElement;
