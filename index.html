@@ -20,8 +20,7 @@
   body { min-height: 100vh; padding-bottom: calc(110px + env(safe-area-inset-bottom)); overflow-x: hidden; }
   body.timer { padding-bottom: calc(180px + env(safe-area-inset-bottom)); }
   body:after { content: ""; position: fixed; left: 0; right: 0; bottom: 0; height: 380px; pointer-events: none; z-index: 0;
-    background: radial-gradient(ellipse 75% 55% at 50% 100%, var(--glow) 0%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 55%); mask-image: linear-gradient(to bottom, transparent 0%, #000 55%); }
+    background: radial-gradient(ellipse 75% 55% at 50% 100%, var(--glow) 0%, transparent 100%); }
   button, input { font-family: inherit; color: inherit; }
   button { border: 0; background: none; cursor: pointer; padding: 0; }
   svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
@@ -127,8 +126,8 @@
   .rest b { font-size: 15px; } .rest p { font-size: 12.5px; color: var(--mut); margin-top: 2px; }
 
   /* таймер и меню — жидкое стекло */
-  .glass { background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.06) 45%, rgba(255,255,255,.08));
-    -webkit-backdrop-filter: blur(26px) saturate(190%); backdrop-filter: blur(26px) saturate(190%);
+  /* без backdrop-filter: живое размытие контента под панелью сильно тормозит во встроенном браузере Telegram */
+  .glass { background: linear-gradient(180deg, color-mix(in srgb, var(--acc) 14%, #3c3c40), color-mix(in srgb, var(--acc) 9%, #232325) 45%, color-mix(in srgb, var(--acc) 10%, #29292b));
     border: 1px solid rgba(255,255,255,.16);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.38), inset 0 -1px 1px rgba(255,255,255,.08), inset 0 0 18px rgba(255,255,255,.05), 0 14px 40px rgba(0,0,0,.55); }
   #rest { position: fixed; left: 14px; right: 14px; bottom: calc(100px + env(safe-area-inset-bottom)); max-width: 492px; margin: 0 auto; height: 60px; border-radius: 30px;
@@ -146,7 +145,7 @@
   #rest.go .x { color: var(--accT); }
 
   nav { position: fixed; left: 22px; right: 22px; bottom: calc(18px + env(safe-area-inset-bottom)); max-width: 476px; margin: 0 auto; height: 66px; border-radius: 33px; display: flex; align-items: center; padding: 5px; z-index: 16; }
-  nav { touch-action: none; user-select: none; -webkit-user-select: none; }
+  nav { touch-action: none; user-select: none; -webkit-user-select: none; transform: translateZ(0); }
   nav button { position: relative; z-index: 2; flex: 1; height: 56px; border-radius: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10.5px; font-weight: 600; color: rgba(255,255,255,.62); transition: color .25s, transform .25s; pointer-events: none; }
   nav button svg { width: 24px; height: 24px; stroke-width: 1.9; }
   nav button.on { color: var(--acc); }
@@ -154,8 +153,8 @@
   .lens { position: absolute; z-index: 1; top: 5px; left: 0; height: 56px; border-radius: 28px; pointer-events: none; will-change: transform;
     background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.08));
     box-shadow: inset 0 1px 0 rgba(255,255,255,.4), inset 0 0 0 1px rgba(255,255,255,.1), 0 4px 14px rgba(0,0,0,.25);
-    transition: transform .5s cubic-bezier(.3,1.35,.45,1), background .25s, box-shadow .25s; }
-  .lens.drag { transition: transform .06s linear, background .2s, box-shadow .2s;
+    transition: transform .5s cubic-bezier(.3,1.35,.45,1); }
+  .lens.drag { transition: transform .06s linear;
     background: linear-gradient(180deg, rgba(255,255,255,.30), rgba(255,255,255,.10));
     box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 0 1px rgba(255,255,255,.18), inset 0 0 22px rgba(255,255,255,.12), 0 10px 30px rgba(0,0,0,.45); }
 
@@ -2377,8 +2376,8 @@ function show(tab) {
   if (weekSheet) weekSheet.close();
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
   if (typeof placeLens === 'function' && !navDrag) placeLens(TABS.indexOf(tab));
-  window.scrollTo(0, 0);
   render();
+  window.scrollTo(0, 0); // после отрисовки: иначе браузер зря считает раскладку старой страницы
 }
 function render() {
   document.body.classList.toggle('nonav', !!state.view || !DB.prog);
