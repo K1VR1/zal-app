@@ -2239,7 +2239,7 @@ function calendarInner() {
     '<div class="calw">' + WD_SHORT.slice(1).map(d => '<span>' + d + '</span>').join('') + '</div><div class="calg">' + cells + '</div>' +
     '<div class="calleg"><div><i class="l4"></i><span>сходил</span></div><div><i class="ms"></i><span>пропустил</span></div><div><i class="pl"></i><span>план</span></div></div>';
 }
-function calendarHTML() { return secHead('Активность') + '<div class="card" id="cal">' + calendarInner() + '</div>'; }
+function calendarHTML() { return secHead('Календарь') + '<div class="card" id="cal">' + calendarInner() + '</div>'; }
 const longDate = iso => { const d = dateOf(iso); return d.getDate() + ' ' + MON[d.getMonth()] + ' ' + d.getFullYear(); };
 function loadImg(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('bad image')); i.src = src; }); }
 async function drawProfileCard() {
