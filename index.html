@@ -338,6 +338,12 @@
   .gl b { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .gl span { flex: none; font-size: 12.5px; font-weight: 600; color: var(--mut); }
   .gl.ok span { color: var(--done); }
+  .gdue { font-size: 11.5px; font-weight: 600; color: var(--mut); margin-top: 6px; }
+  .gdue.soon { color: var(--org); } .gdue.late { color: var(--red); }
+  .datein { display: flex; align-items: center; gap: 4px; background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.12); border-radius: 12px; padding: 4px 6px 4px 10px; }
+  .datein input { background: none; border: 0; outline: none; color: #fff; font-size: 15px; font-weight: 600; font-family: inherit; color-scheme: dark; min-width: 0; }
+  .datein .x { width: 26px; height: 26px; display: grid; place-items: center; color: var(--mut); }
+  .datein .x svg { width: 14px; height: 14px; stroke-width: 2.4; }
   .gbar { height: 8px; border-radius: 4px; background: var(--g3); margin-top: 7px; overflow: hidden; }
   .gbar i { display: block; height: 100%; border-radius: 4px; background: var(--acc); }
   .gl.ok .gbar i { background: var(--done); }
@@ -527,7 +533,9 @@
   .seg.liquid { position: relative; touch-action: none; user-select: none; -webkit-user-select: none; }
   .seg.liquid button { position: relative; z-index: 2; pointer-events: none; transition: color .2s; }
   .seg.liquid button.on { background: none; box-shadow: none; }
-  #rateBar { position: fixed; left: 14px; right: 14px; bottom: calc(168px + env(safe-area-inset-bottom)); max-width: 492px; margin: 0 auto; border-radius: 22px; padding: 7px 7px 7px 14px; display: flex; align-items: center; gap: 6px; z-index: 15; }
+  /* «Как подход?» стоит над таймером, а когда таймер закрыли — плавно съезжает на его место */
+  #rateBar { position: fixed; left: 14px; right: 14px; bottom: calc(100px + env(safe-area-inset-bottom)); max-width: 492px; margin: 0 auto; border-radius: 22px; padding: 7px 7px 7px 14px; display: flex; align-items: center; gap: 6px; z-index: 15; transition: transform .38s cubic-bezier(.22,1,.36,1); }
+  body.timer #rateBar { transform: translateY(-68px); }
   #rateBar span { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; color: var(--soft); white-space: nowrap; }
   #rateBar button { flex: none; height: 34px; padding: 0 11px; border-radius: 17px; background: rgba(255,255,255,.12); font-size: 12.5px; font-weight: 700; }
   .it[data-exn] { cursor: pointer; }
@@ -2193,17 +2201,32 @@ function openGoalEdit(g, i) {
   const s = openSheet('<div class="sh"><div><small>Цель</small><h2>' + esc(st.name) + '</h2></div>' + closeBtn + '</div>' +
     '<div class="frow"><span>Сейчас</span><b>' + (st.cur != null ? fmtNum(st.cur) + ' ' + st.unit : '—') + '</b></div>' +
     '<div class="frow"><span>Хочу</span><div class="kgin"><input id="goalIn" inputmode="decimal" placeholder="—" value="' + fmtNum(g.v) + '"><small>' + st.unit + '</small></div></div>' +
-    '<button class="btn" data-a="ok">Сохранить</button>' +
+    '<div class="frow"><span>К какой дате<small>необязательно</small></span><div class="datein"><input id="goalD" type="date" min="' + addDays(isoToday(), 1) + '" value="' + (g.d || '') + '">' +
+    '<button class="x" data-a="nod" aria-label="Без срока"' + (g.d ? '' : ' hidden') + '>' + ic('x') + '</button></div></div>' +
+    '<button class="btn" data-a="ok" style="margin-top:6px">Сохранить</button>' +
     (i >= 0 ? '<button class="link red" data-a="del" style="display:block;margin:10px auto 0">Удалить цель</button>' : ''));
+  const dIn = s.el.querySelector('#goalD'), noD = s.el.querySelector('[data-a=nod]');
+  dIn.addEventListener('change', () => { noD.hidden = !dIn.value; });
+  noD.addEventListener('click', () => { dIn.value = ''; noD.hidden = true; tap(); });
   s.el.querySelector('[data-a=ok]').addEventListener('click', () => {
     const v = parseNum(s.el.querySelector('#goalIn').value);
     if (!(v > 0 && v <= 1000)) return toast('Введи число от 1 до 1000');
+    const d = dIn.value;
+    if (d && d <= isoToday()) return toast('Дата должна быть в будущем');
     g.v = v;
+    if (d) g.d = d; else delete g.d;
     if (i < 0) { if (g.t === 'bw' && lastBW() != null) g.s = lastBW(); (P.goals || (P.goals = [])).push(g); }
     put('prog', P); haptic('success'); s.close(); renderProfile();
   });
   const del = s.el.querySelector('[data-a=del]');
   if (del) del.addEventListener('click', () => { P.goals.splice(i, 1); put('prog', P); tap(); s.close(); renderProfile(); });
+}
+// срок цели: «до 31 декабря · осталось 48 дней», после даты — «срок прошёл»
+function goalDue(g, st) {
+  if (!g.d || st.done) return '';
+  const left = daysBetween(isoToday(), g.d);
+  const txt = left < 0 ? 'Срок прошёл ' + dlong(g.d) : left === 0 ? 'Срок — сегодня' : 'До ' + dlong(g.d) + ' · осталось ' + left + ' ' + plural(left, 'день', 'дня', 'дней');
+  return '<div class="gdue' + (left < 0 ? ' late' : left <= 7 ? ' soon' : '') + '">' + txt + '</div>';
 }
 function goalsHTML() {
   const list = goals();
@@ -2211,7 +2234,7 @@ function goalsHTML() {
     (list.length ? '<div class="card goals">' + list.map((g, i) => {
       const st = goalState(g);
       return '<button class="gl' + (st.done ? ' ok' : '') + '" data-goal="' + i + '"><div class="ghd"><b>' + esc(st.name) + '</b><span>' + (st.done ? 'Достигнута · ' : '') + (st.cur != null ? fmtNum(st.cur) : '—') + ' / ' + fmtNum(g.v) + ' ' + st.unit + '</span></div>' +
-        '<div class="gbar"><i style="width:' + Math.round(st.pct * 100) + '%"></i></div></button>';
+        '<div class="gbar"><i style="width:' + Math.round(st.pct * 100) + '%"></i></div>' + goalDue(g, st) + '</button>';
     }).join('') + '</div>' : '<div class="card"><div class="empty" style="padding:8px">Поставь цель: полоска будет двигаться сама после тренировок</div></div>');
 }
 const secHead = (title, right) => '<div class="sec" style="display:flex;justify-content:space-between;align-items:center;margin-top:18px">' + title + (right || '') + '</div>';
