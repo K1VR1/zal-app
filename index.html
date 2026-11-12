@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <title>Журнал зала</title>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://telegram.org; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src https://mygym.oleg25092007.workers.dev; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://telegram.org; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://mygym.oleg25092007.workers.dev; base-uri 'none'; form-action 'none'">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -28,7 +28,6 @@
   button { border: 0; background: none; cursor: pointer; padding: 0; }
   svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
   .wrap { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; padding: 14px 16px 0; }
-  .demo { margin: 0 0 10px; padding: 8px 12px; border-radius: 12px; background: rgba(var(--accRGB),.12); color: var(--org); font-size: 12px; font-weight: 600; }
 
   /* шапка */
   .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 24px; }
@@ -42,6 +41,7 @@
   .rings { display: flex; align-items: center; gap: 14px; background: var(--g1); border-radius: 22px; padding: 12px 14px; }
   .rings svg.r { width: 92px; height: 92px; flex: none; }
   .leg { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; min-width: 0; }
+  .leg div:nth-child(3):last-child { grid-column: span 2; }
   .leg div { font-size: 11px; font-weight: 600; color: var(--mut); white-space: nowrap; }
   .leg b { display: block; font-size: 18px; font-weight: 700; letter-spacing: -.02em; margin-top: 1px; white-space: nowrap; }
   .leg b small { font-size: 11px; font-weight: 600; color: var(--mut); margin-left: 2px; letter-spacing: 0; }
@@ -90,8 +90,8 @@
   .erow input { width: 3ch; max-width: 100%; min-width: 1.6ch; background: none; border: 0; outline: none; text-align: center; font-size: 30px; font-weight: 800; letter-spacing: -.03em; font-variant-numeric: tabular-nums; padding: 0; border-radius: 10px; }
   .erow input:focus { background: rgba(255,255,255,.06); }
   .erow .val small { font-size: 12px; font-weight: 600; color: var(--mut); }
-  .quick { display: flex; gap: 6px; margin: 6px 0 2px 66px; flex-wrap: wrap; }
-  .quick button { font-size: 11.5px; font-weight: 600; color: var(--soft); background: var(--g3); border-radius: 999px; padding: 5px 10px; }
+  .quick { display: flex; gap: 5px; margin: 6px 0 2px 66px; justify-content: center; flex-wrap: nowrap; white-space: nowrap; } /* 66px = подпись «Вес» + отступ: центр совпадает с цифрами */
+  .quick button { flex: none; font-size: 11.5px; font-weight: 600; color: var(--soft); background: var(--g3); border-radius: 999px; padding: 5px 9px; }
   .save { margin-top: 10px; height: 50px; width: 100%; border-radius: 16px; background: var(--acc); color: var(--accT); display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 16px; font-weight: 800; box-shadow: 0 8px 24px -8px var(--glow); }
   .save:active { transform: scale(.985); }
   .save svg { width: 18px; height: 18px; stroke-width: 3; }
@@ -181,6 +181,7 @@
   .sh .close svg { width: 14px; height: 14px; stroke-width: 2.6; }
   .ws { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 12px 0; }
   .ws.three { grid-template-columns: repeat(3, 1fr); }
+  .ws.two { grid-template-columns: 1fr 1fr; }
   .ws div { background: rgba(255,255,255,.07); border-radius: 16px; padding: 9px 8px; min-width: 0; }
   .ws small { font-size: 10.5px; font-weight: 600; color: var(--mut); white-space: nowrap; }
   .ws b { display: block; font-size: 18px; font-weight: 800; letter-spacing: -.03em; margin-top: 2px; white-space: nowrap; }
@@ -374,7 +375,7 @@
   .pltb svg { flex: none; width: 20px; height: 20px; color: var(--mut); }
   .pst { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 16px; }
   .pst > div { grid-column: span 2; min-width: 0; background: var(--g1); border-radius: 18px; padding: 12px; font-size: 11px; font-weight: 600; color: var(--mut); white-space: nowrap; }
-  .pst > div.w { grid-column: span 3; }
+  .pst > div.w, .pst > div.h { grid-column: span 3; }
   .pst > div > i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
   .pst b { display: block; font-size: 22px; font-weight: 800; letter-spacing: -.03em; margin-top: 3px; }
   .pst .w b { font-size: 30px; }
@@ -389,6 +390,67 @@
   .bests .nr:first-child { border-top: 0; }
   .bests .nr span { color: var(--org); font-weight: 700; }
   .prof .sub { font-size: 13px; color: var(--mut); }
+  .tip { display: flex; align-items: flex-start; gap: 10px; margin: 10px 0; padding: 12px 12px 12px 12px; border-radius: 18px; background: rgba(var(--accRGB), .12); border: 1px solid rgba(var(--accRGB), .35); transition: opacity .2s, transform .2s; }
+  .tip.bye { opacity: 0; transform: scale(.97); }
+  .tipi { flex: none; width: 30px; height: 30px; border-radius: 10px; background: var(--acc); color: var(--accT); display: grid; place-items: center; }
+  .tipi svg { width: 17px; height: 17px; stroke-width: 2.2; }
+  .tipt { flex: 1; min-width: 0; }
+  .tipt b { display: block; font-size: 14px; font-weight: 800; }
+  .tipt p { font-size: 12.5px; color: var(--soft); line-height: 1.38; margin-top: 2px; }
+  .tipok { display: block; font-size: 13px; font-weight: 700; color: var(--acc); padding: 6px 0 0; }
+  .tour { text-align: center; padding: 6px 4px 4px; }
+  .tour .tico { width: 72px; height: 72px; margin: 4px auto 12px; border-radius: 22px; background: var(--acc); color: var(--accT); display: grid; place-items: center; }
+  .tour .tico svg { width: 38px; height: 38px; stroke-width: 1.9; }
+  .tour small { font-size: 12px; font-weight: 600; color: var(--mut); }
+  .tour h2 { font-size: 26px; font-weight: 800; letter-spacing: -.03em; margin-top: 2px; }
+  .tour p { font-size: 15px; color: var(--soft); line-height: 1.45; margin: 8px 6px 0; min-height: 66px; }
+  .tdots { display: flex; justify-content: center; gap: 6px; margin: 16px 0 16px; }
+  .tdots i { width: 7px; height: 7px; border-radius: 4px; background: var(--g3); transition: width .25s, background .25s; }
+  .tdots i.on { width: 20px; background: var(--acc); }
+  .feat { background: var(--g1); border-radius: 18px; padding: 2px 12px; }
+  .frw { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,.07); }
+  .frw:last-child { border-bottom: 0; }
+  .frw > span { flex: none; width: 34px; height: 34px; border-radius: 11px; background: var(--g3); color: var(--acc); display: grid; place-items: center; }
+  .frw > span svg { width: 18px; height: 18px; }
+  .frw > div { flex: 1; min-width: 0; }
+  .frw b { display: block; font-size: 14.5px; }
+  .frw small { display: block; font-size: 12px; color: var(--mut); line-height: 1.35; margin-top: 1px; }
+  .frw > svg { flex: none; width: 16px; height: 16px; color: var(--g4); }
+  .fcard { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; margin-top: 10px; padding: 12px 14px; border-radius: 18px; background: var(--g1); }
+  .fcard > span { flex: none; width: 36px; height: 36px; border-radius: 12px; background: var(--acc); color: var(--accT); display: grid; place-items: center; }
+  .fcard > span svg { width: 19px; height: 19px; stroke-width: 2.1; }
+  .fcard > div { flex: 1; } .fcard b { display: block; font-size: 15px; } .fcard small { font-size: 12px; color: var(--mut); }
+  .fcard > svg { width: 18px; height: 18px; color: var(--mut); }
+  .psum { display: grid; grid-template-columns: 1.3fr 1fr; gap: 8px; }
+  .psum > div { background: var(--g1); border-radius: 22px; padding: 14px; min-width: 0; }
+  .psum span { display: block; font-size: 11px; font-weight: 600; color: var(--mut); white-space: nowrap; }
+  .psum span i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
+  .psum b { display: block; font-weight: 800; letter-spacing: -.03em; margin-top: 2px; white-space: nowrap; }
+  .psum b small { font-size: 13px; font-weight: 600; color: var(--mut); margin-left: 3px; letter-spacing: 0; }
+  .pm b { font-size: 36px; line-height: 1.05; }
+  .pwb { display: flex; align-items: flex-end; gap: 4px; height: 30px; margin-top: 10px; }
+  .pwb i { flex: 1; border-radius: 3px; background: var(--lime); opacity: .3; }
+  .pwb i.on { opacity: 1; }
+  .pwb i.z { background: var(--g3); opacity: 1; }
+  .pm em { display: block; font-style: normal; font-size: 10.5px; color: var(--mut); margin-top: 5px; }
+  .ps { display: flex; flex-direction: column; justify-content: space-between; }
+  .ps > div + div { border-top: 1px solid rgba(255,255,255,.07); padding-top: 10px; }
+  .ps b { font-size: 28px; }
+  .mgc { position: relative; display: flex; align-items: center; width: 100%; height: 116px; margin-top: 10px; padding: 0 0 0 18px; border-radius: 22px; overflow: hidden; text-align: left;
+    background: radial-gradient(120% 140% at 85% 50%, rgba(var(--accRGB),.10), transparent 60%), var(--g1); }
+  .mgc:active { transform: scale(.985); }
+  .mgt { position: relative; z-index: 1; flex: 1; min-width: 0; }
+  .mgt b { display: block; font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+  .mgt small { display: block; font-size: 12px; font-weight: 600; color: var(--mut); margin-top: 3px; }
+  .mgt small em { font-style: normal; color: var(--done); }
+  .mgc .mgf { position: absolute; right: 0; top: 0; width: 64%; height: 100%; object-fit: cover; object-position: center 40%; }
+  .mgi { position: absolute; right: 26px; top: 50%; transform: translateY(-50%); width: 56px; height: 56px; border-radius: 18px; background: var(--g2); color: var(--acc); display: grid; place-items: center; }
+  .mgi svg { width: 28px; height: 28px; }
+  .mghero { height: 190px; margin-top: 6px; border-radius: 22px; overflow: hidden; background: radial-gradient(90% 120% at 50% 50%, rgba(var(--accRGB),.12), transparent 70%), var(--g1); }
+  .mghero .mgf { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; display: block; }
+  .mgc .mgf { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 30%); mask-image: linear-gradient(90deg, transparent 0, #000 30%); }
+  .pchip { display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 700; color: var(--acc); background: var(--g1); border-radius: 999px; padding: 6px 11px 6px 8px; }
+  .pchip svg { width: 15px; height: 15px; stroke-width: 2.4; }
   .prof .acts { display: flex; gap: 14px; margin-top: 6px; }
   .prof .acts .link { cursor: pointer; }
   .fileIn { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
@@ -498,7 +560,6 @@
   <button data-tab="today" class="on"><svg class="i" viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg>Сегодня</button>
   <button data-tab="progress"><svg class="i" viewBox="0 0 24 24"><path d="M4 19h16M5 15l4.5-4.5 3.5 3 6-6.5"/><path d="M15 7h4v4"/></svg>Прогресс</button>
   <button data-tab="history"><svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h2M12 14h2M8 17h2"/></svg>История</button>
-  <button data-tab="library"><svg class="i" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>Упражнения</button>
   <button data-tab="profile"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1-4 4-6 7.5-6s6.5 2 7.5 6"/></svg>Профиль</button>
 </nav>
 <div id="toast" class="glass"></div>
@@ -547,6 +608,18 @@ const ICONS = {
   left: '<path d="M15 6l-6 6 6 6"/>',
   right: '<path d="M9 6l6 6-6 6"/>',
   user: '<circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1-4 4-6 7.5-6s6.5 2 7.5 6"/>',
+  share: '<path d="M12 15V4M7.5 8.5L12 4l4.5 4.5M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/>',
+  bulb: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>',
+  chart: '<path d="M4 19h16M5 15l4.5-4.5 3.5 3 6-6.5"/><path d="M15 7h4v4"/>',
+  cal: '<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  list: '<path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>',
+  bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15L6 16zM10 20.5a2 2 0 0 0 4 0"/>',
+  clock: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M10 3h4"/>',
+  target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".6"/>',
+  trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0V4zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/>',
+  scale: '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 9.5a4 4 0 0 1 6 0L12.5 12"/>',
+  plates: '<rect x="3" y="7" width="3" height="10" rx="1"/><rect x="18" y="7" width="3" height="10" rx="1"/><rect x="7" y="9" width="2" height="6" rx="1"/><rect x="15" y="9" width="2" height="6" rx="1"/><path d="M9 12h6"/>',
+  palette: '<path d="M12 3.5a8.5 8.5 0 0 0 0 17c1.2 0 1.8-.8 1.8-1.6 0-1.3-1.1-1.6-1.1-2.7 0-.9.7-1.5 1.6-1.5h2.2A4 4 0 0 0 20.5 11 8 7.5 0 0 0 12 3.5z"/><circle cx="7.8" cy="11" r=".9"/><circle cx="10.5" cy="7.6" r=".9"/><circle cx="14.6" cy="7.8" r=".9"/>',
   camera: '<path d="M4 8h3.5L9 5.5h6L16.5 8H20a1 1 0 0 1 1 1v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>'
 };
 const ic = (n, cls) => '<svg class="i' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24">' + ICONS[n] + '</svg>';
@@ -756,10 +829,15 @@ function stats() {
   const I = idx(), t = isoToday(), perWeek = {};
   I.dates.forEach(d => { const w = weekNo(d); perWeek[w] = (perWeek[w] || 0) + 1; });
   const now = weekNo(t), tg3 = target();
-  let streak = 0, w = (perWeek[now] || 0) >= tg3 ? now : now - 1;
-  while (w >= 1 && (perWeek[w] || 0) >= tg3) { streak++; w--; }
-  let best = 0, run = 0;
-  for (let i = 1; i <= now; i++) { run = (perWeek[i] || 0) >= tg3 ? run + 1 : 0; best = Math.max(best, run); }
+  // серия — тренировки подряд: день по плану без тренировки её обрывает, сегодняшний ещё не пропуск
+  const has = {}; I.dates.forEach(d => { has[d] = 1; });
+  const first = [I.dates[0], DB.prog.start].filter(Boolean).sort()[0];
+  let streak = 0, best = 0;
+  if (first) for (let d = first; d <= t; d = addDays(d, 1)) {
+    if (has[d]) streak++;
+    else if (d < t && planFor(d)) streak = 0;
+    best = Math.max(best, streak);
+  }
   const from7 = addDays(t, -6);
   return {
     workouts: I.dates.length, tonnage: Math.round(I.sessions.reduce((a, s) => a + s.ton, 0)),
@@ -920,7 +998,7 @@ function weekStats(t) {
     if (l.length === 3 && !x.bw && !isBW(x.n) && l.every(v => v.top === l[2].top) && stuck.indexOf(x.n) < 0) stuck.push(x.n);
   }));
   return { from: from, done: w.done, target: w.target, ton: Math.round(w.ton),
-    prs: I.prs.filter(p => p.d >= from && p.d <= to).map(p => p.name + ': ' + fmtNum(p.kg) + ' кг'), stuck: stuck };
+    prs: [], stuck: stuck };
 }
 function syncReminders(force) {
   if (DEMO || !DB.prog || !API_URL) return;
@@ -979,7 +1057,102 @@ function rings(vals) {
 function streakChip() {
   const st = stats();
   if (!st.streak) return '';
-  return '<span class="streak">' + FLAME + st.streak + ' ' + plural(st.streak, 'неделя', 'недели', 'недель') + ' подряд</span>';
+  return '<span class="streak">' + FLAME + st.streak + ' ' + plural(st.streak, 'тренировка', 'тренировки', 'тренировок') + ' подряд</span>';
+}
+
+/* ---------- подсказки по интерфейсу: каждая показывается один раз, отметки — в prog.seen ---------- */
+const seen = id => !!(DB.prog && (DB.prog.seen || []).indexOf(id) >= 0);
+function markSeen(id) {
+  if (!DB.prog || seen(id)) return;
+  (DB.prog.seen || (DB.prog.seen = [])).push(id); put('prog', DB.prog);
+}
+// первая непрочитанная из списка [[id, заголовок, текст, условие?]] — на экране не больше одной подсказки сразу
+function tip(list) {
+  const t = list.find(x => (x[3] === undefined || x[3]) && !seen(x[0]));
+  return t ? '<div class="tip" data-tipbox="' + t[0] + '"><span class="tipi">' + ic('bulb') + '</span><div class="tipt"><b>' + t[1] + '</b><p>' + t[2] + '</p><button class="tipok" data-tip="' + t[0] + '">Понятно</button></div></div>' : '';
+}
+$view.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-tip]');
+  if (!b) return;
+  tap(); markSeen(b.dataset.tip);
+  const box = b.closest('.tip');
+  box.classList.add('bye'); setTimeout(() => box.remove(), 220);
+});
+
+const TOUR = [
+  ['dumb', 'Сегодня', 'Открываешь — и сразу видишь план на день. Вводишь вес и повторы, жмёшь «Записать подход». Вес на следующий раз приложение подскажет само.'],
+  ['chart', 'Прогресс', 'Как растут веса в каждом упражнении и где застой. Здесь же вес тела и каталог упражнений.'],
+  ['cal', 'История', 'Тоннаж по неделям, календарь тренировок и последние занятия.'],
+  ['user', 'Профиль', 'Цели, лучшие результаты, план тренировок и настройки: напоминания, цвет, таймер отдыха.']
+];
+function openTour(after) {
+  let i = 0;
+  const body = () => '<div class="tour"><div class="tico">' + ic(TOUR[i][0]) + '</div><small>' + (i + 1) + ' из ' + TOUR.length + '</small><h2>' + TOUR[i][1] + '</h2><p>' + TOUR[i][2] + '</p>' +
+    '<div class="tdots">' + TOUR.map((_, k) => '<i class="' + (k === i ? 'on' : '') + '"></i>').join('') + '</div>' +
+    '<button class="btn" data-t="next">' + (i < TOUR.length - 1 ? 'Дальше' : 'Поехали') + '</button>' +
+    (i < TOUR.length - 1 ? '<button class="link" data-t="skip" style="display:block;margin:12px auto 0">Пропустить</button>' : '') + '</div>';
+  const s = openSheet('<div id="tourb">' + body() + '</div>', { onClose: () => { markSeen('tour'); if (after) setTimeout(after, 400); } });
+  const bind = () => s.el.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => {
+    tap();
+    if (b.dataset.t === 'skip' || i === TOUR.length - 1) return s.close();
+    i++; s.el.querySelector('#tourb').innerHTML = body(); bind();
+  }));
+  bind();
+}
+
+// [иконка, название, что это и где, куда перейти]
+const FEATURES = [
+  ['Тренировка', [
+    ['dumb', 'Запись подходов', 'Вкладка «Сегодня»: вес, повторы и «Записать подход». «+» добавит подход сверх плана', 'today'],
+    ['up', 'Подсказка веса', 'Под названием упражнения — цель на сегодня. ↑ — пора прибавить, при застое предложу сбросить вес', 'today'],
+    ['clock', 'Таймер отдыха и оценка подхода', 'Таймер запускается сам после подхода. Оценка «легко / тяжело» влияет на подсказку веса', 'today'],
+    ['plates', 'Разминка и блины', 'Под упражнением со штангой: разминочные подходы и какие блины вешать', 'today'],
+    ['note', 'Заметки', 'Карандаш на карточке упражнения — например, настройка тренажёра', 'today'],
+    ['arrow', 'Перенос тренировки', 'Не успеваешь — перенеси на завтра из списка упражнений. Пропустил — в день отдыха можно сделать её', 'today'],
+    ['check', 'Итог тренировки', 'После всех упражнений: тоннаж, сравнение с прошлым разом и отчёт в чате с ботом', 'today']
+  ]],
+  ['Прогресс', [
+    ['chart', 'Графики по упражнениям', 'Нажми на упражнение во вкладке «Прогресс»: график веса и все тренировки. 1ПМ в строке — сколько ты поднял бы на один раз', 'progress'],
+    ['scale', 'Вес тела', '«Прогресс» → «Вес тела»: записывай вес и смотри график', 'weight'],
+    ['list', 'Каталог упражнений', '«Прогресс» → «+ Каталог»: добавить упражнение в любой день', 'library'],
+    ['cal', 'История и календарь', 'Тоннаж по неделям, календарь и прошлые тренировки', 'history']
+  ]],
+  ['Профиль и настройки', [
+    ['target', 'Цели', 'Поставь цель по весу в упражнении или по весу тела — полоска двигается сама', 'goal'],
+    ['note', 'План тренировок', 'Поменять дни недели и упражнения', 'plan'],
+    ['bell', 'Напоминания', 'Бот утром пришлёт план, вечером напомнит о пропуске, в воскресенье — итог недели', 'settings'],
+    ['palette', 'Цвет и таймер отдыха', 'Выбери цвет приложения и длину отдыха', 'settings'],
+    ['save', 'Копия тренировок', 'Пришлю файлы с тренировками в чат', 'settings'],
+    ['share', 'Карточка профиля', 'Картинка со статистикой, чтобы поделиться', 'share']
+  ]]
+];
+function openFeatures() {
+  let h = '<div class="sh"><div><small>MY GYM</small><h2>Что умеет приложение</h2></div>' + closeBtn + '</div>';
+  FEATURES.forEach((g, gi) => {
+    h += '<div class="sec">' + g[0] + '</div><div class="feat">' + g[1].map((f, fi) => '<button class="frw" data-f="' + gi + ':' + fi + '"><span>' + ic(f[0]) + '</span><div><b>' + f[1] + '</b><small>' + f[2] + '</small></div>' + ic('right') + '</button>').join('') + '</div>';
+  });
+  h += '<button class="btn gray" data-fx="tour" style="margin-top:16px">Показать знакомство ещё раз</button>' +
+    '<button class="link" data-fx="tips" style="display:block;margin:12px auto 4px">Снова показывать подсказки на экранах</button>';
+  const s = openSheet(h, { expandable: true });
+  s.el.querySelectorAll('[data-f]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.f.split(':'), to = FEATURES[k[0]][1][k[1]][3];
+    tap(); s.close();
+    setTimeout(() => {
+      if (to === 'weight') { state.pseg = 'w'; return show('progress'); }
+      if (to === 'goal') { show('profile'); return openGoalAdd(); }
+      if (to === 'plan') return openProgramEditor();
+      if (to === 'settings') return openSettings();
+      if (to === 'share') return openCard('Карточка профиля', DB.prog.nick || tgName(), drawProfileCard);
+      if (to === 'progress') state.pseg = 'ex';
+      show(to);
+    }, 320);
+  }));
+  s.el.querySelector('[data-fx=tour]').addEventListener('click', () => { tap(); s.close(); setTimeout(() => openTour(), 400); });
+  s.el.querySelector('[data-fx=tips]').addEventListener('click', ev => {
+    tap(); DB.prog.seen = (DB.prog.seen || []).filter(x => x === 'tour'); put('prog', DB.prog);
+    ev.target.textContent = 'Готово — подсказки снова появятся';
+    render();
+  });
 }
 
 /* ---------- подсказки веса ---------- */
@@ -1051,7 +1224,7 @@ function metrics() {
   const prev = ex.reduce((s, e) => s + lastTonnage(e), 0);
   const wk = weekLive(state.today.date), I = idx();
   return { planned: planned, done: done, ton: ton, prev: prev, weekDone: wk.done, weekT: wk.ton, target: wk.target,
-    prs: I.prs.length, prsToday: I.prs.filter(p => p.d === state.today.date).length };
+  };
 }
 
 function renderToday() {
@@ -1061,15 +1234,20 @@ function renderToday() {
   h += '<div class="top"><span class="date">' + DAYS[d.weekday] + ', ' + dlong(d.date) + '</span><span class="topr">' + streakChip() + '</span></div>';
   if (d.today) {
     h += '<h1>' + esc(d.today.group) + '</h1>';
-    const m = metrics(), np = m.prsToday;
+    const m = metrics();
     h += '<div class="rings">' + rings([m.planned ? m.done / m.planned : 0, m.prev ? m.ton / m.prev : 0, m.weekDone / m.target]) +
       '<div class="leg">' +
       '<div><i style="background:var(--red)"></i>Подходы<b style="color:var(--red)">' + m.done + '<small>/ ' + m.planned + '</small></b></div>' +
       '<div><i style="background:var(--lime)"></i>Тоннаж<b style="color:var(--lime)">' + fmtT(m.ton) + '<small>кг</small></b></div>' +
       '<div><i style="background:var(--cyn)"></i>Неделя<b style="color:var(--cyn)">' + m.weekDone + '<small>/ ' + m.target + ' · ' + fmtT(m.weekT) + ' кг</small></b></div>' +
-      '<div><i style="background:var(--org)"></i>Рекорды<b style="color:var(--org)">' + m.prs + (np ? '<small style="color:var(--org)">+' + np + '</small>' : '') + '</b></div>' +
       '</div></div>';
     const e = curEx();
+    if (m.done > 0) markSeen('t_save'); // первый подход записан — значит, разобрался, подсказку больше не показываем
+    h += tip([
+      ['t_save', 'Записывай подходы', 'Проверь вес и повторы и жми «Записать подход». Под названием — цель на сегодня: ↑ значит пора прибавить. Карандаш — заметка к упражнению.', !!e],
+      ['t_rate', 'После подхода', 'Оцени подход: легко, нормально или тяжело — от этого зависит, предложу ли больший вес. Таймер отдыха запускается сам, нажми на него, чтобы сменить время.', m.done > 0],
+      ['t_rings', 'Кольца дня', 'Красное — подходы сегодня, зелёное — тоннаж по сравнению с прошлой такой тренировкой, голубое — тренировки за неделю.', m.done > 0]
+    ]);
     h += e ? currentCard(e) : allDoneCard();
     h += exerciseList(e);
   } else {
@@ -1079,9 +1257,9 @@ function renderToday() {
       '<div class="leg">' +
       '<div><i style="background:var(--cyn)"></i>Неделя<b style="color:var(--cyn)">' + wk.done + '<small>/ ' + wk.target + '</small></b></div>' +
       '<div><i style="background:var(--lime)"></i>Тоннаж недели<b style="color:var(--lime)">' + fmtT(wk.ton) + '<small>кг</small></b></div>' +
-      '<div><i style="background:var(--org)"></i>Рекорды<b style="color:var(--org)">' + idx().prs.length + '</b></div>' +
       '<div><i style="background:var(--red)"></i>Вес тела<b style="color:var(--red)">' + (d.bodyweight ? fmtNum(d.bodyweight) + '<small>кг</small>' : '—') + '</b></div>' +
       '</div></div>';
+    h += tip([['t_rest', 'День отдыха', 'Ниже — план следующей тренировки. Если пропустишь тренировку, здесь появится кнопка «Сделать сегодня».']]);
     if (d.move && d.move.kind === 'today') {
       h += '<div class="movebox"><p>Пропустил тренировку <b>' + esc(d.move.group.toLowerCase()) + '</b> (' + DAYS[d.move.weekday].toLowerCase() + ', ' + dm(d.move.from) +
         ')? Можно сделать её сегодня — план и подсказки сохранятся.</p><button class="btn" data-act="move">Сделать сегодня</button></div>';
@@ -1157,7 +1335,8 @@ function currentCard(e) {
     '<label class="val"><input data-f="kg" inputmode="decimal" value="' + fmtNum(ed.kg) + '"><small>кг</small></label>' +
     '<button class="b" data-ed="kg+">' + ic('plus') + '</button></div>' +
     '<div class="quick"><button data-q="down">−' + fmtNum(kgStep(ed.kg)) + '</button>' +
-    (prevSet ? '<button data-q="copy">как в ' + (e.sets.indexOf(prevSet) + 1) + '-м</button>' : (parseLast(e.last, plan).length ? '<button data-q="last">как в прошлый раз</button>' : '')) +
+    // «как в прошлый раз» — главное; «как в N-м» только если прошлой тренировки нет
+    (parseLast(e.last, plan).length ? '<button data-q="last">как в прошлый раз</button>' : (prevSet ? '<button data-q="copy">как в ' + (e.sets.indexOf(prevSet) + 1) + '-м</button>' : '')) +
     '<button data-q="up">+' + fmtNum(kgStep(ed.kg)) + '</button></div>' +
     '<div class="erow"><span class="lb">Повторы</span><button class="b" data-ed="r-">' + ic('minus') + '</button>' +
     '<label class="val"><input data-f="reps" inputmode="numeric" value="' + fmtNum(ed.reps) + '"></label>' +
@@ -1292,7 +1471,6 @@ function commitSet(e, i, kg, reps) {
   e.tonnage = tonOf(e.sets);
   const ss = session();
   if (reps != null) { if (!ss.start) ss.start = Date.now(); ss.last = Date.now(); saveCache(); }
-  if (kg != null && reps) checkRecord(e, kg);
   saveToday();
 }
 
@@ -1513,17 +1691,6 @@ function popup(t1, t2, t3) {
   c.classList.add('on');
   clearTimeout(popup.t); popup.t = setTimeout(() => c.classList.remove('on'), 3000);
 }
-function checkRecord(e, kg) {
-  if (isBW(e.name)) return;
-  const prev = bestMap()[e.name];
-  if (prev == null || kg <= prev) return;
-  if (!cache.bests || cache.bestsAt !== isoToday()) { cache.bests = {}; cache.bestsAt = isoToday(); }
-  cache.bests[e.name] = kg; saveCache();
-  const ss = session(), old = ss.prs.find(p => p.name === e.name);
-  ss.prs = ss.prs.filter(p => p.name !== e.name).concat([{ name: e.name, kg: kg, prev: old ? old.prev : prev }]);
-  popup('🏆 Новый рекорд', esc(e.name), fmtNum(kg) + ' кг · было ' + fmtNum(old ? old.prev : prev));
-  try { tg && tg.HapticFeedback.impactOccurred('heavy'); } catch (err) {}
-}
 function showSummary() {
   const t = state.today.today, ex = named();
   const done = ex.filter(e => doneSets(e));
@@ -1535,10 +1702,6 @@ function showSummary() {
   h += '<div class="ws three"><div><small>Тоннаж</small><b style="color:var(--lime)">' + fmtT(m.ton) + (delta != null ? '<small style="color:' + (delta >= 0 ? 'var(--done)' : 'var(--red)') + '">' + sign(delta) + '%</small>' : '') + '</b></div>' +
     '<div><small>Подходов</small><b style="color:var(--red)">' + m.done + '<small>в ' + done.length + ' упр.</small></b></div>' +
     '<div><small>Время</small><b style="color:var(--cyn)">' + (mins ? mins + '<small>мин</small>' : '—') + '</b></div></div>';
-  if (ss.prs.length) {
-    h += '<div class="sec">Рекорды</div>';
-    ss.prs.forEach((p, i) => { h += '<div class="row2"><div class="nm"><b>' + esc(p.name) + '<span class="tag">PR</span></b><small>было ' + fmtNum(p.prev) + ' кг</small></div><div class="v" style="color:var(--org)">' + fmtNum(p.kg) + ' кг<button class="sharebtn" data-prcard="' + i + '">поделиться</button></div></div>'; });
-  }
   h += '<div class="sec">По сравнению с прошлым разом</div>';
   done.forEach(e => {
     const was = lastTonnage(e), now = e.tonnage || 0, d = pct(now, was);
@@ -1549,10 +1712,6 @@ function showSummary() {
   if (pending()) h += '<div class="hintfull" style="display:block">Сохраняю в облако Telegram — не закрывай приложение секунду-другую</div>';
   h += '<button class="btn" data-close>Готово</button>';
   const sheet = openSheet(h);
-  sheet.el.querySelectorAll('[data-prcard]').forEach(b => b.addEventListener('click', () => {
-    const p = ss.prs[Number(b.dataset.prcard)];
-    sheet.close(); openRecordCard({ name: p.name, kg: p.kg, prev: p.prev, d: t.date });
-  }));
   haptic('success');
   sendReport();
 }
@@ -1569,7 +1728,6 @@ function buildReport(ss) {
   const planned = ex.filter(e => !e.extra).length;
   const good = [], bad = [], next = [], clean = [], facts = [], stronger = [], easyList = [];
 
-  ss.prs.forEach(p => good.push(p.name + ': рекорд, ' + fmtNum(p.kg) + ' кг (было ' + fmtNum(p.prev) + ')'));
   if (delta != null && delta > 0) good.push('Тоннаж в тех же упражнениях ' + sign(delta) + '%');
   if (delta != null && delta < 0) bad.push('Тоннаж в тех же упражнениях ' + sign(delta) + '%');
   if (skipped.length) bad.push('Пропущено: ' + listNames(skipped));
@@ -1592,7 +1750,7 @@ function buildReport(ss) {
     }
     if (missed.length) bad.push(e.name + ': ' + missed.join(', '));
     else if (plan.reps != null) clean.push(e.name);
-    const e1Text = e.name + ': расчётный максимум ' + sign(e1Pct) + '%, ' + fmtE1(e1Was) + ' → ' + fmtE1(e1Now) + ' кг';
+    const e1Text = e.name + ': 1ПМ ' + sign(e1Pct) + '%, ' + fmtE1(e1Was) + ' → ' + fmtE1(e1Now) + ' кг';
     if (e1Pct != null && e1Pct >= 1 && !ss.prs.some(p => p.name === e.name)) stronger.push({ p: e1Pct, t: e1Text });
     if (e1Pct != null && e1Pct <= -3) bad.push(e1Text); // вес могли снизить ради повторов: минус только если реально стало слабее
 
@@ -1631,7 +1789,7 @@ function sendMissedReport() {
   const t = isoToday(), past = idx().dates.filter(d => d < t), d = past[past.length - 1];
   if (!d || d < addDays(t, -3) || (DB.prog.rep && DB.prog.rep >= d)) return;
   const keep = state.today, I = idx(), ai = !!(DB.prog.aiReport && USER && USER.id === OWNER_ID);
-  const prs = I.prs.filter(p => p.d === d).map(p => ({ name: p.name, kg: p.kg, prev: Math.max.apply(null, [0].concat(I.byEx[p.name].filter(x => x.d < d).map(x => x.top))) }));
+  const prs = []; // рекорды в отчётах больше не показываем
   let b;
   try { state.today = buildToday(d); b = buildReport({ start: null, prs: prs }); } finally { state.today = keep; }
   api('report', Object.assign({ ai: ai }, ai ? b : { report: b.report })).then(() => markReported(d)).catch(() => {}); // не вышло — попробуем при следующем открытии
@@ -1642,21 +1800,22 @@ function renderProgress() {
   const p = state.progress;
   if (!p) return skeleton();
   const weeksN = p.nowWeek || 1;
-  let h = demoBanner() + '<div class="top"><span class="date">' + (p.start ? 'С ' + dlong(p.start) + ' · ' + weeksN + ' ' + plural(weeksN, 'неделя', 'недели', 'недель') : 'С начала программы') + '</span></div><h1>Прогресс</h1>';
+  let h = demoBanner() + '<div class="top"><span class="date">' + (p.start ? 'С ' + dlong(p.start) + ' · ' + weeksN + ' ' + plural(weeksN, 'неделя', 'недели', 'недель') : 'С начала программы') + '</span>' +
+    '<button class="pchip" data-lib>' + ic('plus') + 'Каталог</button></div><h1>Прогресс</h1>';
+  // сводка: тоннаж крупно с мини-столбиками по неделям, рядом — тренировки и тоннаж за 7 дней
   const tw = parseNum(String(p.tiles.tonnage).replace(/\s/g, '')) || 0, t7 = parseNum(String(p.tiles.week).replace(/\s/g, '')) || 0;
-  h += '<div class="sum">' +
-    '<div><i style="background:var(--red)"></i>Тренировок<b style="color:var(--red)">' + esc(p.tiles.workouts) + '</b></div>' +
-    '<div><i style="background:var(--lime)"></i>Тоннаж всего<b style="color:var(--lime)">' + fmtTon(tw) + '<small>т</small></b></div>' +
-    '<div><i style="background:var(--cyn)"></i>За 7 дней<b style="color:var(--cyn)">' + fmtTon(t7) + '<small>т</small></b></div>' +
-    '<div><i style="background:var(--org)"></i>Рекорды<b style="color:var(--org)">' + esc(p.tiles.prs) + '</b></div></div>';
-  if (p.weeks5) {
-    h += '<div class="strk">' + FLAME.replace('<svg', '<svg class="f' + (p.streak ? '' : ' off') + '"') + '<b>' + (p.streak ? p.streak + ' ' + plural(p.streak, 'неделя', 'недели', 'недель') + ' подряд' : 'Серия пока не началась') + '</b>' +
-      '<div class="weeks">' + p.weeks5.map(w => '<i class="' + (w.n >= p.target ? 'f' : '') + '" style="' + (w.n > 0 && w.n < p.target ? 'background:linear-gradient(0deg,var(--org) ' + Math.round(w.n / p.target * 100) + '%,var(--g3) 0)' : '') + '" title="Неделя ' + w.week + ': ' + w.n + '/' + p.target + '"></i>').join('') + '</div></div>';
-  }
-  h += '<div class="seg">' + [['ex', 'Упражнения'], ['w', 'Вес тела']].map(s => '<button data-seg="' + s[0] + '" class="' + (state.pseg === s[0] ? 'on' : '') + '">' + s[1] + '</button>').join('') + '</div>';
+  const wk = (buildHistory(null).weeks || []).slice(-6), mx = Math.max.apply(null, [1].concat(wk.map(w => w.tonnage || 0)));
+  h += '<div class="psum"><div class="pm"><span><i style="background:var(--lime)"></i>Тоннаж всего</span><b style="color:var(--lime)">' + fmtTon(tw) + '<small>т</small></b>' +
+    '<div class="pwb">' + Array(6 - wk.length).fill(null).concat(wk).map((w, i) => '<i class="' + (i === 5 ? 'on' : w && w.tonnage ? '' : 'z') + '" style="height:' + (w && w.tonnage ? Math.max(14, Math.round(w.tonnage / mx * 100)) : 10) + '%"></i>').join('') + '</div>' +
+    '<em>по неделям</em></div>' +
+    '<div class="ps"><div><span><i style="background:var(--red)"></i>Тренировок</span><b style="color:var(--red)">' + esc(p.tiles.workouts) + '</b></div>' +
+    '<div><span><i style="background:var(--cyn)"></i>За 7 дней</span><b style="color:var(--cyn)">' + fmtTon(t7) + '<small>т</small></b></div></div></div>';
+  h += tip([['t_prog', 'Как читать прогресс', 'Нажми на упражнение — график и все тренировки. 1ПМ — сколько ты поднял бы на один раз. Зелёная линия — растёшь, серая — застой. «+ Каталог» — добавить упражнение в программу.']]);
+  h += '<div class="seg" style="margin-top:12px">' + [['ex', 'Упражнения'], ['w', 'Вес тела']].map(s => '<button data-seg="' + s[0] + '" class="' + (state.pseg === s[0] ? 'on' : '') + '">' + s[1] + '</button>').join('') + '</div>';
   if (state.pseg === 'ex') h += exList(p);
   else h += weightBlock(p);
   $view.innerHTML = h;
+  $view.querySelector('[data-lib]').addEventListener('click', () => { tap(); lib.g = ''; lib.q = ''; show('library'); });
   $view.querySelectorAll('[data-seg]').forEach(b => b.addEventListener('click', () => { state.pseg = b.dataset.seg; tap(); renderProgress(); }));
   $view.querySelectorAll('[data-day]').forEach(b => b.addEventListener('click', () => { state.pday = b.dataset.day; tap(); renderProgress(); }));
   $view.querySelectorAll('[data-exn]').forEach(b => b.addEventListener('click', () => { tap(); openExercise(p.exercises[Number(b.dataset.exn)].name); }));
@@ -1702,32 +1861,21 @@ function bigChart(points, unit) {
 function openExercise(name) {
   const list = idx().byEx[name] || [], bw = isBW(name);
   let best = 0;
-  const runs = list.map(x => { const pr = !bw && best > 0 && x.top > best; best = Math.max(best, x.top); return Object.assign({}, x, { pr: pr, e1: bw ? 0 : bestE1(x.sets) }); });
-  const bestRun = runs.reduce((m, x) => (x.top > (m ? m.top : 0) ? x : m), null);
+  const runs = list.map(x => { best = Math.max(best, x.top); return x; });
   const mode = bw ? 'reps' : 'kg';
-  const pts = m => runs.slice(-30).map(x => ({ d: x.d, pr: x.pr, v: m === 'e1' ? x.e1 : m === 'reps' ? x.reps : x.top }));
-  const unit = { kg: 'кг', e1: 'кг, расчётный максимум', reps: 'повторов' };
+  const pts = m => runs.slice(-30).map(x => ({ d: x.d, v: m === 'reps' ? x.reps : x.top }));
+  const unit = { kg: 'кг', reps: 'повторов' };
   let h = '<div class="sh"><div><small>Упражнение</small><h2>' + esc(name) + '</h2></div>' + closeBtn + '</div>';
   if (!runs.length) { openSheet(h + '<div class="empty">Ещё не делал это упражнение</div>'); return; }
-  h += '<div class="ws three"><div><small>' + (bw ? 'Макс. повторов' : 'Лучший вес') + '</small><b>' + (bw ? Math.max.apply(null, runs.map(x => x.reps)) : fmtNum(best) + '<small>кг</small>') + '</b></div>' +
-    (bw ? '' : '<div><small>Лучший 1ПМ</small><b>' + fmtE1(Math.max.apply(null, runs.map(x => x.e1))) + '<small>кг</small></b></div>') +
+  h += '<div class="ws two"><div><small>' + (bw ? 'Макс. повторов' : 'Лучший вес') + '</small><b>' + (bw ? Math.max.apply(null, runs.map(x => x.reps)) : fmtNum(best) + '<small>кг</small>') + '</b></div>' +
     '<div><small>Тренировок</small><b>' + runs.length + '</b></div></div>';
-  if (!bw) h += '<div class="seg sm liquid" id="exSeg"><div class="lens"></div><button>Вес</button><button>Расчётный максимум</button></div>';
   h += '<div id="exChart">' + bigChart(pts(mode), unit[mode]) + '</div>';
-  if (!bw) h += '<button class="btn gray" data-card>Поделиться рекордом</button>';
   h += '<div class="sec">История</div>';
   runs.slice().reverse().forEach(x => {
     const sets = x.sets.map(s => fmtNum(s[0]) + '×' + (s[1] == null ? '' : s[1]) + (s[2] && s[2] !== 2 ? '<span class="rate r' + s[2] + '">' + RATES[s[2]].toLowerCase() + '</span>' : '')).join(' · ');
-    h += '<div class="row2"><div class="nm"><b>' + dlong(x.d) + (x.pr ? '<span class="tag">PR</span>' : '') + '</b><small>' + sets + '</small></div>' + (x.e1 ? '<div class="v">' + fmtE1(x.e1) + '<small style="color:var(--mut)">1ПМ</small></div>' : '') + '</div>';
+    h += '<div class="row2"><div class="nm"><b>' + dlong(x.d) + '</b><small>' + sets + '</small></div></div>';
   });
-  const s = openSheet(h, { expandable: true });
-  if (!bw) {
-    liquidSeg(s.el.querySelector('#exSeg'), 0, i => { const m = i ? 'e1' : 'kg'; s.el.querySelector('#exChart').innerHTML = bigChart(pts(m), unit[m]); });
-    s.el.querySelector('[data-card]').addEventListener('click', () => {
-      const before = runs.filter(x => x.d < bestRun.d).map(x => x.top);
-      s.close(); openRecordCard({ name: name, kg: bestRun.top, prev: before.length ? Math.max.apply(null, before) : null, d: bestRun.d });
-    });
-  }
+  openSheet(h, { expandable: true });
 }
 function spark(vals, color) {
   if (!vals || vals.length < 2) return '<svg class="sp" viewBox="0 0 54 22"></svg>';
@@ -1773,31 +1921,22 @@ function renderHistory() {
   const cur = weeks[weeks.length - 1], prev = weeks[weeks.length - 2];
   const d = prev && prev.tonnage ? pct(cur.tonnage, prev.tonnage) : null;
   let s = demoBanner() + '<div class="top"><span class="date">' + (h.start ? 'С ' + dlong(h.start) : 'По неделям') + '</span></div><h1>История</h1>';
+  s += tip([['t_hist', 'История', 'Нажми на столбик — покажу, что было за неделю. В календаре зелёные дни — тренировки, пунктир — что по плану.']]);
   s += '<div class="card" id="barsCard" style="margin-top:0"><div class="ct"><b>Тоннаж по неделям</b>' + (d != null ? '<span>к прошлой <em class="' + (d < 0 ? 'dn' : '') + '">' + sign(d) + '%</em></span>' : '') + '</div>' +
     '<div id="barsBox">' + weekBars(weeks) + '</div><div class="tapnote">Нажми на неделю — покажу подробности</div></div>';
+  s += calendarHTML();
   if (!h.names.length) s += '<div class="list" style="margin-top:10px"><div class="empty">Пока нет записей</div></div>';
-  else {
-    s += '<div class="chips">' + h.names.map(n => '<button class="' + (n === state.pick ? 'on' : '') + '" data-n="' + esc(n) + '">' + esc(n) + '</button>').join('') + '</div>';
-    const pts = h.points || [];
-    if (pts.length) {
-      const bwx = isBW(state.pick);
-      const first = pts[0], last = pts[pts.length - 1], g = pct(last.weight, first.weight);
-      const vals = pts.map(p => ({ date: p.date, v: bwx ? p.reps : p.weight }));
-      s += '<div class="card" style="margin-top:0"><div class="bigs"><div>Сейчас<b>' + (bwx ? last.reps + ' раз' : fmtNum(last.weight) + ' кг') + '</b></div><div>Старт<b>' + (bwx ? first.reps + ' раз' : fmtNum(first.weight) + ' кг') + '</b></div>' +
-        (!bwx && g != null ? '<div>Прирост<b class="' + (g < 0 ? 'dn' : 'g') + '">' + sign(g) + '%</b></div>' : '') + '</div>' + areaChart(vals.slice(-8), theme().c) + '</div>';
-    } else s += '<div class="list"><div class="empty">Выбери упражнение</div></div>';
-  }
   if (h.recent && h.recent.length) {
-    s += '<div class="list" style="margin-top:10px">' + h.recent.map((r, i) => '<div class="lr"><div class="d"><b>' + r.date.slice(8) + '</b><small>' + MON3[Number(r.date.slice(5, 7)) - 1] + '</small></div>' +
-      '<span class="bar" style="background:' + (i === 0 ? 'var(--org)' : 'var(--g3)') + '"></span><div class="nm"><b>' + esc(r.group || 'Тренировка') + '</b><small>' + r.sets + ' ' + plural(r.sets, 'подход', 'подхода', 'подходов') + (r.prs ? ' · ' + r.prs + ' ' + plural(r.prs, 'рекорд', 'рекорда', 'рекордов') : '') + '</small></div><span class="t">' + fmtT(r.tonnage) + ' кг</span></div>').join('') + '</div>';
+    s += secHead('Последние тренировки') + '<div class="list">' + h.recent.map((r, i) => '<div class="lr"><div class="d"><b>' + r.date.slice(8) + '</b><small>' + MON3[Number(r.date.slice(5, 7)) - 1] + '</small></div>' +
+      '<span class="bar" style="background:' + (i === 0 ? 'var(--org)' : 'var(--g3)') + '"></span><div class="nm"><b>' + esc(r.group || 'Тренировка') + '</b><small>' + r.sets + ' ' + plural(r.sets, 'подход', 'подхода', 'подходов') + '' + '</small></div><span class="t">' + fmtT(r.tonnage) + ' кг</span></div>').join('') + '</div>';
   }
   $view.innerHTML = s;
-  $view.querySelectorAll('.chips button').forEach(b => b.addEventListener('click', async () => {
-    state.pick = b.dataset.n; tap();
-    $view.querySelectorAll('.chips button').forEach(x => x.classList.toggle('on', x === b));
-    state.history = buildHistory(state.pick);
-    const sx = document.querySelector('.chips').scrollLeft; renderHistory(); document.querySelector('.chips').scrollLeft = sx;
-  }));
+  const cal = $view.querySelector('#cal');
+  cal.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-c]');
+    if (!b || b.disabled) return;
+    state.calM = shiftMonth(state.calM, Number(b.dataset.c)); tap(); cal.innerHTML = calendarInner();
+  });
   bindBars();
 }
 function bindBars(sel) {
@@ -1861,15 +2000,14 @@ function weekHtml(w) {
   const f = w.from, t = w.to;
   const range = Number(f.slice(8)) + ' ' + MON3[Number(f.slice(5, 7)) - 1] + ' — ' + Number(t.slice(8)) + ' ' + MON3[Number(t.slice(5, 7)) - 1];
   let h = '<div class="sh"><div><small>Неделя ' + w.week + ' · ' + range + '</small><h2>' + (w.tonnage ? fmtTon(w.tonnage) + ' т за неделю' : 'Без тренировок') + '</h2></div>' + closeBtn + '</div>';
-  h += '<div class="ws"><div><small>Тренировок</small><b style="color:' + (w.done >= 3 ? 'var(--done)' : '#fff') + '">' + w.done + '/' + Math.max(3, w.total) + '</b></div>' +
+  h += '<div class="ws three"><div><small>Тренировок</small><b style="color:' + (w.done >= 3 ? 'var(--done)' : '#fff') + '">' + w.done + '/' + Math.max(3, w.total) + '</b></div>' +
     '<div><small>Подходов</small><b>' + w.sets + '</b></div>' +
-    '<div><small>Рекорды</small><b style="color:var(--org)">' + w.prs + '</b></div>' +
     '<div><small>К прошлой</small><b style="color:' + (w.delta == null ? 'var(--mut)' : w.delta >= 0 ? 'var(--done)' : 'var(--red)') + '">' + (w.delta == null ? '—' : sign(w.delta) + '%') + '</b></div></div>';
   const today = isoToday();
   w.days.forEach(d => {
     const future = d.date > today, cls = d.done ? 'ok' : future ? 'soon' : 'miss';
     const dd = d.prevT ? pct(d.tonnage, d.prevT) : null;
-    const pr = d.prs.length ? ' · <i>PR</i> ' + esc(d.prs[0].name.toLowerCase()) + ' ' + fmtNum(d.prs[0].kg) + ' кг' + (d.prs.length > 1 ? ' и ещё ' + (d.prs.length - 1) : '') : '';
+    const pr = '';
     h += '<div class="wd ' + (d.done ? '' : 'miss') + '"><span class="day ' + cls + '">' + DSH[d.weekday] + '</span><div class="nm"><b>' + esc(d.group) + '</b><small>' + dm(d.date) +
       (d.done ? ' · ' + d.sets + ' ' + plural(d.sets, 'подход', 'подхода', 'подходов') + pr : future ? ' · впереди' : ' · пропуск') + '</small></div>' +
       (d.done ? '<div class="t">' + fmtT(d.tonnage) + ' кг' + (dd != null ? '<small style="color:' + (dd >= 0 ? 'var(--done)' : 'var(--red)') + '">' + sign(dd) + '%</small>' : '') + '</div>' : '') + '</div>';
@@ -1879,7 +2017,7 @@ function weekHtml(w) {
   h += '<div class="hintfull" data-half>' + (withEx.length ? 'Потяни вверх — все упражнения и подходы' : '') + '</div>';
   withEx.forEach(d => {
     h += '<div class="exday"><h4><span class="day">' + DSH[d.weekday] + '</span>' + esc(d.group) + ' · ' + dm(d.date) + '</h4><div class="exl">' +
-      d.exercises.map(x => '<div><b>' + esc(x.name) + (x.pr ? '<em>PR</em>' : '') + '</b><span>' + x.sets.map(s => fmtNum(s[0]) + '×' + fmtNum(s[1])).join(' · ') + '</span></div>').join('') + '</div></div>';
+      d.exercises.map(x => '<div><b>' + esc(x.name) + '' + '</b><span>' + x.sets.map(s => fmtNum(s[0]) + '×' + fmtNum(s[1])).join(' · ') + '</span></div>').join('') + '</div></div>';
   });
   return h;
 }
@@ -1924,21 +2062,30 @@ function exGroups() {
   return (mine.length ? [['Мои', mine]] : []).concat(CATALOG);
 }
 const daysWith = name => DB.prog.days.filter(d => d.x.some(x => x.n === name));
+/* ---------- картинки групп мышц: рендеры из Blender (build.py, EX=anat), лежат в img/muscles ---------- */
+const GROUP_IMG = { 'Грудь': 'chest', 'Спина': 'back', 'Ноги': 'legs', 'Ягодицы': 'glutes', 'Плечи': 'shoulders', 'Бицепс': 'biceps', 'Трицепс': 'triceps', 'Предплечья': 'forearms', 'Пресс': 'abs' };
+const bodyFig = (group, cls) => GROUP_IMG[group] ? '<img class="' + cls + '" src="img/muscles/' + GROUP_IMG[group] + '.webp?v=3" alt="" loading="lazy" decoding="async">' : '';
+
 function renderLibrary() {
   const total = CATALOG.reduce((n, g) => n + g[1].length, 0), groups = exGroups();
   if (lib.g && !groups.some(g => g[0] === lib.g)) lib.g = '';
-  $view.innerHTML = demoBanner() + '<div class="top"><span class="date">' + total + ' ' + plural(total, 'упражнение', 'упражнения', 'упражнений') + ' в каталоге</span></div><h1>Упражнения</h1>' +
-    '<input class="field" id="libQ" style="margin-top:0" maxlength="60" placeholder="Поиск или своё название" autocomplete="off" value="' + esc(lib.q) + '">' +
-    '<div class="chips">' + ['Все'].concat(groups.map(g => g[0])).map((n, i) => '<button data-g="' + (i ? esc(n) : '') + '" class="' + (lib.g === (i ? n : '') ? 'on' : '') + '">' + esc(n) + '</button>').join('') + '</div>' +
+  const g = lib.g ? groups.find(x => x[0] === lib.g) : null;
+  let h = '<div class="top"><button class="link" data-libback>‹ ' + (g ? 'Каталог' : 'Прогресс') + '</button>' +
+    '<span class="date">' + (g ? g[1].length + ' ' + plural(g[1].length, 'упражнение', 'упражнения', 'упражнений') : total + ' ' + plural(total, 'упражнение', 'упражнения', 'упражнений')) + '</span></div>' +
+    '<h1>' + (g ? esc(g[0]) : 'Каталог') + '</h1>';
+  if (g && GROUP_IMG[g[0]]) h += '<div class="mghero">' + bodyFig(g[0], 'mgf') + '</div>';
+  h += '<input class="field" id="libQ" style="margin-top:' + (g ? '12px' : '0') + '" maxlength="60" placeholder="' + (g ? 'Поиск в группе или своё название' : 'Поиск или своё название') + '" autocomplete="off" value="' + esc(lib.q) + '">' +
     '<div id="libL"></div>';
+  $view.innerHTML = h;
+  $view.querySelector('[data-libback]').addEventListener('click', () => {
+    tap();
+    if (lib.g) { lib.g = ''; lib.q = ''; renderLibrary(); $scroll.scrollTop = 0; } else show('progress');
+  });
   const q = $view.querySelector('#libQ');
   q.addEventListener('input', () => { lib.q = q.value; drawLibrary(); });
-  $view.querySelectorAll('.chips button').forEach(b => b.addEventListener('click', () => {
-    lib.g = b.dataset.g; tap();
-    $view.querySelectorAll('.chips button').forEach(x => x.classList.toggle('on', x === b));
-    drawLibrary();
-  }));
   $view.querySelector('#libL').addEventListener('click', ev => {
+    const c = ev.target.closest('[data-grp]');
+    if (c) { tap(); lib.g = c.dataset.grp; lib.q = ''; renderLibrary(); $scroll.scrollTop = 0; return; }
     const b = ev.target.closest('[data-n]');
     if (b) { tap(); openAddToDay(b.dataset.n); }
   });
@@ -1949,11 +2096,20 @@ function drawLibrary() {
   if (!box) return;
   const raw = lib.q.trim(), v = exNorm(raw), groups = exGroups();
   let h = '';
+  // главный экран без поиска — карточки групп с картинками
+  if (!lib.g && !v) {
+    box.innerHTML = groups.map(g => {
+      const inProg = g[1].filter(n => daysWith(n).length).length;
+      return '<button class="mgc" data-grp="' + esc(g[0]) + '"><div class="mgt"><b>' + esc(g[0]) + '</b><small>' + g[1].length + ' ' + plural(g[1].length, 'упражнение', 'упражнения', 'упражнений') +
+        (inProg ? ' · <em>' + inProg + ' в программе</em>' : '') + '</small></div>' + (GROUP_IMG[g[0]] ? bodyFig(g[0], 'mgf') : '<span class="mgi">' + ic('dumb') + '</span>') + '</button>';
+    }).join('');
+    return;
+  }
   if (v && !groups.some(g => g[1].some(n => exNorm(n) === v))) h += '<div class="catl"><button class="own" data-n="' + esc(raw) + '">' + ic('plus') + 'Добавить «' + esc(raw) + '»</button></div>';
   groups.filter(g => !lib.g || g[0] === lib.g).forEach(g => {
     const list = g[1].filter(n => !v || exNorm(n).indexOf(v) >= 0);
     if (!list.length) return;
-    h += '<div class="sec">' + esc(g[0]) + '</div><div class="list">' + list.map(n => {
+    h += (lib.g ? '' : '<div class="sec">' + esc(g[0]) + '</div>') + '<div class="list"' + (lib.g ? ' style="margin-top:10px"' : '') + '>' + list.map(n => {
       const on = daysWith(n);
       return '<button class="lx' + (on.length ? ' in' : '') + '" data-n="' + esc(n) + '"><span class="nm"><b>' + esc(n) + '</b>' + (on.length ? '<small>' + on.map(d => WD_SHORT[d.wd]).join(' · ') + '</small>' : '') + '</span><span class="pl">' + ic(on.length ? 'check' : 'plus') + '</span></button>';
     }).join('') + '</div>';
@@ -2112,7 +2268,7 @@ async function drawProfileCard() {
   while (c.measureText(name).width > W - 168 && size > 40) { size -= 4; c.font = F(800, size); }
   c.fillText(name, cx, 640);
   // цифры
-  [[String(st.workouts), plural(st.workouts, 'тренировка', 'тренировки', 'тренировок')], [fmtTon(st.tonnage), 'тонн поднято'], [String(st.prs), plural(st.prs, 'рекорд', 'рекорда', 'рекордов')]].forEach((x, i) => {
+  [[String(st.workouts), plural(st.workouts, 'тренировка', 'тренировки', 'тренировок')], [fmtTon(st.tonnage), 'тонн поднято'], [String(st.streak), plural(st.streak, 'тренировка', 'тренировки', 'тренировок') + ' подряд']].forEach((x, i) => {
     const tx = W * (1 + i * 2) / 6;
     c.fillStyle = acc; c.font = F(800, 92); c.fillText(x[0], tx, 800);
     c.fillStyle = '#C7C7CC'; c.font = F(600, 34); c.fillText(x[1], tx, 852);
@@ -2138,16 +2294,14 @@ function statsHTML(st, kg) {
     const max = Math.max.apply(null, vals.concat([1]));
     return '<div class="pbars" style="--c:' + color + '">' + vals.map(v => '<span class="' + (v ? '' : 'z') + '" style="height:' + (v ? Math.max(15, Math.round(v / max * 100)) : 15) + '%"></span>').join('') + '</div>';
   };
-  const prsMonth = I.prs.filter(p => p.d >= monthAgo).length;
   const dBw = DB.bw.length >= 2 ? Math.round((DB.bw[DB.bw.length - 1][1] - DB.bw[0][1]) * 10) / 10 : null;
   const bwSub = kg == null ? 'записать вес' : dBw == null ? 'первый замер' : !dBw ? 'как на старте' : (dBw > 0 ? '+' : '−') + fmtNum(Math.abs(dBw)) + ' с начала';
   const tile = (cls, color, label, val, sub, extra, attr) => '<div class="' + cls + '"' + (attr || '') + '><i style="background:' + color + '"></i>' + label + '<b style="color:' + color + '">' + val + '</b><em>' + sub + '</em>' + (extra || '') + '</div>';
   return '<div class="pst">' +
     tile('w', 'var(--red)', 'Тренировок', st.workouts, 'на неделе ' + st.thisWeek + ' из ' + st.target, bars(weeks.map(w => w.length), 'var(--red)')) +
     tile('w', 'var(--lime)', 'Поднято', fmtTon(st.tonnage) + '<small>т</small>', '+' + fmtTon(st.t7) + ' т за 7 дней', bars(weeks.map(w => w.reduce((a, x) => a + x.ton, 0)), 'var(--lime)')) +
-    tile('', 'var(--org)', 'Рекорды', st.prs, '+' + prsMonth + ' за месяц') +
-    tile('', 'var(--done)', 'Серия', st.streak + '<small>нед.</small>', 'лучшая: ' + st.bestStreak) +
-    tile('', 'var(--cyn)', 'Вес', kg != null ? fmtNum(kg) + '<small>кг</small>' : '—', bwSub, '', ' data-p="weight"') +
+    tile('h', 'var(--done)', 'Серия', st.streak + '<small>трен.</small>', 'подряд · лучшая: ' + st.bestStreak) +
+    tile('h', 'var(--cyn)', 'Вес', kg != null ? fmtNum(kg) + '<small>кг</small>' : '—', bwSub, '', ' data-p="weight"') +
     '</div>';
 }
 
@@ -2196,9 +2350,11 @@ function renderProfile() {
     '<label class="ava" id="avaBox" for="avaIn" aria-label="Загрузить фото">' + (ava ? '<img alt="" src="' + esc(ava) + '">' : ic('user')) + '<span class="cam">' + ic('camera') + '</span></label>' +
     '<button class="pname" data-p="nick" aria-label="Изменить ник"><span>' + esc(name) + '</span>' + ic('note') + '</button><div class="sub">' + count + ' ' + plural(count, 'тренировка', 'тренировки', 'тренировок') + ' в неделю</div>' +
     '<div class="acts"><label class="link acc" for="avaIn">' + (ava ? 'Сменить фото' : 'Загрузить фото') + '</label>' + (ava ? '<button class="link" data-p="del">Удалить</button>' : '') + '</div></div>' +
+    tip([['t_prof', 'Твой профиль', 'Нажми на фото или ник, чтобы поменять. Цели двигаются сами после тренировок. Шестерёнка — напоминания, цвет и таймер отдыха.']]) +
     statsHTML(st, kg) +
     '<button class="btn gray" data-p="share" style="margin-top:10px">Поделиться профилем</button>' +
-    goalsHTML() + calendarHTML() +
+    '<button class="fcard" data-p="features"><span>' + ic('bulb') + '</span><div><b>Что умеет приложение</b><small>Все возможности за минуту</small></div>' + ic('right') + '</button>' +
+    goalsHTML() +
     (bests.length ? '<div class="sec" style="margin-top:18px">Лучшие результаты</div><div class="card bests">' + bests.map(x => '<div class="nr"><b>' + esc(x[0]) + '</b><span>' + fmtNum(x[1]) + ' кг</span></div>').join('') + '</div>' : '') +
     '<div class="card plt" style="margin-top:18px"><button class="pltb" data-p="plan" aria-expanded="' + !!state.planOpen + '"><div><b>План тренировок</b><small>' + planDays.map(d => WD_SHORT[d.wd]).join(' · ') + ' · ' + exCount + ' ' + plural(exCount, 'упражнение', 'упражнения', 'упражнений') + '</small></div>' + ic(state.planOpen ? 'up' : 'down') + '</button>' +
     (state.planOpen ? '<button class="link acc" data-p="edit">Изменить</button>' : '') + '</div>';
@@ -2207,12 +2363,6 @@ function renderProfile() {
       d.x.map(x => '<div class="nr"><b>' + esc(x.n) + '</b><span>' + planStr(x.s, x.r) + '</span></div>').join('') + '</div>';
   });
   $view.innerHTML = h;
-  const cal = $view.querySelector('#cal');
-  cal.addEventListener('click', ev => {
-    const b = ev.target.closest('[data-c]');
-    if (!b || b.disabled) return;
-    state.calM = shiftMonth(state.calM, Number(b.dataset.c)); tap(); cal.innerHTML = calendarInner();
-  });
   $view.querySelectorAll('[data-goal]').forEach(b => b.addEventListener('click', () => { tap(); const i = Number(b.dataset.goal); openGoalEdit(goals()[i], i); }));
   const input = $view.querySelector('#avaIn'), box = $view.querySelector('#avaBox');
   input.addEventListener('change', async () => {
@@ -2233,6 +2383,7 @@ function renderProfile() {
     if (a === 'nick') return openNick();
     if (a === 'plan') { state.planOpen = !state.planOpen; const y = $scroll.scrollTop; renderProfile(); $scroll.scrollTop = y; return; }
     if (a === 'settings') return openSettings();
+    if (a === 'features') return openFeatures();
     if (a === 'goal') return openGoalAdd();
     if (a === 'share') return openCard('Карточка профиля', DB.prog.nick || tgName(), drawProfileCard);
     if (a === 'weight') { state.pseg = 'w'; return show('progress'); }
@@ -2244,7 +2395,7 @@ function renderProfile() {
 function renderWelcome() {
   document.body.classList.add('nonav');
   $view.innerHTML = demoBanner() + '<div class="hero"><div class="logo">' + ic('dumb') + '</div><h1>MY GYM</h1>' +
-    '<p>Журнал тренировок прямо в Telegram: подсказки по весу, рекорды, прогресс и напоминания. Все данные хранятся в твоём аккаунте.</p>' +
+    '<p>Журнал тренировок прямо в Telegram: подсказки по весу, прогресс и напоминания. Все данные хранятся в твоём аккаунте.</p>' +
     '<button class="btn" data-go="tpl">Собрать программу</button></div>';
   $view.querySelector('[data-go]').addEventListener('click', () => { state.view = 'tpl'; render(); });
 }
@@ -2386,50 +2537,10 @@ function saveProgram() {
   state.view = null; state.draft = null; state.firstRun = false;
   show(state.tab);
   syncReminders();
-  if (first) setTimeout(() => askReminders(), 500);
+  if (first) setTimeout(() => openTour(askReminders), 500);
   else note('Программа сохранена');
 }
 
-/* ---------- карточка рекорда ---------- */
-function wrapText(c, text, maxW, maxLines) {
-  const lines = []; let cur = '';
-  text.split(' ').forEach(w => { const t = cur ? cur + ' ' + w : w; if (c.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; });
-  if (cur) lines.push(cur);
-  if (lines.length > maxLines) { lines.length = maxLines; lines[maxLines - 1] = lines[maxLines - 1].replace(/.{0,2}$/, '') + '…'; }
-  return lines;
-}
-async function drawRecordCard(r) {
-  try { await Promise.all([document.fonts.load('800 100px Inter', 'Жим'), document.fonts.load('600 40px Inter', 'Жим')]); } catch (e) {}
-  const W = 1080, H = 1350, cv = document.createElement('canvas');
-  cv.width = W; cv.height = H;
-  const c = cv.getContext('2d'), F = (w, s) => w + ' ' + s + 'px Inter, -apple-system, system-ui, sans-serif';
-  c.fillStyle = '#000'; c.fillRect(0, 0, W, H);
-  const g = c.createRadialGradient(W / 2, H + 80, 40, W / 2, H + 80, 1050);
-  const rgb = rgbOf(theme().c);
-  g.addColorStop(0, 'rgba(' + rgb + ',.62)'); g.addColorStop(1, 'rgba(' + rgb + ',0)');
-  c.fillStyle = g; c.fillRect(0, 0, W, H);
-  c.textBaseline = 'alphabetic'; c.textAlign = 'left';
-  c.fillStyle = theme().c; c.font = F(800, 46); c.fillText('MY GYM', 84, 130);
-  c.fillStyle = '#8E8E93'; c.font = F(600, 38); c.textAlign = 'right'; c.fillText(dlong(r.d), W - 84, 128); c.textAlign = 'left';
-  c.fillStyle = '#C7C7CC'; c.font = F(700, 52); c.fillText('Новый рекорд', 84, 390);
-  c.fillStyle = '#fff'; c.font = F(800, 84);
-  wrapText(c, r.name, W - 168, 2).forEach((l, i) => c.fillText(l, 84, 494 + i * 98));
-  const val = fmtNum(r.kg); let size = 320;
-  c.font = F(800, size);
-  while (c.measureText(val).width > W - 340 && size > 120) { size -= 10; c.font = F(800, size); }
-  c.fillStyle = theme().c; c.fillText(val, 76, 950);
-  const vw = c.measureText(val).width;
-  c.fillStyle = '#fff'; c.font = F(800, 88); c.fillText('кг', 76 + vw + 26, 950);
-  if (r.prev) {
-    const diff = Math.round((r.kg - r.prev) * 100) / 100;
-    c.fillStyle = '#30D158'; c.font = F(800, 56); c.fillText('+' + fmtNum(diff) + ' кг', 84, 1058);
-    const dw = c.measureText('+' + fmtNum(diff) + ' кг').width;
-    c.fillStyle = '#C7C7CC'; c.font = F(600, 44); c.fillText('было ' + fmtNum(r.prev) + ' кг', 84 + dw + 30, 1056);
-  }
-  c.fillStyle = 'rgba(255,255,255,.72)'; c.font = F(600, 38); c.fillText('Журнал тренировок в Telegram: @my_gyymm_bot', 84, 1262);
-  return cv.toDataURL('image/jpeg', 0.9);
-}
-const openRecordCard = r => openCard('Карточка рекорда', r.name, () => drawRecordCard(r));
 async function openCard(label, title, draw) {
   const s = openSheet('<div class="sh"><div><small>' + label + '</small><h2>' + esc(title) + '</h2></div>' + closeBtn + '</div><div id="cardBox"><div class="empty">Рисую…</div></div>');
   let url;
@@ -2555,6 +2666,7 @@ function openSettings() {
     (USER && USER.id === OWNER_ID ? '<div class="sgroup"><div class="frow"><span>ИИ-отчёт<small>разбор тренировки от Claude вместо обычного</small></span><button class="tgl' + (P.aiReport ? ' on' : '') + '" data-s="ai"><i></i></button></div></div>' : '') +
     '<div class="sgroup"><div class="frow"><span>Цвет приложения</span></div><div class="thm">' + THEMES.map(t => '<button data-s="th" data-id="' + t.id + '" class="' + (t === theme() ? 'on' : '') + '" style="background:' + t.c + '" aria-label="' + t.n + '">' + (t === theme() ? ic('check') : '') + '</button>').join('') + '</div></div>' +
     '<div class="sgroup"><div class="frow"><span>Таймер отдыха</span></div><div class="seg sm liquid" id="restSeg"><div class="lens"></div>' + REST_OPTS.map(v => '<button>' + Math.floor(v / 60) + ':' + String(v % 60).padStart(2, '0') + '</button>').join('') + '</div></div>' +
+    '<button class="srow" data-s="features"><span>' + ic('bulb') + '</span><div><b>Что умеет приложение</b><small>все возможности и знакомство</small></div>' + ic('arrow') + '</button>' +
     '<button class="srow" data-s="backup"><span>' + ic('save') + '</span><div><b>Копия тренировок</b><small>пришлю файлы в чат с ботом</small></div>' + ic('arrow') + '</button>' +
     '<div class="note2">Сохранено тренировок: ' + idx().dates.length + '. Все данные хранятся в твоём аккаунте Telegram' + (pending() ? ' · синхронизация…' : '') + '.</div>';
   const s = openSheet('<div id="setb">' + body() + '</div>');
@@ -2571,6 +2683,7 @@ function openSettings() {
       s.el.querySelector('#setb').innerHTML = body(); s.bindClose(); bind();
       return;
     }
+    if (a === 'features') { tap(); s.close(); return setTimeout(openFeatures, 380); }
     if (a === 'backup') {
       if (b.dataset.busy) return;
       b.dataset.busy = '1'; tap();
@@ -2671,13 +2784,14 @@ function convertExport(data) {
 
 /* ---------- общее ---------- */
 function skeleton() { $view.innerHTML = demoBanner() + '<div class="skeleton" style="height:56px;margin-top:4px"></div><div class="skeleton"></div><div class="skeleton" style="height:300px"></div>'; }
-function demoBanner() { return DEMO ? '<div class="demo">Демо-режим с примером тренировок: открой через Telegram, чтобы вести свой журнал</div>' : ''; }
+function demoBanner() { return ''; } // плашку «Демо-режим» убрали: мешала смотреть экраны
 
 function show(tab) {
   state.tab = tab;
   if (weekSheet) weekSheet.close();
-  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
-  if (typeof placeLens === 'function' && !navDrag) placeLens(TABS.indexOf(tab));
+  const nt = tab === 'library' ? 'progress' : tab; // каталог упражнений живёт внутри «Прогресса»
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === nt));
+  if (typeof placeLens === 'function' && !navDrag) placeLens(TABS.indexOf(nt));
   render();
   $scroll.scrollTop = 0; // после отрисовки: иначе браузер зря считает раскладку старой страницы
 }
@@ -2804,8 +2918,10 @@ navMouse('pointerdown', ev => { try { $nav.setPointerCapture(ev.pointerId); } ca
 navMouse('pointermove', ev => navMove(ev.pointerId, ev.clientX));
 navMouse('pointerup', ev => navEnd(ev.pointerId, ev.clientX, false));
 navMouse('pointercancel', ev => navEnd(ev.pointerId, ev.clientX, true));
-window.addEventListener('resize', () => placeLens(TABS.indexOf(state.tab)));
-requestAnimationFrame(() => { lens.style.transition = 'none'; placeLens(TABS.indexOf(state.tab)); requestAnimationFrame(() => lens.style.transition = ''); });
+// каталог — не вкладка, линза в нём стоит на «Прогрессе»
+const navTab = () => TABS.indexOf(state.tab === 'library' ? 'progress' : state.tab);
+window.addEventListener('resize', () => placeLens(navTab()));
+requestAnimationFrame(() => { lens.style.transition = 'none'; placeLens(navTab()); requestAnimationFrame(() => lens.style.transition = ''); });
 
 /* ---------- демо-режим (открыто не из Telegram): пример с выдуманными тренировками ---------- */
 function seedDemo() {
